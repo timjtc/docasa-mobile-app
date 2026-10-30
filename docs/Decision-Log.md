@@ -89,6 +89,27 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   FastLED if it deviates; NimBLE-Arduino 2.x + ArduinoJson 7.x pinned when installed (Phase 1/2).
   Partially resolves Plan OQ #5 (NimBLE-vs-core check remains at Phase 2).
 
+- **D-014 — NimBLE-Arduino 2.5.2 + ArduinoJson 7.4.3 pinned** · resolved · 2026-10-30 · firmware
+  Context: D-003 promised exact pins at Phase 1/2; Plan OQ #5.
+  Decision: **NimBLE-Arduino 2.5.2** + **ArduinoJson 7.4.3** installed and compile-verified with
+  core 3.3.12 (v4.1: 732,643 B flash / 55 %, 40,572 B RAM / 12 %, 0 warnings).
+  Notes: API drift found vs. the 1.x-style calls — NimBLE 2.5.2 has **no
+  `getSubscribedCount()`**; CCCD gating is implemented via the `onSubscribe` callback
+  (subValue bit 0) maintaining per-characteristic flags, reset on disconnect. Runtime
+  compatibility confirmed only at G2 (bench). Supersedes the "pin later" clause of D-003.
+
+- **D-015 — Phases 1+2 merged; bench gates deferred** · resolved · 2026-10-30 · process + firmware
+  Context: user timeline pressure; hardware not yet available for bench/flash.
+  Decision: (a) Phases 1 and 2 executed as a **single firmware session** (user-approved) —
+  `FIRMWARE_VERSION = 4.1.0` covers both (the interim 4.0.0 NVS-only step from D-005 is never
+  shipped). (b) v4.1 is **code-complete and compile-verified**; gates **G1/G2 run later from
+  `docs/Bench-Runbook.md`** when hardware arrives — they remain the definition of done for
+  Plan P0+P1. (c) The Command characteristic handles `{"cmd":"time"}` now (Phase 4 handshake
+  dependency; trivially in scope) and deliberately **ignores** `resetFilter` until Phase 5.
+  (d) Behavior-preservation gate: `tools/firmware-diff-check.sh` PASS — 312 lines added,
+  0 removed/changed vs frozen v3 baseline (setup()/loop() contain only the two pre-approved
+  insertion calls plus top-of-file includes).
+
 ---
 
 ### Backlog (unscheduled, non-blocking)

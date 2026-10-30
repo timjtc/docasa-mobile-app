@@ -14,3 +14,10 @@ Build check (arduino-cli, ESP32 Arduino core 3.x):
 ```
 arduino-cli compile --fqbn esp32:esp32:esp32 firmware/docasa-air-purifier-v4
 ```
+
+Flashing + bench verification (G1/G2): see `docs/Bench-Runbook.md`.
+Behavior-preservation gate (run before every firmware commit):
+
+```
+tools/firmware-diff-check.sh        # must report 0 removed/changed lines
+```

@@ -7,6 +7,10 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME680.h>
 #include "Adafruit_PM25AQI.h"
+// --- DOCASA IoT (v4.1): BLE + NVS + JSON for the appended IoT block (Plan §1.4 additive) ---
+#include <Preferences.h>
+#include <NimBLEDevice.h>
+#include <ArduinoJson.h>
 
 // --- Pin Definitions ---
 #define BATT_SENSE_PIN   33
@@ -123,6 +127,9 @@ void setup() {
   tft.setRotation(1);
   tft.invertDisplay(false);
 
+  // --- DOCASA IoT (v4.1): BLE + NVS init — pre-approved setup() insertion (Plan §7.6) ---
+  docasaIoBegin();
+
   // --- Run Cinematic Boot Screen Animation ---
   showBootScreen();
 
@@ -143,6 +150,9 @@ void loop() {
 
   updateDisplay();
   updateAndDrawParticles();
+
+  // --- DOCASA IoT (v4.1): telemetry/persistence scheduler — pre-approved loop() insertion ---
+  docasaIoService();
 
   delay(15);
 }
@@ -631,4 +641,306 @@ void updateAndDrawParticles() {
 
     tft.fillCircle((int)particles[i].x, (int)particles[i].y, particles[i].radius, particleColor);
   }
+}
+
+// ============================================================================
+// === DOCASA IoT ADDITIONS (v4.1) ============================================
+// === Scope: Plan §1.4 — BLE capability + NVS persistence + data transmis- ===
+// === sion ONLY. No hardware-control, display, LED, fan or sensor logic is  ===
+// === modified. Changes to the original v3 code are strictly additive: the  ===
+// === three includes at the top of this file, the two pre-approved inser-   ===
+// === tion calls (docasaIoBegin() in setup(), docasaIoService() in loop()), ===
+// === and this appended block. Verify with tools/firmware-diff-check.sh     ===
+// === (must report 0 removed/changed lines).                                ===
+// === Interface spec: docs/BLE-Protocol-Contract.md v1.0 (frozen, D-002).   ===
+// ============================================================================
+
+// --- Identity & protocol constants (Contract §1–§2) ---
+#define DOCASA_BLE_NAME         "DOCASA-AirPurifier"
+#define DOCASA_PROTOCOL_VERSION 1
+const char* DOCASA_FW_VERSION = "4.1.0";  // D-005/D-015: 4.1.0 = NVS + BLE (merged session)
+
+#define DOCASA_UUID_SERVICE "d0ca5a0e-975a-4408-9059-a93d3207072f"
+#define DOCASA_UUID_AIR     "d0ca5a22-27ed-4fbe-aa36-dd1ffdc66f7f"
+#define DOCASA_UUID_ENV     "d0ca5acb-dcfc-4d8f-8a52-b21558697f7e"
+#define DOCASA_UUID_SYS     "d0ca5a8f-1160-4c49-a9ee-138998d9c402"
+#define DOCASA_UUID_FILTER  "d0ca5a7a-fd2b-4dbf-932a-855cb6d3ddf0"
+#define DOCASA_UUID_CMD     "d0ca5abd-8a7e-4412-9e96-a01d4656f3f7"
+
+// --- NVS persistence state (Plan §4.2 / D-004: both integrals uint64) ---
+Preferences docasaPrefs;
+uint64_t docasaFanSeconds       = 0;  // Σ commanded-RPM × dt          [RPM·s]
+uint64_t docasaPmWeightedFanSec = 0;  // Σ commanded-RPM × PM2.5 × dt [RPM·µg·s]
+uint32_t docasaPowerOnSeconds   = 0;  // powered time — device lifecycle (never filter-reset)
+uint32_t docasaMsResidual       = 0;  // shared sub-second residual (no drift, exact dt accounting)
+uint32_t docasaEpoch            = 0;  // app-supplied time (reboot-volatile — Contract §6.7)
+
+// --- BLE GATT objects ---
+NimBLEServer*          docasaServer       = nullptr;
+NimBLEService*         docasaTelemetrySvc = nullptr;
+NimBLECharacteristic*  docasaAirChr       = nullptr;
+NimBLECharacteristic*  docasaEnvChr       = nullptr;
+NimBLECharacteristic*  docasaSysChr       = nullptr;
+NimBLECharacteristic*  docasaFilterChr    = nullptr;
+NimBLECharacteristic*  docasaCmdChr       = nullptr;
+NimBLECharacteristic*  docasaBattChr      = nullptr;
+
+// --- Scheduler & on-change tracking (unsigned-delta millis — rollover-safe, Plan §7.2) ---
+unsigned long docasaLastTickMs     = 0;
+unsigned long docasaLastNvsWriteMs = 0;
+uint32_t      docasaTickCount      = 0;
+int           docasaLastStageSent  = -1;
+bool          docasaLastChgSent    = false;
+bool          docasaLastFullSent   = false;
+
+// CCCD subscription tracking (NimBLE 2.x has no getSubscribedCount — onSubscribe
+// callback maintains these flags; risk 7.22. Reset on disconnect.)
+volatile bool docasaAirSubscribed  = false;
+volatile bool docasaEnvSubscribed  = false;
+volatile bool docasaSysSubscribed  = false;
+volatile bool docasaBattSubscribed = false;
+
+// --- Connection policy callbacks (data/flags only — never draw, Plan §3.3) ---
+class DocasaServerCallbacks : public NimBLEServerCallbacks {
+  void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
+    NimBLEDevice::getAdvertising()->stop();   // single-central policy (Plan §7.9)
+    Serial.println("[DOCASA IO] central connected — advertising paused");
+  }
+  void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
+    NimBLEDevice::startAdvertising();         // auto re-advertise (Contract §6.5)
+    docasaAirSubscribed  = false;             // subscriptions die with the connection
+    docasaEnvSubscribed  = false;
+    docasaSysSubscribed  = false;
+    docasaBattSubscribed = false;
+    Serial.println("[DOCASA IO] central disconnected — advertising resumed");
+  }
+};
+
+// --- CCCD subscription tracking callbacks (flags only — Plan §3.3) ---
+class DocasaSubsCallbacks : public NimBLECharacteristicCallbacks {
+  void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo,
+                   uint16_t subValue) override {
+    bool on = (subValue & 0x01) != 0;   // bit 0 = notifications enabled
+    if      (pCharacteristic == docasaAirChr)  docasaAirSubscribed  = on;
+    else if (pCharacteristic == docasaEnvChr)  docasaEnvSubscribed  = on;
+    else if (pCharacteristic == docasaSysChr)  docasaSysSubscribed  = on;
+    else if (pCharacteristic == docasaBattChr) docasaBattSubscribed = on;
+  }
+};
+
+// --- Command characteristic callbacks (Contract §5) ---
+class DocasaCmdCallbacks : public NimBLECharacteristicCallbacks {
+  void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
+    std::string rx = pCharacteristic->getValue();
+    JsonDocument doc;
+    if (deserializeJson(doc, rx.data(), rx.size())) {
+      Serial.println("[DOCASA IO] cmd ignored — malformed JSON");        // fixture X1
+      return;
+    }
+    const char* cmd = doc["cmd"].is<const char*>() ? doc["cmd"].as<const char*>() : nullptr;
+    if (cmd != nullptr && strcmp(cmd, "time") == 0 && doc["epoch"].is<uint32_t>()) {
+      docasaEpoch = doc["epoch"].as<uint32_t>();   // re-synced on every app connect (Plan §5)
+      Serial.printf("[DOCASA IO] time sync — epoch=%lu\n", (unsigned long)docasaEpoch);
+    } else {
+      // Unknown or out-of-scope commands (resetFilter → Phase 5; fan → Plan §1.4 restricted
+      // list): ignore silently, keep the connection (Contract §5 / fixtures X2, X3).
+      Serial.printf("[DOCASA IO] cmd ignored — '%s'\n", cmd ? cmd : "(none)");
+    }
+  }
+};
+
+// --- Payload builders (Contract §4 — JSON v1, canonical key order) ---
+size_t docasaBuildAirQuality(char* buf, size_t len) {
+  JsonDocument doc;
+  doc["v"]    = DOCASA_PROTOCOL_VERSION;
+  doc["pm1"]  = pm10Value;    // ⚠ v3 variable name holds PM1.0 (Plan §1.2 — never rename)
+  doc["pm25"] = pm25Value;
+  doc["pm10"] = pm100Value;
+  doc["st"]   = overallStage;
+  return serializeJson(doc, buf, len);
+}
+
+size_t docasaBuildEnvironment(char* buf, size_t len) {
+  JsonDocument doc;
+  doc["v"]   = DOCASA_PROTOCOL_VERSION;
+  doc["t"]   = roundf(temperature * 10.0f) / 10.0f;    // 1 decimal (Contract §4.2)
+  doc["h"]   = roundf(humidity * 10.0f) / 10.0f;
+  doc["voc"] = roundf(gasResistance * 10.0f) / 10.0f;
+  return serializeJson(doc, buf, len);
+}
+
+size_t docasaBuildSystemStatus(char* buf, size_t len) {
+  JsonDocument doc;
+  doc["v"]    = DOCASA_PROTOCOL_VERSION;
+  doc["fan"]  = currentFanRpm;                         // commanded target (Contract §4.3)
+  doc["bat"]  = batteryPct;
+  doc["chg"]  = isCharging ? 1 : 0;
+  doc["full"] = isTrulyFull ? 1 : 0;
+  doc["vb"]   = roundf(smoothedVoltage * 100.0f) / 100.0f;  // 2 decimals
+  return serializeJson(doc, buf, len);
+}
+
+size_t docasaBuildFilterCounters(char* buf, size_t len) {
+  JsonDocument doc;
+  doc["v"]    = DOCASA_PROTOCOL_VERSION;
+  doc["fs"]   = docasaFanSeconds;
+  doc["pwfs"] = docasaPmWeightedFanSec;
+  doc["on"]   = docasaPowerOnSeconds / 3600UL;         // whole hours (Contract §4.4)
+  return serializeJson(doc, buf, len);
+}
+
+// --- Publish helper: update stored value (serves reads) and notify only when
+//     the central has notifications enabled (CCCD-gated — risk 7.22). The
+//     read-only counters characteristic has no flags → never notified. ---
+void docasaPublish(NimBLECharacteristic* chr, const char* buf, size_t len) {
+  chr->setValue((const uint8_t*)buf, len);
+  bool subscribed =
+      (chr == docasaAirChr  && docasaAirSubscribed)  ||
+      (chr == docasaEnvChr  && docasaEnvSubscribed)  ||
+      (chr == docasaSysChr  && docasaSysSubscribed);
+  if (subscribed) chr->notify();
+}
+
+// --- NVS helpers (namespace "docasa", keys per Contract §4.4) ---
+void docasaNvsRestore() {
+  docasaPrefs.begin("docasa", false);
+  docasaFanSeconds       = docasaPrefs.getULong64("fanSec", 0);
+  docasaPmWeightedFanSec = docasaPrefs.getULong64("pwfs", 0);
+  docasaPowerOnSeconds   = docasaPrefs.getUInt("onSec", 0);
+}
+
+void docasaNvsPersist() {
+  docasaPrefs.putULong64("fanSec", docasaFanSeconds);
+  docasaPrefs.putULong64("pwfs",   docasaPmWeightedFanSec);
+  docasaPrefs.putUInt("onSec",     docasaPowerOnSeconds);
+  docasaLastNvsWriteMs = millis();
+}
+
+// --- BLE GATT server construction (Contract §2–§3) ---
+void docasaBleBegin() {
+  NimBLEDevice::init(DOCASA_BLE_NAME);
+  NimBLEDevice::setMTU(247);   // payloads ≤ ~77 B; app requests 247 (Contract §1)
+  docasaServer = NimBLEDevice::createServer();
+  docasaServer->setCallbacks(new DocasaServerCallbacks());
+
+  // Device Information Service (0x180A)
+  NimBLEService* dis = docasaServer->createService(NimBLEUUID("180A"));
+  dis->createCharacteristic(NimBLEUUID("2A29"), NIMBLE_PROPERTY::READ)
+      ->setValue(std::string("DOCASA"));
+  dis->createCharacteristic(NimBLEUUID("2A24"), NIMBLE_PROPERTY::READ)
+      ->setValue(std::string("DOCASA Air Purifier"));
+  dis->createCharacteristic(NimBLEUUID("2A26"), NIMBLE_PROPERTY::READ)
+      ->setValue(std::string(DOCASA_FW_VERSION));
+  dis->createCharacteristic(NimBLEUUID("2A27"), NIMBLE_PROPERTY::READ)
+      ->setValue(std::string("ESP32-WROOM-v3"));
+  dis->start();
+
+  // Battery Service (0x180F / 0x2A19) — uint8 %
+  NimBLEService* bas = docasaServer->createService(NimBLEUUID("180F"));
+  docasaBattChr = bas->createCharacteristic(NimBLEUUID("2A19"),
+                                            NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+  uint8_t battInit = (uint8_t)constrain(batteryPct, 0, 100);
+  docasaBattChr->setValue(&battInit, 1);
+  bas->start();
+
+  // DOCASA Telemetry Service (custom 128-bit — UUIDs frozen, D-002)
+  docasaTelemetrySvc = docasaServer->createService(NimBLEUUID(DOCASA_UUID_SERVICE));
+  docasaAirChr    = docasaTelemetrySvc->createCharacteristic(
+                      NimBLEUUID(DOCASA_UUID_AIR),    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+  docasaEnvChr    = docasaTelemetrySvc->createCharacteristic(
+                      NimBLEUUID(DOCASA_UUID_ENV),    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+  docasaSysChr    = docasaTelemetrySvc->createCharacteristic(
+                      NimBLEUUID(DOCASA_UUID_SYS),    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+  docasaFilterChr = docasaTelemetrySvc->createCharacteristic(
+                      NimBLEUUID(DOCASA_UUID_FILTER), NIMBLE_PROPERTY::READ);
+  docasaCmdChr    = docasaTelemetrySvc->createCharacteristic(
+                      NimBLEUUID(DOCASA_UUID_CMD),    NIMBLE_PROPERTY::WRITE);
+  docasaCmdChr->setCallbacks(new DocasaCmdCallbacks());
+  NimBLECharacteristicCallbacks* subsCb = new DocasaSubsCallbacks();
+  docasaAirChr->setCallbacks(subsCb);
+  docasaEnvChr->setCallbacks(subsCb);
+  docasaSysChr->setCallbacks(subsCb);
+  docasaBattChr->setCallbacks(subsCb);
+
+  // Initial snapshot so first reads (e.g. connect during the boot screen) are valid
+  char buf[96];
+  docasaPublish(docasaAirChr,    buf, docasaBuildAirQuality(buf, sizeof(buf)));
+  docasaPublish(docasaEnvChr,    buf, docasaBuildEnvironment(buf, sizeof(buf)));
+  docasaPublish(docasaSysChr,    buf, docasaBuildSystemStatus(buf, sizeof(buf)));
+  docasaPublish(docasaFilterChr, buf, docasaBuildFilterCounters(buf, sizeof(buf)));
+  docasaTelemetrySvc->start();
+
+  NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
+  adv->addServiceUUID(NimBLEUUID(DOCASA_UUID_SERVICE));  // name in ADV, UUID in scan response (Contract §1)
+  adv->start();
+}
+
+// --- One-time init — the single pre-approved setup() insertion (Plan §7.6) ---
+void docasaIoBegin() {
+  Serial.printf("\n[DOCASA IO] firmware %s (protocol v%d)\n",
+                DOCASA_FW_VERSION, DOCASA_PROTOCOL_VERSION);
+  docasaNvsRestore();
+  Serial.printf("[DOCASA IO] NVS restored: fs=%llu pwfs=%llu on=%luh\n",
+                docasaFanSeconds, docasaPmWeightedFanSec,
+                (unsigned long)(docasaPowerOnSeconds / 3600UL));
+  docasaBleBegin();
+  Serial.printf("[DOCASA IO] BLE advertising as '%s'\n", DOCASA_BLE_NAME);
+  docasaLastTickMs     = millis();
+  docasaLastNvsWriteMs = millis();
+}
+
+// --- 1 Hz work: accumulate → persist (throttled) → publish (Contract §3) ---
+void docasaIoTick(unsigned long now) {
+  unsigned long dtMs = now - docasaLastTickMs;   // unsigned delta — rollover-safe (Plan §7.2)
+  docasaLastTickMs   = now;
+
+  // Shared sub-second residual: exact whole-second accounting for all three counters
+  docasaMsResidual += (uint32_t)dtMs;
+  uint32_t wholeSec = docasaMsResidual / 1000UL;
+  docasaMsResidual -= wholeSec * 1000UL;
+  if (wholeSec > 0) {
+    docasaFanSeconds       += (uint64_t)currentFanRpm * wholeSec;                        // RPM·s
+    docasaPmWeightedFanSec += (uint64_t)currentFanRpm * (uint64_t)pm25Value * wholeSec;  // RPM·µg·s
+    docasaPowerOnSeconds   += wholeSec;
+  }
+
+  // 5-min throttled persistence (Plan §4.2 flash-wear math)
+  if (now - docasaLastNvsWriteMs >= 300000UL) docasaNvsPersist();
+
+  // 1 Hz snapshot publish
+  char buf[96];
+  docasaPublish(docasaAirChr, buf, docasaBuildAirQuality(buf, sizeof(buf)));
+  docasaPublish(docasaEnvChr, buf, docasaBuildEnvironment(buf, sizeof(buf)));
+  docasaPublish(docasaSysChr, buf, docasaBuildSystemStatus(buf, sizeof(buf)));
+  uint8_t batt = (uint8_t)constrain(batteryPct, 0, 100);
+  docasaBattChr->setValue(&batt, 1);
+  if (docasaBattSubscribed) docasaBattChr->notify();
+  docasaPublish(docasaFilterChr, buf, docasaBuildFilterCounters(buf, sizeof(buf)));
+
+  // 60 s serial verification dump (G1 observation point)
+  docasaTickCount++;
+  if (docasaTickCount % 60 == 0) {
+    Serial.printf("[DOCASA IO] fs=%llu pwfs=%llu onSec=%lu\n",
+                  docasaFanSeconds, docasaPmWeightedFanSec, (unsigned long)docasaPowerOnSeconds);
+  }
+}
+
+// --- Per-loop service — the single pre-approved loop() insertion ---
+void docasaIoService() {
+  // On-change extras: event-like transitions push an immediate notify (Plan §3.3)
+  if (overallStage != docasaLastStageSent) {
+    docasaLastStageSent = overallStage;
+    char buf[96];
+    docasaPublish(docasaAirChr, buf, docasaBuildAirQuality(buf, sizeof(buf)));
+  }
+  if (isCharging != docasaLastChgSent || isTrulyFull != docasaLastFullSent) {
+    docasaLastChgSent  = isCharging;
+    docasaLastFullSent = isTrulyFull;
+    char buf[96];
+    docasaPublish(docasaSysChr, buf, docasaBuildSystemStatus(buf, sizeof(buf)));
+  }
+
+  // 1 Hz scheduler (loop runs ~66 Hz — decimation per Plan §3.3)
+  unsigned long now = millis();
+  if (now - docasaLastTickMs >= 1000UL) docasaIoTick(now);
 }
