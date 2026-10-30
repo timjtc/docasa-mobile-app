@@ -29,6 +29,7 @@ class FbpDocasaConnection implements DocasaConnection {
   String? _airJson, _envJson, _sysJson;
 
   BluetoothDevice? _device;
+  BluetoothDevice? _picked;
   StreamSubscription? _airSub, _envSub, _sysSub, _dropSub;
   bool _run = false;
   bool _logFirstFrameDone = false;
@@ -44,19 +45,18 @@ class FbpDocasaConnection implements DocasaConnection {
     _statesCtrl.add(s);
   }
 
-  /// Runs until disconnect()/dispose(): connect → subscribe → on drop,
-  /// reconnect with 0.5→8 s backoff. Backoff resets after each successful
-  /// handshake.
-  @override
-  Future<void> connect() async {
+  /// Runs against the picker-chosen device until disconnect()/dispose():
+  /// connect → subscribe → on drop, reconnect with 0.5→8 s backoff. Backoff
+  /// resets after each successful handshake.
+  Future<void> connectTo(BluetoothDevice device) async {
+    _picked = device;
     if (_run) return;
     _run = true;
     var attempt = 0;
     while (_run) {
       _emit(DocasaConnectionState.connecting);
-      final linked = await _link();
+      final linked = await _link(device);
       if (!_run) return;
-      // Keep the link until it drops: _link() completes on disconnect.
       if (linked) attempt = 0;
       _airJson = _envJson = _sysJson = null;
       attempt = max(1, attempt + 1);
@@ -64,21 +64,30 @@ class FbpDocasaConnection implements DocasaConnection {
     }
   }
 
-  /// One connect cycle: permissions → UUID scan → connect → MTU → handshake
-  /// subscriptions. Returns when the link drops (whatever the next step is).
-  Future<bool> _link() async {
+  @override
+  Future<void> connect() async {
+    if (_run) return;
+    final pick = _picked;
+    if (pick == null) {
+      debugPrint(
+          'FBP: connect() with no picked device — user must choose first');
+      return;
+    }
+    await connectTo(pick);
+  }
+
+  /// One connect cycle for the picked device: permissions → connect → MTU →
+  /// handshake subscriptions. Returns when the link drops (whatever next).
+  Future<bool> _link(BluetoothDevice dev) async {
     if (!await _ensurePermissions()) {
       _run = false;
       _emit(DocasaConnectionState.disconnected);
       return false;
     }
 
-    BluetoothDevice dev;
     try {
-      dev = await _scanOnce();
+      debugPrint('FBP: connecting to ${dev.remoteId}');
       _device = dev;
-      // FBLP 2.x is dual-licensed (License enum on connect) — nonprofit tier
-      // for personal use (D-018). mtu: 247 is negotiated in one step (§7.20).
       await dev.connect(
         license: License.nonprofit,
         timeout: const Duration(seconds: 15),
@@ -106,30 +115,22 @@ class FbpDocasaConnection implements DocasaConnection {
     return true;
   }
 
-  Future<BluetoothDevice> _scanOnce() async {
-    await FlutterBluePlus.startScan(
-        timeout: const Duration(seconds: 10),
-        withServices: [Guid(DocasaContract.serviceUuid)]);
-    final List<ScanResult> found;
-    try {
-      found = await FlutterBluePlus.scanResults
-          .firstWhere((list) => list.isNotEmpty)
-          .timeout(const Duration(seconds: 12), onTimeout: () => const []);
-    } finally {
-      await FlutterBluePlus.stopScan();
-    }
-    if (found.isEmpty) {
-      debugPrint('FBP: scan finished with 0 matches in 12 s');
-      throw const SocketException('no DOCASA device found');
-    }
-    debugPrint('FBP: scan found ${found.length} device(s), '
-        'taking ${found.first.device.remoteId}');
-    return found.first.device;
-  }
-
   Future<void> _handshake() async {
     final dev = _device!;
     final services = await dev.discoverServices();
+
+    // Handshake target verification (user requirement, Contract §3): the
+    // connected device must present DOCASA device info — not some other
+    // peripheral we accidentally selected in the picker.
+    final info = await readDeviceInfo();
+    debugPrint('FBP: handshake device info: '
+        'mfg=${info.manufacturer} model=${info.model} fw=${info.firmwareRevision}');
+    if (info.manufacturer != 'DOCASA' ||
+        info.model != 'DOCASA Air Purifier' ||
+        !info.firmwareRevision.startsWith('4.')) {
+      throw StateError(
+          'handshake verification failed — this is not a v4.x DOCASA purifier');
+    }
     BluetoothCharacteristic? byUuid(String uuid) {
       for (final s in services) {
         for (final c in s.characteristics) {

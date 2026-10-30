@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/format.dart';
 import '../../core/stage.dart';
 import '../../protocol/models.dart';
-import '../../providers.dart';
+import '../device/device_picker.dart';
 
 /// Small label-over-value card used across pages.
 class ValueTile extends StatelessWidget {
@@ -189,7 +189,9 @@ class ConnectGate extends ConsumerWidget {
             FilledButton.icon(
               icon: const Icon(Icons.bluetooth),
               label: const Text('Connect'),
-              onPressed: () => ref.read(connectionProvider).connect(),
+              onPressed: () async {
+                await startConnectFlow(context, ref);
+              },
             ),
           ],
         ),

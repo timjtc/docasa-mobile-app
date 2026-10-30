@@ -7,6 +7,7 @@ import '../../data/history_seeder.dart';
 import '../../providers.dart';
 import '../../protocol/models.dart';
 import '../shared/widgets.dart';
+import 'device_picker.dart';
 
 /// Connection manager + device info + Phase 3 demo tools.
 class DevicePage extends ConsumerWidget {
@@ -73,9 +74,10 @@ class DevicePage extends ConsumerWidget {
                         onPressed: state == DocasaConnectionState.connected
                             ? () async {
                                 await conn.disconnect();
-                                await conn.connect();
+                                if (!context.mounted) return;
+                                await startConnectFlow(context, ref);
                               }
-                            : () => conn.connect(),
+                            : () => startConnectFlow(context, ref),
                       ),
                     ],
                   ),
