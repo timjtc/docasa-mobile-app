@@ -1,0 +1,65 @@
+{
+  "nodes": [
+    {
+      "id": "ios_runner_assets_xcassets_launchimage_imageset_launchimage_3x_launchimage_3x",
+      "label": "LaunchImage@3x.png (iOS launch screen image, 3x density variant, 1x1 8-bit gray+alpha PNG)",
+      "file_type": "image",
+      "source_file": "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ios_runner_assets_xcassets_launchimage_imageset_launchimage_asset_set",
+      "label": "LaunchImage asset set (iOS launch screen image registered in Contents.json with 1x/2x/3x density variants)",
+      "file_type": "concept",
+      "source_file": "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ios_runner_assets_xcassets_launchimage_imageset_launchimage_3x_blank_transparent_placeholder",
+      "label": "Blank transparent 1x1 placeholder pixel (inferred visual content of Flutter template launch image, unverified)",
+      "file_type": "concept",
+      "source_file": "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "ios_runner_assets_xcassets_launchimage_imageset_launchimage_3x_launchimage_3x",
+      "target": "ios_runner_assets_xcassets_launchimage_imageset_launchimage_asset_set",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ios_runner_assets_xcassets_launchimage_imageset_launchimage_3x_launchimage_3x",
+      "target": "ios_runner_assets_xcassets_launchimage_imageset_launchimage_3x_blank_transparent_placeholder",
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "coverage": {
+    "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png": 2
+  }
+}

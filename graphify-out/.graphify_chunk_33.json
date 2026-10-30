@@ -1,0 +1,101 @@
+{
+  "nodes": [
+    {
+      "id": "web_favicon",
+      "label": "Web Favicon (favicon.png, 16x16 8-bit RGBA browser icon)",
+      "file_type": "image",
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "web_favicon_browser_tab_icon",
+      "label": "Browser Tab Icon Role (rel=icon link target declared in web/index.html)",
+      "file_type": "concept",
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "web_favicon_flutter_template_artwork",
+      "label": "Icon artwork: likely stock Flutter logo favicon from flutter create template (visual content unverified, vision unavailable)",
+      "file_type": "image",
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "web_index",
+      "target": "web_favicon",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "web_favicon",
+      "target": "web_favicon_browser_tab_icon",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "web_favicon",
+      "target": "web_favicon_flutter_template_artwork",
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.25,
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "web_favicon",
+      "target": "web_icons_icon_192",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "web_app_icon_asset_set",
+      "label": "Web App Icon Asset Set (browser favicon plus PWA manifest icons)",
+      "nodes": [
+        "web_favicon",
+        "web_icons_icon_192",
+        "web_icons_icon_512",
+        "web_icons_icon_maskable_192",
+        "web_icons_icon_maskable_512"
+      ],
+      "relation": "form",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/home/timothyjtc/proj/docasa-app/web/favicon.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "coverage": {
+    "/home/timothyjtc/proj/docasa-app/web/favicon.png": 13
+  }
+}

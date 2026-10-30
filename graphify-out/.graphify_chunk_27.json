@@ -1,0 +1,65 @@
+{
+  "nodes": [
+    {
+      "id": "macos_runner_assets_xcassets_appicon_appiconset_app_icon_128",
+      "label": "macOS App Icon 128x128 @1x (app_icon_128.png, PNG 128x128 8-bit RGBA)",
+      "file_type": "image",
+      "source_file": "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "macos_runner_assets_xcassets_appicon_appiconset_app_icon_128_appicon_asset_set",
+      "label": "AppIcon.appiconset macOS Asset Set (10 catalog entries, 16-1024px, 1x/2x)",
+      "file_type": "concept",
+      "source_file": "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "xcode",
+      "contributor": null
+    },
+    {
+      "id": "macos_runner_assets_xcassets_appicon_appiconset_app_icon_128_visual_identity",
+      "label": "Docasa App Visual Identity (icon artwork content)",
+      "file_type": "concept",
+      "source_file": "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "macos_runner_assets_xcassets_appicon_appiconset_app_icon_128_appicon_asset_set",
+      "target": "macos_runner_assets_xcassets_appicon_appiconset_app_icon_128",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "macos_runner_assets_xcassets_appicon_appiconset_app_icon_128",
+      "target": "macos_runner_assets_xcassets_appicon_appiconset_app_icon_128_visual_identity",
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png",
+      "source_location": null,
+      "weight": 0.2
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "coverage": {
+    "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png": 23
+  }
+}

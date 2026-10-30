@@ -27,6 +27,12 @@ class FakeDocasaConnection implements DocasaConnection {
   Timer? _timer;
   DocasaConnectionState _state = DocasaConnectionState.disconnected;
 
+  // shortcut: outage cadence is a fixed script (every 90 s, 5 s offline, then
+  // auto-reconnect) — simulates out-of-range BLE drops; the real transport
+  // will not auto-reconnect, tune reconnect UX at bench time.
+  static const int _outageEverySec = 90;
+  int _uptime = 0;
+
   int _lastTimeSyncEpoch = 0;
   bool _timeSynced = false;
 
@@ -81,6 +87,11 @@ class FakeDocasaConnection implements DocasaConnection {
   Future<void> resetFilter() async => _gen.resetFilter();
 
   void _onTick() {
+    if (++_uptime % _outageEverySec == 0) {
+      disconnect();
+      _timer = Timer(const Duration(seconds: 5), () => connect());
+      return;
+    }
     final t = _gen.step();
     try {
       final telemetry = DocasaTelemetry(

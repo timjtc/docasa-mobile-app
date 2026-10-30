@@ -320,7 +320,7 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
   **must stay PASS (0 removed/changed lines)** before every firmware commit.
 
 ### Verify commands
-- App: `flutter analyze` (0 issues) · `flutter test` (49 passed) ·
+- App: `flutter analyze` (0 issues) · `flutter test` (51 passed) ·
   `flutter build apk --debug` ✓.
 - Firmware: `arduino-cli compile --fqbn esp32:esp32:esp32 --build-path /tmp/opencode/fw-build-v41 firmware/docasa-air-purifier-v4`
   (v4.1: 732,643 B flash 55%, 40,572 B RAM 12%, 0 warnings) + `bash tools/firmware-diff-check.sh`.

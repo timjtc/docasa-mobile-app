@@ -206,6 +206,27 @@ void main() {
     }
   });
 
+  test('month view reads 30 days of the hour tier', () async {
+    final now = 1700000000000;
+    final a = (now - 2 * hour) ~/ hour * hour;
+    final m = (now - 4 * day) ~/ hour * hour;
+    final c = (now - 29 * day) ~/ hour * hour;
+    await db.batch((b) {
+      b.insert(db.hourAggregates, hourRow(a));
+      b.insert(db.hourAggregates, hourRow(m));
+      b.insert(db.hourAggregates, hourRow(c));
+    });
+
+    final s = await const HistoryRepository()
+        .load(db, HistoryRange.month, HistoryMetric.pm25, nowMs: now);
+    expect(s.bucketCount, inInclusiveRange(29 * 24, 30 * 24 + 2));
+    expect(s.points[(a - s.windowStartMs) ~/ hour], isNotNull);
+    expect(s.points[(m - s.windowStartMs) ~/ hour], isNotNull);
+    expect(s.points[(c - s.windowStartMs) ~/ hour], closeTo(5, 0.01));
+    expect(s.coverage, lessThan(0.1));
+    expect(s.stageCounts[0], 3 * 3600);
+  });
+
   test('TelemetryRecorder buffers and flushes complete frames', () async {
     final conn = ManualConnection();
     final rec = TelemetryRecorder(db);

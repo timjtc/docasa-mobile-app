@@ -1,0 +1,248 @@
+[
+ {
+  "num": 1,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/AGENTS.md",
+   "/home/timothyjtc/proj/docasa-app/README.md",
+   "/home/timothyjtc/proj/docasa-app/.commandcode/skills/ponytail/SKILL.md",
+   "/home/timothyjtc/proj/docasa-app/.commandcode/skills/ponytail-audit/SKILL.md",
+   "/home/timothyjtc/proj/docasa-app/.commandcode/skills/ponytail-debt/SKILL.md",
+   "/home/timothyjtc/proj/docasa-app/.commandcode/skills/ponytail-gain/SKILL.md",
+   "/home/timothyjtc/proj/docasa-app/.commandcode/skills/ponytail-help/SKILL.md",
+   "/home/timothyjtc/proj/docasa-app/.commandcode/skills/ponytail-review/SKILL.md",
+   "/home/timothyjtc/proj/docasa-app/docs/App-Required-Features.md",
+   "/home/timothyjtc/proj/docasa-app/docs/BLE-Protocol-Contract.md",
+   "/home/timothyjtc/proj/docasa-app/docs/Bench-Runbook.md",
+   "/home/timothyjtc/proj/docasa-app/docs/Decision-Log.md",
+   "/home/timothyjtc/proj/docasa-app/docs/Development-Process.md",
+   "/home/timothyjtc/proj/docasa-app/docs/IoT-Integration-Plan.md",
+   "/home/timothyjtc/proj/docasa-app/docs/Prompt-Planning.md",
+   "/home/timothyjtc/proj/docasa-app/docs/gate-reports/G0.md",
+   "/home/timothyjtc/proj/docasa-app/docs/gate-reports/G3.md",
+   "/home/timothyjtc/proj/docasa-app/firmware/README.md",
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md",
+   "/home/timothyjtc/proj/docasa-app/linux/CMakeLists.txt",
+   "/home/timothyjtc/proj/docasa-app/linux/flutter/CMakeLists.txt",
+   "/home/timothyjtc/proj/docasa-app/linux/runner/CMakeLists.txt",
+   "/home/timothyjtc/proj/docasa-app/web/index.html",
+   "/home/timothyjtc/proj/docasa-app/windows/CMakeLists.txt",
+   "/home/timothyjtc/proj/docasa-app/windows/flutter/CMakeLists.txt"
+  ]
+ },
+ {
+  "num": 2,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/windows/runner/CMakeLists.txt"
+  ]
+ },
+ {
+  "num": 3,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/android/app/src/main/res/mipmap-hdpi/ic_launcher.png"
+  ]
+ },
+ {
+  "num": 4,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/android/app/src/main/res/mipmap-mdpi/ic_launcher.png"
+  ]
+ },
+ {
+  "num": 5,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png"
+  ]
+ },
+ {
+  "num": 6,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png"
+  ]
+ },
+ {
+  "num": 7,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+  ]
+ },
+ {
+  "num": 8,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
+  ]
+ },
+ {
+  "num": 9,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png"
+  ]
+ },
+ {
+  "num": 10,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png"
+  ]
+ },
+ {
+  "num": 11,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png"
+  ]
+ },
+ {
+  "num": 12,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png"
+  ]
+ },
+ {
+  "num": 13,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png"
+  ]
+ },
+ {
+  "num": 14,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png"
+  ]
+ },
+ {
+  "num": 15,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png"
+  ]
+ },
+ {
+  "num": 16,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png"
+  ]
+ },
+ {
+  "num": 17,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png"
+  ]
+ },
+ {
+  "num": 18,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png"
+  ]
+ },
+ {
+  "num": 19,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png"
+  ]
+ },
+ {
+  "num": 20,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png"
+  ]
+ },
+ {
+  "num": 21,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png"
+  ]
+ },
+ {
+  "num": 22,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png"
+  ]
+ },
+ {
+  "num": 23,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png"
+  ]
+ },
+ {
+  "num": 24,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png"
+  ]
+ },
+ {
+  "num": 25,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png"
+  ]
+ },
+ {
+  "num": 26,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png"
+  ]
+ },
+ {
+  "num": 27,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png"
+  ]
+ },
+ {
+  "num": 28,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_16.png"
+  ]
+ },
+ {
+  "num": 29,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png"
+  ]
+ },
+ {
+  "num": 30,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_32.png"
+  ]
+ },
+ {
+  "num": 31,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_512.png"
+  ]
+ },
+ {
+  "num": 32,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_64.png"
+  ]
+ },
+ {
+  "num": 33,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/web/favicon.png"
+  ]
+ },
+ {
+  "num": 34,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/web/icons/Icon-192.png"
+  ]
+ },
+ {
+  "num": 35,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/web/icons/Icon-512.png"
+  ]
+ },
+ {
+  "num": 36,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/web/icons/Icon-maskable-192.png"
+  ]
+ },
+ {
+  "num": 37,
+  "files": [
+   "/home/timothyjtc/proj/docasa-app/web/icons/Icon-maskable-512.png"
+  ]
+ }
+]
