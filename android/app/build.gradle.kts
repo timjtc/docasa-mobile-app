@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "com.example.docasa_app"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android requires API 37 (D-017).
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

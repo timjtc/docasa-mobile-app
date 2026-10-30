@@ -24,8 +24,8 @@ abstract final class FilterAlertDecision {
 }
 
 /// flutter_local_notifications-backed port. Initialization failures are
-/// swallowed — the Android 13+ POST_NOTIFICATIONS runtime permission flow is
-/// wired in Phase 4 (Development-Process §7 task 1 sibling).
+/// swallowed — including a denied POST_NOTIFICATIONS prompt (Phase 4: the
+/// request happens once at first init).
 class LocalFilterAlertPort implements FilterAlertPort {
   LocalFilterAlertPort();
 
@@ -39,6 +39,15 @@ class LocalFilterAlertPort implements FilterAlertPort {
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
     );
+    try {
+      // Android 13+ POST_NOTIFICATIONS runtime prompt (Phase 4, manifest tag).
+      await p
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+    } on Exception {
+      // Older APIs / channel quirk — notification attempt still handled below.
+    }
     return _plugin = p;
   }
 

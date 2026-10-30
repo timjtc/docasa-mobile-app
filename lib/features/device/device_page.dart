@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/format.dart';
 import '../../data/history_compactor.dart';
 import '../../data/history_seeder.dart';
-import '../../protocol/models.dart';
 import '../../providers.dart';
+import '../../protocol/models.dart';
 import '../shared/widgets.dart';
 
 /// Connection manager + device info + Phase 3 demo tools.
@@ -94,9 +94,11 @@ class DevicePage extends ConsumerWidget {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Phase 3: connected to the built-in device emulator — '
-                      'same protocol path as real BLE. Hardware pairing '
-                      'arrives in Phase 4.',
+                      kRealBle
+                          ? 'Real transport (flutter_blue_plus) — runtime '
+                              'verification at G4 after the bench session.'
+                          : 'Phase 3: connected to the built-in device emulator '
+                              '— same protocol path as real BLE.',
                     ),
                   ),
                 ],

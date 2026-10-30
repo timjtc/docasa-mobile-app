@@ -133,6 +133,30 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   Notes: D-011 (real budget numbers / filter model) remains pending → Phase 4 (user input
   needed).
 
+- **D-017 — Phase 4 pre-built without hardware (entry-gate deviation)** · resolved · 2026-10-30 · app
+  Context: §7 declares G2 + G3 passed as Phase 4 entry; no hardware exists yet, and the user
+  chose pre-building over blocking (G3 passed 2026-10-30).
+  Decision: Phase 4 tasks 1–5 are **code-complete, analyzer+test-gated, runtime-unverified**:
+  real transport `lib/ble/fbp/fbp_docasa_connection.dart` behind the unchanged
+  `DocasaConnection` interface — UUID scan → connect (MTU 247) → §6.1 handshake (time sync on
+  every connect) → 3-CCCD merge into complete frames → reconnect loop 0.5→8 s backoff
+  (pure `backoffDelay`, tested); runtime permissions inside the transport (scan/connect +
+  legacy location ≤ API 30), manifest BT + `POST_NOTIFICATIONS` added. Transport switch is a
+  single `dart-define`: `--dart-define=DOCASA_REAL_BLE=true`; the emulator stays default so
+  dev/tests never need hardware.
+  Notes: **G1/G2 bench still must run BEFORE any G4 device test** (G4 checklist governs);
+  FBLP 2.x stream semantics and merge alignment are the known-unverified surface.
+
+- **D-018 — Phase 4 dependency + license (resolves D-011)** · resolved · 2026-10-30 · app
+  Context: FBLP 2.x introduced a required `License` enum on `connect()` (dual-license:
+ nonprofit vs paid commercial); D-011 wanted filter-budget numbers by Phase 4.
+  Decision: **flutter_blue_plus 2.3.14 with `License.nonprofit`** (personal/civil use — paid
+  commercial tier only if the app is commercialized someday); **permission_handler** added
+  (the one justifiable addition — Android runtime permission UX). D-011: ship **configurable
+  placeholder budgets** (`FilterBudgets` defaults ≈ 3000 h nominal-load equivalent; editable in
+  settings; swap exact numbers when the real filter cartridge is chosen — bench session is the
+  natural moment).
+
 ### Backlog (unscheduled, non-blocking)
 
 - Rename Android `applicationId` from `com.example.docasa_app` before any distribution.

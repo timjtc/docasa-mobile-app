@@ -326,11 +326,13 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
   (v4.1: 732,643 B flash 55%, 40,572 B RAM 12%, 0 warnings) + `bash tools/firmware-diff-check.sh`.
 - Drift schema changes: `dart run build_runner build --delete-conflicting-outputs`.
 
-### App dependency pins (D-016)
-flutter_riverpod **3.4.3** · flutter_blue_plus **2.3.14** (Phase 4) · drift **2.35.3** ·
-fl_chart **1.3.0** · flutter_local_notifications **22.3.3** · intl 0.20.3 ·
-path_provider 2.1.6 · `sqlite3_flutter_libs` removed. Android: **minSdk 26** (D-009),
-core library desugaring enabled (`desugar_jdk_libs 2.1.4`).
+### App dependency pins (D-016/D-018)
+flutter_riverpod **3.4.3** · flutter_blue_plus **2.3.14** (`License.nonprofit`,
+D-018) · permission_handler · drift **2.35.3** · fl_chart **1.3.0** ·
+flutter_local_notifications **22.3.3** · intl 0.20.3 · path_provider 2.1.6 ·
+`sqlite3_flutter_libs` removed. Android: **minSdk 26** (D-009), core library
+desugaring enabled (`desugar_jdk_libs 2.1.4`), manifest BT/`POST_NOTIFICATIONS`
+per D-017.
 
 ### Gotchas found during Phase 3 (do not rediscover)
 - Riverpod 3.x: `AsyncValue.value` is nullable; `valueOrNull` does not exist.
@@ -342,9 +344,11 @@ core library desugaring enabled (`desugar_jdk_libs 2.1.4`).
 
 ### Current state & next steps
 - **Done:** Phase 0 (G0) · Phases 1+2 firmware (v4.1.0; bench gates G1/G2 deferred →
-  `Bench-Runbook.md` when hardware arrives) · Phase 3 (G3 PASS — `gate-reports/G3.md`).
-- **Next:** Phase 4 — swap `connectionProvider` to a flutter_blue_plus transport (single
-  swap point, everything else transport-agnostic), handshake + `time` sync, manifest
-  BT/notification permissions, periodic counter reads, real transport smoke tests.
-- **Needs user input:** D-011 (filter budgets / filter model numbers).
+  `Bench-Runbook.md` when hardware arrives) · Phase 3 (G3 PASS — `gate-reports/G3.md`) ·
+  Phase 4 **pre-built** code-complete (D-017: real FBP transport, permissions, reconnect
+  backoff; `--dart-define=DOCASA_REAL_BLE=true` switches it on).
+- **Next (in order):** (1) bench day — G1/G2 from `Bench-Runbook.md`; (2) swap in the real
+  transport on a phone and run the G4 checklist (`Development-Process §7`) → `gate-reports/G4.md`.
+- **Needs user input:** G4 phone (Android version); real filter-cartridge numbers for exact
+  budgets (D-018 placeholders until then).
 - **Firmware untouched since `75394c9`;** codec/golden contract is frozen (Contract v1.0).

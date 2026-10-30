@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'ble/docasa_connection.dart';
 import 'ble/fake/fake_docasa_connection.dart';
+import 'ble/fbp/fbp_docasa_connection.dart';
 import 'data/db/database.dart';
 import 'data/filter_health.dart';
 import 'data/history_repository.dart';
@@ -19,9 +20,13 @@ final dbProvider = Provider<AppDatabase>((ref) {
   return db;
 });
 
+/// Phase 4 transport switch: `--dart-define=DOCASA_REAL_BLE=true` runs the
+/// flutter_blue_plus transport; default stays the device emulator so dev,
+/// tests and analyzer runs never need hardware (D-017).
+const kRealBle = bool.fromEnvironment('DOCASA_REAL_BLE');
+
 final connectionProvider = Provider<DocasaConnection>((ref) {
-  // Phase 3: device emulator (encode→decode round-trip each tick).
-  final c = FakeDocasaConnection();
+  final c = kRealBle ? FbpDocasaConnection() : FakeDocasaConnection();
   ref.onDispose(c.dispose);
   return c;
 });
