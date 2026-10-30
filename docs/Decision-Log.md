@@ -167,6 +167,35 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   distinguish firmware-side causes (unverified NimBLE paths, D-015) from app-side causes before
   changing either. G1/G2 remain required before declaring Phase 1+2 done.
 
+- **D-020 — G4 practice round on a real phone (no hardware in range yet)** · resolved · 2026-10-31 · app
+  Context: user wants real-BLE UX now; the ESP32 remains unpowered/unflashed (D-019 path).
+  Decision (all on-commit, analyzer + 52 tests green, released in the BLE-test artifact):
+  (a) **Connect flow = live device picker** for the real transport — bottom-sheet scan in
+  15 s windows listing only devices whose advertisement carries the Contract §1/§2 service
+  UUID (or the exact `DOCASA-AirPurifier` name), tappable by name with RSSI; when nothing
+  valid shows, a diagnostic listing of raw nearby advertisers renders NON-tappable (user
+  requirement to narrow the list); tapped device is passed to `FbpDocasaConnection.connectTo()`
+  (interface unchanged, emulator untouched). Boot-time auto-connect holds until first pick,
+  then reconnect-drop loops target the picked device with the 0.5→8 s backoff.
+  (b) **Handshake device verification** (Contract §3): after GATT discovery the app requires
+  mfg `DOCASA`, model `DOCASA Air Purifier`, fw `4.x` — exact strings verified in the v4.1.0
+  source (2A29/2A24/2A26) — else disconnect + logged verification failure.
+  (c) **Permission-gate fix**: `locationWhenInUse` removed from `_ensurePermissions`
+  (neverForLocation scan on API 31+ never needs it; the permanent-`denied` result froze the
+  loop pre-scan — reproduced on the A34 via the instrumented trail).
+  (d) **Instrumentation kept for G4 triage**: `debugPrint` decision trail in the transport
+  (state changes, permission results, link failures, scan summaries, first frame). The
+  diagnostic scan is currently **unfiltered** with per-cycle name+UUID logging;
+  `shortcut: unfiltered scan costs one log line per 12 s cycle, restore
+  `withServices` filtering after G4 passes`.
+  (e) **Artifact tooling**: `tools/build-demo-apk.sh` and `tools/build-ble-test-apk.sh`
+  (Gradle `-P-demoBuild`/`-PrealBle` + dart-define) — parallel-install `DOCASA Demo` /
+  `DOCASA BLE Test` (id suffixes `.demo`/`.ble`, labels distinct); launchable-activity stays
+  `com.example.docasa_app.MainActivity` for all variants (aapt-verified after an
+  `am start -n *.ble/.MainActivity` type-3 error from the suffix shorthand).
+  Observed so far on the A34: BT permissions granted, scan cycles run correctly, **zero
+  DOCASA advertisements seen** — purifier never powered in range; nothing app-side failed.
+
 ### Backlog (unscheduled, non-blocking)
 
 - Rename Android `applicationId` from `com.example.docasa_app` before any distribution.

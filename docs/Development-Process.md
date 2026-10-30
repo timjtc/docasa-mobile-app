@@ -300,7 +300,7 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
 
 ---
 
-## 11. Environment facts & project state (updated at G3 — 2026-10-30)
+## 11. Environment facts & project state (updated 2026-10-31 — G4 practice session)
 
 ### Toolchain (D-013 pins)
 - **Flutter 3.47.9 stable / Dart 3.13.7** — CLI on PATH (added to `~/.bashrc`; prefix bash
@@ -314,17 +314,30 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
 
 ### Git state
 - Branch `main`: `3f77473` (initial) → `458ceda`, `084eacd` (**Phase 0**, tag `gate/G0`) →
-  `3e85ae1` (**Phase 3**, tag `gate/G3`).
+  `3e85ae1` (**Phase 3**, tag `gate/G3`) → `475ac45` (Phase 3 closeout) → `65273f6`
+  (Phase 4 pre-build, D-017) → `a33a8ff`/`a272559` (UI fixes) → `8ae7224` (demo export) →
+  `403abb3` (BLE-test export, D-019) → `35ddf2a`, `c89b04d` (live G4 practice: permission fix,
+  device picker + handshake verification, D-020).
 - Firmware commit `75394c9` = **v4.1.0** (Phases 1+2 merged, D-015): NVS counters (u64,
   5-min throttle) + NimBLE GATT per Contract v1.0; behavior gate `tools/firmware-diff-check.sh`
   **must stay PASS (0 removed/changed lines)** before every firmware commit.
 
-### Verify commands
-- App: `flutter analyze` (0 issues) · `flutter test` (51 passed) ·
+### Verify commands & artifacts
+- App: `flutter analyze` (0 issues) · `flutter test` (52 passed) ·
   `flutter build apk --debug` ✓.
 - Firmware: `arduino-cli compile --fqbn esp32:esp32:esp32 --build-path /tmp/opencode/fw-build-v41 firmware/docasa-air-purifier-v4`
   (v4.1: 732,643 B flash 55%, 40,572 B RAM 12%, 0 warnings) + `bash tools/firmware-diff-check.sh`.
 - Drift schema changes: `dart run build_runner build --delete-conflicting-outputs`.
+- Export scripts: `bash tools/build-demo-apk.sh` (emulator, "DOCASA Demo") and
+  `bash tools/build-ble-test-apk.sh` (real FBLP + picker, "DOCASA BLE Test") →
+  `releases/`-dated artifacts, parallel-install (ids `.demo` / `.ble`,
+  Gradle `-PdemoBuild=true` / `-PrealBle=true` + `--dart-define=DOCASA_REAL_BLE=true`).
+- Phone test artifact install: `~/Android/Sdk/platform-tools/adb install -r releases/<apk>`,
+  launch `-n com.example.docasa_app/ble/com.example.docasa_app.MainActivity`
+  (**activity class stays under `com.example.docasa_app`** — applicationId suffix changes only
+  the package name; aapt-verified, D-020; do not use `.ble/.` shorthand).
+- Test phone: Samsung A34 (SM-A346E, Android 14), USB debugging on, `adb` at
+  `~/Android/Sdk/platform-tools/adb`. Notes file: `docs/App-ADB-Test.md`.
 
 ### App dependency pins (D-016/D-018)
 flutter_riverpod **3.4.3** · flutter_blue_plus **2.3.14** (`License.nonprofit`,
@@ -334,21 +347,35 @@ flutter_local_notifications **22.3.3** · intl 0.20.3 · path_provider 2.1.6 ·
 desugaring enabled (`desugar_jdk_libs 2.1.4`), manifest BT/`POST_NOTIFICATIONS`
 per D-017.
 
-### Gotchas found during Phase 3 (do not rediscover)
+### Gotchas found during Phase 3/4 practice (do not rediscover)
 - Riverpod 3.x: `AsyncValue.value` is nullable; `valueOrNull` does not exist.
 - Drift 2.35: non-autoincrement PK columns arrive in `Companion.insert` as optional
   `Value<T>` — wrap PK values in `Value()`.
-- Keep `RecordingService.dispose` synchronous (widget tests assert no pending timers).
-- Widget tests must `scrollUntilVisible` below-the-fold controls (lazy list building).
-- fl_local_notifications v22 uses named `initialize({required settings:})` API.
+- FBLP 2.x: `connect()` requires `License.nonprofit` (dual-license) and negotiates
+  `mtu: 247` itself — no manual `requestMtu`.
+- BLE discovery on API 31+ never needs location (`BLUETOOTH_SCAN` `neverForLocation`);
+  requesting `locationWhenInUse` in the permission gate freezes the loop on permanent
+  `denied` (fixed in D-020). `permission_handler` requires compileSdk 37.
+- fl_chart: gap markers must be `FlSpot.nullSpot` — a `FlSpot(x, NaN)` with a real x
+  fails `spot.isNull()` and silently corrupts the stroke path (invisible line).
+- Keep `RecordingService.dispose` synchronous (widget tests assert no pending timers);
+  widget tests must `scrollUntilVisible` below-the-fold controls; fl_local_notifications
+  v22 uses named `initialize({required settings:})`.
+- FBLP transports shouldn't silently no-op on permission denial forever: the fix path
+  (require only scan+connect) + `debugPrint` decision trail on every state change is the
+  G4 triage surface (kept in the artifact; consider `kDebugMode`-gating after G4).
 
 ### Current state & next steps
 - **Done:** Phase 0 (G0) · Phases 1+2 firmware (v4.1.0; bench gates G1/G2 deferred →
   `Bench-Runbook.md` when hardware arrives) · Phase 3 (G3 PASS — `gate-reports/G3.md`) ·
-  Phase 4 **pre-built** code-complete (D-017: real FBP transport, permissions, reconnect
-  backoff; `--dart-define=DOCASA_REAL_BLE=true` switches it on).
-- **Next (in order):** (1) bench day — G1/G2 from `Bench-Runbook.md`; (2) swap in the real
-  transport on a phone and run the G4 checklist (`Development-Process §7`) → `gate-reports/G4.md`.
-- **Needs user input:** G4 phone (Android version); real filter-cartridge numbers for exact
-  budgets (D-018 placeholders until then).
+  Phase 4 pre-built + **instrumented practice round on a real phone** (D-017/D-019/D-020):
+  real FBLP transport with device picker, handshake device verification, reconnect
+  backoff, permission gate — verified up to "scans run, no DOCASA advertisement yet"
+  (device was unpowered; firmware advertisement remains THE unverified runtime surface).
+- **Next (in order):** (1) bench day — flash v4.1.0 + G1/G2 from `Bench-Runbook.md`
+  (ESP32 in range → picker should show `DOCASA-AirPurifier`); (2) run G4 checklist
+  (`Development-Process §7`) with the BLE-test artifact → `gate-reports/G4.md`;
+  (3) after G4, restore `withServices` scan filtering and review the debugPrints.
+- **Needs user input:** nothing blocking; filter-cartridge numbers for exact budgets when
+  chosen (D-018 placeholders active).
 - **Firmware untouched since `75394c9`;** codec/golden contract is frozen (Contract v1.0).
