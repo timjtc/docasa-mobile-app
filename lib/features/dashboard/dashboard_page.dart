@@ -38,30 +38,11 @@ class DashboardPage extends ConsumerWidget {
     DocasaConnectionState connState,
     DocasaTelemetry? t,
   ) {
-    if (connState == DocasaConnectionState.connecting) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (connState == DocasaConnectionState.disconnected) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Device not connected'),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              icon: const Icon(Icons.bluetooth),
-              label: const Text('Connect'),
-              onPressed: () =>
-                  ref.read(connectionProvider).connect(),
-            ),
-          ],
-        ),
-      );
-    }
-
     final air = t?.air;
     final stage = AirStage.fromIndex(air?.stage);
-    return ListView(
+    return ConnectGate(
+      connState: connState,
+      child: ListView(
       padding: const EdgeInsets.all(12),
       children: [
         StageHero(
@@ -98,11 +79,11 @@ class DashboardPage extends ConsumerWidget {
             ),
           ),
       ],
+      ),
     );
   }
 }
 
-/// System status — mirrors the device LCD page 1 (SYSTEM STATUS).
 class SystemPage extends ConsumerWidget {
   const SystemPage({super.key});
 
@@ -126,9 +107,11 @@ class SystemPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
+      body: ConnectGate(
+        connState: connState,
+        child: ListView(
+          padding: const EdgeInsets.all(12),
+          children: [
           Row(
             children: [
               Expanded(
@@ -189,6 +172,7 @@ class SystemPage extends ConsumerWidget {
                 : Colors.green,
           ),
         ],
+        ),
       ),
     );
   }

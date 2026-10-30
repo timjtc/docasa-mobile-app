@@ -58,8 +58,33 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      body: IndexedStack(index: _tab, children: _pages),
+      body: Column(
+        children: [
+          // Branding placeholder (user request) — swap this row for the real
+          // logotype asset once it exists.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Row(
+              children: [
+                Icon(Icons.air, size: 22, color: cs.primary),
+                const SizedBox(width: 10),
+                const Text('DOCASA',
+                    style: TextStyle(
+                        letterSpacing: 6,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15)),
+                const Spacer(),
+                Text('logo placeholder',
+                    style:
+                        TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
+              ],
+            ),
+          ),
+          Expanded(child: IndexedStack(index: _tab, children: _pages)),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),

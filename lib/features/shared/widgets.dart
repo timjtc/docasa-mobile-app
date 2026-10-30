@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/format.dart';
 import '../../core/stage.dart';
 import '../../protocol/models.dart';
+import '../../providers.dart';
 
 /// Small label-over-value card used across pages.
 class ValueTile extends StatelessWidget {
@@ -161,5 +163,38 @@ class ConnectionChip extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Connection gate shared by live-feed pages (Air, System): shows the
+/// connecting spinner / connect prompt instead of stale values while offline.
+class ConnectGate extends ConsumerWidget {
+  final DocasaConnectionState connState;
+  final Widget child;
+
+  const ConnectGate({super.key, required this.connState, required this.child});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (connState == DocasaConnectionState.connecting) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (connState == DocasaConnectionState.disconnected) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Device not connected'),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              icon: const Icon(Icons.bluetooth),
+              label: const Text('Connect'),
+              onPressed: () => ref.read(connectionProvider).connect(),
+            ),
+          ],
+        ),
+      );
+    }
+    return child;
   }
 }
