@@ -112,8 +112,29 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
 
 ---
 
+- **D-016 — Phase 3 dependency pins (Oct 2026 registry state)** · resolved · 2026-10-30 · app
+  Context: D-007/D-008/D-012 deferred exact pins to Phase 3; the registry moved past the
+  versions the Process doc anticipated.
+  Decision: pinned — flutter_riverpod **3.4.3** (resolves **D-007**; Riverpod 3.x, not the 2.x
+  the Process anticipated: async `.value` is nullable, `valueOrNull` removed, `Notifier` API,
+  `StateNotifierProvider` only via `legacy.dart`); drift **2.35.3** + drift_dev **2.35.2** +
+  build_runner **2.17.1** (resolves **D-008**; note: non-autoincrement PK columns arrive in
+  `Companion.insert` as optional `Value<T>` fields — wrap PK values in `Value()`);
+  **`sqlite3_flutter_libs` removed** (its 0.6.0+eol release is a no-op EOL stub; `sqlite3` 3.5.2
+  bundles the native loader via Dart build hooks); flutter_blue_plus **2.3.14** (pre-pinned for
+  Phase 4); fl_chart **1.3.0**; flutter_local_notifications **22.3.3** (v22 requires
+  `initialize({required settings:})` / `show({notificationDetails:})` named params and **core
+  library desugaring** — enabled in `android/app/build.gradle.kts` with desugar_jdk_libs 2.1.4);
+  intl 0.20.3; path_provider 2.1.6. Retention policy (resolves **D-012**): the recommended
+  ladder as coded — raw 1 Hz kept **24 h** → 1-min aggregates **7 d** → 1-h aggregates **90 d**,
+  compaction pass every 60 s while connected (`lib/data/history_compactor.dart`). minSdk
+  pre-set to **26** (per D-009) in the same build-script pass; BLE manifest permissions still
+  land with Phase 4.
+  Notes: D-011 (real budget numbers / filter model) remains pending → Phase 4 (user input
+  needed).
+
 ### Backlog (unscheduled, non-blocking)
 
 - Rename Android `applicationId` from `com.example.docasa_app` before any distribution.
 - Plan OQ #2 (fan voltage rail) — verify at next bench session; no app/firmware impact.
-- `tools/firmware-diff-check.sh` convenience script (Phase 0 optional).
+- ~~`tools/firmware-diff-check.sh` convenience script~~ — done in Phase 1 (D-015).
