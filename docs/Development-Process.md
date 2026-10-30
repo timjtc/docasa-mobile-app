@@ -165,7 +165,8 @@ soak with no crash/heap growth; **boot animation, LCD pages, LED chase, fan beha
 
 Tasks:
 1. Pin app dependencies (each pin → Decision-Log): `flutter_blue_plus`, `flutter_riverpod`
-   (D-007), `drift` + `sqlite3_flutter_libs` (D-008), `fl_chart`, `flutter_local_notifications`,
+   (D-007), `drift` (D-008 — `sqlite3_flutter_libs` later removed; see D-016), `fl_chart`,
+   `flutter_local_notifications`,
    `intl`.
 2. Architecture scaffold per Plan §6.1 — strict layering, protocol knowledge in one place:
    ```
@@ -299,14 +300,51 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
 
 ---
 
-## 11. Environment facts (updated at G0 — 2026-10-30)
+## 11. Environment facts & project state (updated at G3 — 2026-10-30)
 
-- **Flutter 3.47.9 stable / Dart 3.13.7** — CLI on PATH (added to `~/.bashrc`); builds also work
-  via Android Studio. Template counter app, stock `minSdk = flutter.minSdkVersion`. Baseline:
-  analyze clean, tests pass.
-- **git 2.55** — repo initialized on `main` at Phase 0 (snapshot `3f77473`).
-- **arduino-cli 1.5.1** (`~/.local/bin`) + **ESP32 Arduino core 3.3.12** + baseline libraries
-  pinned (versions in D-013). v4 sketch (byte-identical to v3) compiles clean — see
-  `docs/gate-reports/G0.md`.
-- Target device: ESP32 **WROOM** (D-001), running `firmware/baseline/docasa-air-purifier-v3.ino`.
-- All hardware code lives under `firmware/` (project directive).
+### Toolchain (D-013 pins)
+- **Flutter 3.47.9 stable / Dart 3.13.7** — CLI on PATH (added to `~/.bashrc`; prefix bash
+  calls with `export PATH="$HOME/development/flutter/bin:$PATH"`). Builds also work via
+  Android Studio.
+- **arduino-cli 1.5.1** (`~/.local/bin`) + **ESP32 Arduino core 3.3.12** + libraries pinned
+  (D-013/D-014; NimBLE 2.5.2, ArduinoJson 7.4.3). FQBN is `esp32:esp32:esp32` (`esp32dev`
+  removed in core 3.x).
+- Target device: ESP32 **WROOM** (D-001). All hardware code lives under `firmware/`.
+- Host has `libsqlite3.so.0` → Drift `NativeDatabase.memory()` works in `flutter test`.
+
+### Git state
+- Branch `main`: `3f77473` (initial) → `458ceda`, `084eacd` (**Phase 0**, tag `gate/G0`) →
+  `3e85ae1` (**Phase 3**, tag `gate/G3`).
+- Firmware commit `75394c9` = **v4.1.0** (Phases 1+2 merged, D-015): NVS counters (u64,
+  5-min throttle) + NimBLE GATT per Contract v1.0; behavior gate `tools/firmware-diff-check.sh`
+  **must stay PASS (0 removed/changed lines)** before every firmware commit.
+
+### Verify commands
+- App: `flutter analyze` (0 issues) · `flutter test` (49 passed) ·
+  `flutter build apk --debug` ✓.
+- Firmware: `arduino-cli compile --fqbn esp32:esp32:esp32 --build-path /tmp/opencode/fw-build-v41 firmware/docasa-air-purifier-v4`
+  (v4.1: 732,643 B flash 55%, 40,572 B RAM 12%, 0 warnings) + `bash tools/firmware-diff-check.sh`.
+- Drift schema changes: `dart run build_runner build --delete-conflicting-outputs`.
+
+### App dependency pins (D-016)
+flutter_riverpod **3.4.3** · flutter_blue_plus **2.3.14** (Phase 4) · drift **2.35.3** ·
+fl_chart **1.3.0** · flutter_local_notifications **22.3.3** · intl 0.20.3 ·
+path_provider 2.1.6 · `sqlite3_flutter_libs` removed. Android: **minSdk 26** (D-009),
+core library desugaring enabled (`desugar_jdk_libs 2.1.4`).
+
+### Gotchas found during Phase 3 (do not rediscover)
+- Riverpod 3.x: `AsyncValue.value` is nullable; `valueOrNull` does not exist.
+- Drift 2.35: non-autoincrement PK columns arrive in `Companion.insert` as optional
+  `Value<T>` — wrap PK values in `Value()`.
+- Keep `RecordingService.dispose` synchronous (widget tests assert no pending timers).
+- Widget tests must `scrollUntilVisible` below-the-fold controls (lazy list building).
+- fl_local_notifications v22 uses named `initialize({required settings:})` API.
+
+### Current state & next steps
+- **Done:** Phase 0 (G0) · Phases 1+2 firmware (v4.1.0; bench gates G1/G2 deferred →
+  `Bench-Runbook.md` when hardware arrives) · Phase 3 (G3 PASS — `gate-reports/G3.md`).
+- **Next:** Phase 4 — swap `connectionProvider` to a flutter_blue_plus transport (single
+  swap point, everything else transport-agnostic), handshake + `time` sync, manifest
+  BT/notification permissions, periodic counter reads, real transport smoke tests.
+- **Needs user input:** D-011 (filter budgets / filter model numbers).
+- **Firmware untouched since `75394c9`;** codec/golden contract is frozen (Contract v1.0).
