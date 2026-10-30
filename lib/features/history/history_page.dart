@@ -85,7 +85,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                               style: TextStyle(color: cs.onSurfaceVariant),
                             ),
                           )
-                        : _chart(series),
+                        : _chart(series, cs),
                   ),
                   if (series != null)
                     Padding(
@@ -120,7 +120,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     );
   }
 
-  Widget _chart(HistorySeries s) {
+  Widget _chart(HistorySeries s, ColorScheme cs) {
     final xs = s.windowStartMs.toDouble();
     final xe = xs + s.bucketCount * s.range.bucketMs;
     final ys = <double>[
@@ -151,11 +151,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         lineBarsData: [
           LineChartBarData(
             spots: [
+              // Gap marker MUST be FlSpot.nullSpot — a FlSpot(x, NaN) with a
+              // real x fails spot.isNull()'s nullSpot-equality (FlSpot ==
+              // only matches NaN on BOTH axes), the segments never split and
+              // the stroke path silently breaks (invisible line).
               for (var i = 0; i < s.bucketCount; i++)
-                FlSpot(xs + i * s.range.bucketMs,
-                    s.points[i] ?? double.nan), // NaN breaks the line = gap
+                s.points[i] == null
+                    ? FlSpot.nullSpot
+                    : FlSpot(
+                        xs + i * s.range.bucketMs, s.points[i]!),
             ],
-            color: DocasaThemeAccent.color,
+            color: cs.primary,
             barWidth: 1.6,
             dotData: const FlDotData(show: false),
           ),
@@ -296,9 +302,4 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     }
     return r;
   }
-}
-
-/// Small indirection so the chart color stays theme-consistent.
-abstract final class DocasaThemeAccent {
-  static const color = Color(0xFF26C6DA);
 }
