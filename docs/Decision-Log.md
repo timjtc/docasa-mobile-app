@@ -157,6 +157,16 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   settings; swap exact numbers when the real filter cartridge is chosen — bench session is the
   natural moment).
 
+- **D-019 — G4 attempted before G1/G2 bench (planned deviation)** · resolved · 2026-10-30 · process
+  Context: user wants real-BLE testing now; the ESP32 will be flashed and bench-verified
+  (G1/G2) only at a later session.
+  Decision: build a parallel-install G4 test artifact
+  (`tools/build-ble-test-apk.sh` → `--dart-define=DOCASA_REAL_BLE=true -PrealBle=true` →
+  `com.example.docasa_app.ble`, launcher label "DOCASA BLE Test") and run the §7 G4 checklist
+  informally, **before** G1/G2 firmware runtime verification. If BLE behaves unexpectedly,
+  distinguish firmware-side causes (unverified NimBLE paths, D-015) from app-side causes before
+  changing either. G1/G2 remain required before declaring Phase 1+2 done.
+
 ### Backlog (unscheduled, non-blocking)
 
 - Rename Android `applicationId` from `com.example.docasa_app` before any distribution.

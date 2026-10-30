@@ -21,10 +21,20 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         // `-PdemoBuild=true` (tools/build-demo-apk.sh) produces the parallel-install
         // demo artifact: separate applicationId + launcher label, emulator mode.
+        // `-PrealBle=true` (tools/build-ble-test-apk.sh) swaps in the flutter_blue_plus
+        // transport (D-017) — for G4 testing before the bench session (D-019).
         val demoBuild = findProperty("demoBuild") == "true"
-        applicationId =
-            if (demoBuild) "com.example.docasa_app.demo" else "com.example.docasa_app"
-        manifestPlaceholders["appName"] = if (demoBuild) "DOCASA Demo" else "docasa_app"
+        val realBle = findProperty("realBle") == "true"
+        applicationId = when {
+            realBle -> "com.example.docasa_app.ble"
+            demoBuild -> "com.example.docasa_app.demo"
+            else -> "com.example.docasa_app"
+        }
+        manifestPlaceholders["appName"] = when {
+            realBle -> "DOCASA BLE Test"
+            demoBuild -> "DOCASA Demo"
+            else -> "docasa_app"
+        }
         // FT-3 requires BLE-only device discovery (D-009): minSdk 26.
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
