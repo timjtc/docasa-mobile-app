@@ -64,7 +64,9 @@ class _AppShellState extends ConsumerState<AppShell> {
         children: [
           // Branding placeholder (user request) — swap this row for the real
           // logotype asset once it exists.
-          Padding(
+          SafeArea(
+            bottom: false,
+            child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Row(
               children: [
@@ -81,6 +83,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                         TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
               ],
             ),
+          ),
           ),
           Expanded(child: IndexedStack(index: _tab, children: _pages)),
         ],
