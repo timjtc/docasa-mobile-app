@@ -52,3 +52,4 @@ firmware/**/*.hex
 # Widget Preview related
 .widget_preview/
 .opencode/
+releases/

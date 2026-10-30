@@ -19,7 +19,12 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.docasa_app"
+        // `-PdemoBuild=true` (tools/build-demo-apk.sh) produces the parallel-install
+        // demo artifact: separate applicationId + launcher label, emulator mode.
+        val demoBuild = findProperty("demoBuild") == "true"
+        applicationId =
+            if (demoBuild) "com.example.docasa_app.demo" else "com.example.docasa_app"
+        manifestPlaceholders["appName"] = if (demoBuild) "DOCASA Demo" else "docasa_app"
         // FT-3 requires BLE-only device discovery (D-009): minSdk 26.
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
