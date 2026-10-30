@@ -77,6 +77,18 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   Recommendation to evaluate: raw 1 Hz kept 24–48 h → 1-min aggregates 7 d → 1-h aggregates 90 d;
   decided and recorded when the DB layer is built.
 
+- **D-013 — Toolchain pins (Phase 0)** · resolved · 2026-10-30 · firmware + app
+  Context: Plan OQ #5 — verify core + library compatibility in the actual toolchain.
+  Decision: arduino-cli **1.5.1**; ESP32 Arduino core **3.3.12** (`esp32:esp32`); FastLED **3.10.8**;
+  Adafruit ST7735/ST7789 **1.12.0**; Adafruit GFX **1.13.0** (+BusIO 1.17.4); Adafruit Unified
+  Sensor **1.1.15**; Adafruit BME680 **2.0.6**; Adafruit PM25 AQI Sensor **2.0.0**; Flutter
+  **3.47.9** / Dart **3.13.7**. Baseline compile of v4 (byte-identical to v3): clean, 0 warnings,
+  397,315 B flash (30 %), 26,676 B RAM (8 %) — G0 report.
+  Notes: core 3.x FQBN is `esp32:esp32:esp32` (`esp32dev` alias removed); FastLED 3.10.8 accepts
+  `FASTLED_ESP32_I2S` silently — LED behavior to be visually confirmed at G1/G2, pin older
+  FastLED if it deviates; NimBLE-Arduino 2.x + ArduinoJson 7.x pinned when installed (Phase 1/2).
+  Partially resolves Plan OQ #5 (NimBLE-vs-core check remains at Phase 2).
+
 ---
 
 ### Backlog (unscheduled, non-blocking)

@@ -12,5 +12,5 @@ All ESP32 / hardware code lives in this directory (project directive, 2026-10-30
 Build check (arduino-cli, ESP32 Arduino core 3.x):
 
 ```
-arduino-cli compile --fqbn esp32:esp32:esp32dev firmware/docasa-air-purifier-v4
+arduino-cli compile --fqbn esp32:esp32:esp32 firmware/docasa-air-purifier-v4
 ```

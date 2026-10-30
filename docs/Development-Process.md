@@ -299,10 +299,14 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
 
 ---
 
-## 11. Environment facts (as of 2026-10-30)
+## 11. Environment facts (updated at G0 — 2026-10-30)
 
-- Flutter project builds via Android Studio (`app-debug.apk` produced 2026-10-30);
-  `flutter`/`dart` not yet on shell PATH. Template counter app, stock `minSdk = flutter.minSdkVersion`.
-- git 2.55 available; **repo not yet initialized**.
-- `arduino-cli` **not installed** — Phase 0 task; core 3.x required (Plan §12.2).
-- Target device: ESP32 **WROOM** (user-confirmed — D-001), running `docasa-air-purifier-v3.ino`.
+- **Flutter 3.47.9 stable / Dart 3.13.7** — CLI on PATH (added to `~/.bashrc`); builds also work
+  via Android Studio. Template counter app, stock `minSdk = flutter.minSdkVersion`. Baseline:
+  analyze clean, tests pass.
+- **git 2.55** — repo initialized on `main` at Phase 0 (snapshot `3f77473`).
+- **arduino-cli 1.5.1** (`~/.local/bin`) + **ESP32 Arduino core 3.3.12** + baseline libraries
+  pinned (versions in D-013). v4 sketch (byte-identical to v3) compiles clean — see
+  `docs/gate-reports/G0.md`.
+- Target device: ESP32 **WROOM** (D-001), running `firmware/baseline/docasa-air-purifier-v3.ino`.
+- All hardware code lives under `firmware/` (project directive).
