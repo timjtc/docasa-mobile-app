@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -30,6 +31,7 @@ class FbpDocasaConnection implements DocasaConnection {
   BluetoothDevice? _device;
   StreamSubscription? _airSub, _envSub, _sysSub, _dropSub;
   bool _run = false;
+  bool _logFirstFrameDone = false;
 
   @override
   Stream<DocasaConnectionState> get states => _statesCtrl.stream;
@@ -37,7 +39,10 @@ class FbpDocasaConnection implements DocasaConnection {
   @override
   Stream<DocasaTelemetry> get telemetry => _telemetryCtrl.stream;
 
-  void _emit(DocasaConnectionState s) => _statesCtrl.add(s);
+  void _emit(DocasaConnectionState s) {
+    debugPrint('FBP: state → $s');
+    _statesCtrl.add(s);
+  }
 
   /// Runs until disconnect()/dispose(): connect → subscribe → on drop,
   /// reconnect with 0.5→8 s backoff. Backoff resets after each successful
@@ -80,9 +85,10 @@ class FbpDocasaConnection implements DocasaConnection {
         mtu: 247,
       );
       await _handshake();
+      debugPrint('FBP: handshake done (CCCDs subscribed), link live');
       _emit(DocasaConnectionState.connected);
-    } catch (_) {
-      // Scan timeout, device vanished mid-handshake, missing chars, StateError.
+    } catch (e, st) {
+      debugPrint('FBP: link failed: $e\n$st');
       _device = null;
       return false;
     }
@@ -96,6 +102,7 @@ class FbpDocasaConnection implements DocasaConnection {
       }
     });
     await dropped.future;
+    debugPrint('FBP: link dropped, re-entering backoff loop');
     return true;
   }
 
@@ -112,8 +119,11 @@ class FbpDocasaConnection implements DocasaConnection {
       await FlutterBluePlus.stopScan();
     }
     if (found.isEmpty) {
+      debugPrint('FBP: scan finished with 0 matches in 12 s');
       throw const SocketException('no DOCASA device found');
     }
+    debugPrint('FBP: scan found ${found.length} device(s), '
+        'taking ${found.first.device.remoteId}');
     return found.first.device;
   }
 
@@ -181,7 +191,12 @@ class FbpDocasaConnection implements DocasaConnection {
         env: DocasaCodec.decodeEnvironment(e),
         sys: DocasaCodec.decodeSystemStatus(s),
       ));
+      if (!_logFirstFrameDone) {
+        _logFirstFrameDone = true;
+        debugPrint('FBP: first complete frame decoded');
+      }
     } on Exception catch (e) {
+      debugPrint('FBP: frame decode error: $e');
       _telemetryCtrl.addError(e); // per Contract X-tests (version drift etc.)
     }
   }
@@ -241,18 +256,23 @@ class FbpDocasaConnection implements DocasaConnection {
     throw StateError('command characteristic missing');
   }
 
-  /// Android 12+ scan/connect runtime permissions; `locationWhenInUse` covers
-  /// API ≤ 30 discovery (manifest hides it on 31+). Denial stops reconnecting
-  /// gracefully — the device page stays on "No device connected".
+  // Android 12+ scan/connect runtime permissions. shortcut: legacy (API ≤ 30)
+  // discovery would also want fine location, but this manifest never requests
+  // it (maxSdkVersion=30, scan is neverForLocation) — so a permanent `denied`
+  // for location is safe to ignore. Upgrade: sdkInt-gated location request if
+  // a pre-31 phone ever joins testing.
   Future<bool> _ensurePermissions() async {
     if (!Platform.isAndroid) return true;
     final granted = await [
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
-      Permission.locationWhenInUse,
     ].request();
-    return granted.values.every(
-        (s) => s.isGranted || s.isLimited || s.isProvisional);
+    final ok = granted.values
+        .every((s) => s.isGranted || s.isLimited || s.isProvisional);
+    debugPrint('FBP: permissions '
+        'scan=${granted[Permission.bluetoothScan]} '
+        'connect=${granted[Permission.bluetoothConnect]}');
+    return ok;
   }
 
   @override
