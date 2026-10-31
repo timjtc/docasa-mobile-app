@@ -21,3 +21,30 @@ Behavior-preservation gate (run before every firmware commit):
 ```
 tools/firmware-diff-check.sh        # must report 0 removed/changed lines
 ```
+
+## Flashing v4.1.0 on a fresh Windows Arduino IDE (hardware maintainer, 2026-10-31)
+
+Environment baseline: the maintainer's IDE previously flashed v3 fine. v4.1.0 is
+v3-additive only, so the flow is identical — the deltas are **two new libraries** and one
+version check.
+
+1. **ESP32 board core**: Boards Manager → `esp32` by Espressif Systems → install/verify
+   **3.3.12** (compile-verified; any ≥3.0 core likely compiles, but stick to 3.3.12 to match
+   the verified build — core 3.x is required, the old 2.x era core is not sufficient).
+2. **New libraries** (Library Manager):
+   - **NimBLE-Arduino** by h2zero — **2.5.2** (BLE stack used by the IoT additions;
+     D-014).
+   - **ArduinoJson** by Benoit Blanchon — **7.4.3**. If Library Manager doesn't offer the
+     exact version, install from the GitHub release zip.
+3. **Existing libraries** (should already be there from v3; verify only if compile fails):
+   FastLED 3.10.8 · Adafruit ST7735 and ST7789 Library 1.12.0 (+ GFX 1.13.0,
+   BusIO 1.17.4, Unified Sensor prerequisite 1.1.15) · Adafruit BME680 2.0.6 ·
+   Adafruit PM25 AQI Sensor 2.0.0.
+4. **Sketch**: open `firmware/docasa-air-purifier-v4/docasa-air-purifier-v4.ino`
+   (`FIRMWARE_VERSION 4.1.0`). Board: **ESP32 Dev Module** (same as used for v3), other
+   settings (port, upload speed, partition scheme = default) unchanged — the sketch fits
+   the default partition (verified ~55 % flash, 12 % RAM, 0 warnings).
+5. Flash → expect v3 behavior unchanged (TFT/LED/dials/BME), then run the G1/G2 checklist
+   in `docs/Bench-Runbook.md` (NVS persistence power-cycle test + nRF Connect GATT checks:
+   1 Hz JSON on subscribe, `time` write, `resetFilter` ignored). Record the results into
+   `docs/gate-reports/G1.md` and `G2.md` — those gates close Phases 1+2 (D-015).
