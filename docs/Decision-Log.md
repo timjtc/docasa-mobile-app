@@ -217,6 +217,21 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   Expected: accept the command with counter-zeroing, diff-gate PASS, bump
   FIRMWARE_VERSION 4.1.1, close Phase 5 item.
 
+- **D-022 — Firmware v4.1.1 accepts `resetFilter` (closes D-021d)** · resolved · 2026-11-01 · firmware
+  Context: D-021's replacement flow reached into the Phase-5 gate (D-010) — the user ordered
+  the "I just replaced the filter" reset path.
+  Decision: v4.1.1 — the command handler now implements Contract §5 line 110 exactly:
+  `{"cmd":"resetFilter"}` zeroes `fanSec` + `pwfs`, **persists immediately** (a cut right
+  after replacement cannot resurrect counters from the 5-min throttle window), keeps
+  `onSec`. `DOCASA_FW_VERSION = "4.1.1"`. Compile clean (732,819 B flash 55%, 40,572 B RAM
+  12%, 0 warnings); `tools/firmware-diff-check.sh` PASS — additions only (Plan §1.4).
+  App side (unchanged since `92cba76`): after `resetFilter()` it invalidates the counter /
+  health providers → re-read per Contract line 110 ("app MUST re-read and confirm zeros");
+  the confirmation surface is the Filter page figures + next alert cycle.
+  Notes: the maintainer's flash instructions (`firmware/README.md`) still apply — sketch now
+  reports 4.1.1 on boot; nRF Connect/Serial corroboration point: write `{"cmd":"resetFilter"}`
+  → Serial logs "usage integrals zeroed", counters read back 0, `on` unchanged.
+
 ### Backlog (unscheduled, non-blocking)
 
 - Rename Android `applicationId` from `com.example.docasa_app` before any distribution.

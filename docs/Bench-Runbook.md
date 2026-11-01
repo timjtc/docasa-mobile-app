@@ -1,6 +1,6 @@
 # DOCASA Bench Runbook — flashing & G1/G2 verification
 
-Date prepared: 2026-10-30 · Applies to firmware **v4.1.0** (`firmware/docasa-air-purifier-v4/`)
+Date prepared: 2026-10-30 · Applies to firmware **v4.1.1** (`firmware/docasa-air-purifier-v4/`)
 Use this when the ESP32 is physically available. It covers the flashing setup that the original
 author did in Arduino IDE, plus the Phase 1/2 gate checks (G1, G2).
 
@@ -48,7 +48,7 @@ CP2102/CH340 USB-serial chip that Linux supports out of the box.
 
 **Expected boot serial output (v4.1):**
 ```
-[DOCASA IO] firmware 4.1.0 (protocol v1)
+[DOCASA IO] firmware 4.1.1 (protocol v1)
 [DOCASA IO] NVS restored: fs=0 pwfs=0 on=0h
 [DOCASA IO] BLE advertising as 'DOCASA-AirPurifier'
 ```
@@ -73,7 +73,7 @@ followed by `[DOCASA IO] fs=… pwfs=… onSec=…` every 60 s.
 2. **Connect during boot**: connect while the boot animation still plays (advertising starts
    before `showBootScreen()`).
 3. **Device Info (0x180A)**: Manufacturer `DOCASA`, Model `DOCASA Air Purifier`,
-   Firmware Revision `4.1.0`, Hardware Revision `ESP32-WROOM-v3`.
+   Firmware Revision `4.1.1`, Hardware Revision `ESP32-WROOM-v3`.
 4. **Battery (0x180F/0x2A19)**: read matches LCD %; enable notify → 1 Hz updates.
 5. **Telemetry service**: subscribe Air Quality / Environment / System Status → **1 Hz JSON**
    matching the LCD values live; payloads match `BLE-Protocol-Contract.md` §4 exactly.

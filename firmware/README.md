@@ -22,9 +22,9 @@ Behavior-preservation gate (run before every firmware commit):
 tools/firmware-diff-check.sh        # must report 0 removed/changed lines
 ```
 
-## Flashing v4.1.0 on a fresh Windows Arduino IDE (hardware maintainer, 2026-10-31)
+## Flashing v4.1.1 on a fresh Windows Arduino IDE (hardware maintainer, 2026-11-01)
 
-Environment baseline: the maintainer's IDE previously flashed v3 fine. v4.1.0 is
+Environment baseline: the maintainer's IDE previously flashed v3 fine. v4.1.1 (same as verified v4.1.0 plus the resetFilter acceptance) is
 v3-additive only, so the flow is identical — the deltas are **two new libraries** and one
 version check.
 
@@ -41,7 +41,7 @@ version check.
    BusIO 1.17.4, Unified Sensor prerequisite 1.1.15) · Adafruit BME680 2.0.6 ·
    Adafruit PM25 AQI Sensor 2.0.0.
 4. **Sketch**: open `firmware/docasa-air-purifier-v4/docasa-air-purifier-v4.ino`
-   (`FIRMWARE_VERSION 4.1.0`). Board: **ESP32 Dev Module** (same as used for v3), other
+   (`FIRMWARE_VERSION 4.1.1`). Board: **ESP32 Dev Module** (same as used for v3), other
    settings (port, upload speed, partition scheme = default) unchanged — the sketch fits
    the default partition (verified ~55 % flash, 12 % RAM, 0 warnings).
 5. Flash → expect v3 behavior unchanged (TFT/LED/dials/BME), then run the G1/G2 checklist

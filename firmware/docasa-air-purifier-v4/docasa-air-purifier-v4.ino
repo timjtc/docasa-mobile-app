@@ -658,7 +658,7 @@ void updateAndDrawParticles() {
 // --- Identity & protocol constants (Contract §1–§2) ---
 #define DOCASA_BLE_NAME         "DOCASA-AirPurifier"
 #define DOCASA_PROTOCOL_VERSION 1
-const char* DOCASA_FW_VERSION = "4.1.0";  // D-005/D-015: 4.1.0 = NVS + BLE (merged session)
+const char* DOCASA_FW_VERSION = "4.1.1";  // D-005/D-015/D-022: NVS + BLE + resetFilter accepted
 
 #define DOCASA_UUID_SERVICE "d0ca5a0e-975a-4408-9059-a93d3207072f"
 #define DOCASA_UUID_AIR     "d0ca5a22-27ed-4fbe-aa36-dd1ffdc66f7f"
@@ -741,9 +741,17 @@ class DocasaCmdCallbacks : public NimBLECharacteristicCallbacks {
     if (cmd != nullptr && strcmp(cmd, "time") == 0 && doc["epoch"].is<uint32_t>()) {
       docasaEpoch = doc["epoch"].as<uint32_t>();   // re-synced on every app connect (Plan §5)
       Serial.printf("[DOCASA IO] time sync — epoch=%lu\n", (unsigned long)docasaEpoch);
+    } else if (cmd != nullptr && strcmp(cmd, "resetFilter") == 0) {
+      // Contract §5 (D-022): zero both usage integrals, keep onSec, persist
+      // immediately (a cut right after replacement must not resurrect the
+      // old counters from the 5-min throttle window).
+      docasaFanSeconds       = 0;
+      docasaPmWeightedFanSec = 0;
+      docasaNvsPersist();
+      Serial.println("[DOCASA IO] resetFilter — usage integrals zeroed (onSec preserved)");
     } else {
-      // Unknown or out-of-scope commands (resetFilter → Phase 5; fan → Plan §1.4 restricted
-      // list): ignore silently, keep the connection (Contract §5 / fixtures X2, X3).
+      // Unknown or out-of-scope commands (fan → Plan §1.4 restricted list):
+      // ignore silently, keep the connection (Contract §5 / fixtures X2, X3).
       Serial.printf("[DOCASA IO] cmd ignored — '%s'\n", cmd ? cmd : "(none)");
     }
   }
