@@ -108,12 +108,24 @@ class _AppShellState extends ConsumerState<AppShell>
                     fit: BoxFit.contain,
                   ),
                   const Spacer(),
-                  Switch(
-                    value: cs.brightness == Brightness.dark,
-                    onChanged: (dark) =>
-                        ref.read(themeModeProvider.notifier).set(
-                              dark ? ThemeMode.dark : ThemeMode.light,
-                            ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        cs.brightness == Brightness.dark
+                            ? Icons.dark_mode_outlined
+                            : Icons.light_mode_outlined,
+                        size: 20,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      Switch(
+                        value: cs.brightness == Brightness.dark,
+                        onChanged: (dark) =>
+                            ref.read(themeModeProvider.notifier).set(
+                                  dark ? ThemeMode.dark : ThemeMode.light,
+                                ),
+                      ),
+                    ],
                   ),
                 ],
               ),
