@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// App theme — dark, cyan-accented, echoing the device LCD (dark blue
-/// background `0x0821`, cyan boot accents).
+/// background `0x0821`, cyan boot accents). Light theme mirrors the same
+/// seed for the user toggle (banner variants live in `assets/`).
 abstract final class DocasaTheme {
   static const scaffoldBg = Color(0xFF0A1622);
   static const cardBg = Color(0xFF132233);
@@ -25,6 +26,28 @@ abstract final class DocasaTheme {
         indicatorColor: accent.withValues(alpha: 0.25),
       ),
       cardTheme: const CardThemeData(color: cardBg, margin: EdgeInsets.zero),
+      dividerTheme: DividerThemeData(color: scheme.outlineVariant),
+    );
+  }
+
+  static ThemeData light() {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: accent,
+      brightness: Brightness.light,
+    );
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: scheme.surface,
+      appBarTheme: const AppBarTheme(
+        centerTitle: false,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surfaceContainer,
+        indicatorColor: scheme.primary.withValues(alpha: 0.25),
+      ),
+      cardTheme: CardThemeData(
+          color: scheme.surfaceContainerLow, margin: EdgeInsets.zero),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant),
     );
   }

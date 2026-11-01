@@ -14,15 +14,17 @@ void main() {
   runApp(const ProviderScope(child: DocasaApp()));
 }
 
-class DocasaApp extends StatelessWidget {
+class DocasaApp extends ConsumerWidget {
   const DocasaApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'DOCASA',
       debugShowCheckedModeBanner: false,
-      theme: DocasaTheme.dark(),
+      theme: DocasaTheme.light(),
+      darkTheme: DocasaTheme.dark(),
+      themeMode: ref.watch(themeModeProvider),
       home: const AppShell(),
     );
   }
@@ -90,28 +92,32 @@ class _AppShellState extends ConsumerState<AppShell>
     return Scaffold(
       body: Column(
         children: [
-          // Branding placeholder (user request) — swap this row for the real
-          // logotype asset once it exists.
+          // Brand banner (user-supplied PNG pair) + dark/light toggle. The
+          // banner variant follows the active theme brightness.
           SafeArea(
             bottom: false,
             child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Row(
-              children: [
-                Icon(Icons.air, size: 22, color: cs.primary),
-                const SizedBox(width: 10),
-                const Text('DOCASA',
-                    style: TextStyle(
-                        letterSpacing: 6,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15)),
-                const Spacer(),
-                Text('logo placeholder',
-                    style:
-                        TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
-              ],
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Row(
+                children: [
+                  Image.asset(
+                    cs.brightness == Brightness.dark
+                        ? 'assets/docasa-logo-banner-dark.png'
+                        : 'assets/docasa-logo-banner-light.png',
+                    height: 30,
+                    fit: BoxFit.contain,
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: cs.brightness == Brightness.dark,
+                    onChanged: (dark) =>
+                        ref.read(themeModeProvider.notifier).set(
+                              dark ? ThemeMode.dark : ThemeMode.light,
+                            ),
+                  ),
+                ],
+              ),
             ),
-          ),
           ),
           Expanded(child: IndexedStack(index: _tab, children: _pages)),
         ],

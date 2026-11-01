@@ -1,5 +1,6 @@
 import 'dart:ui' show AppLifecycleState;
 
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'ble/docasa_connection.dart';
@@ -97,6 +98,37 @@ class FilterModalEvents extends Notifier<int> {
 
 final filterModalEventsProvider =
     NotifierProvider<FilterModalEvents, int>(FilterModalEvents.new);
+
+/// Theme mode for the header toggle — dark is the house default (device LCD
+/// echo), persisted to the KV table as `ui.themeMode`.
+class ThemeModeController extends Notifier<ThemeMode> {
+  static const _kKey = 'ui.themeMode';
+
+  @override
+  ThemeMode build() {
+    final repo = ref.watch(dbProvider);
+    repo.select(repo.appSettings).get().then((rows) {
+      final v = rows
+          .firstWhere(
+            (r) => r.key == _kKey,
+            orElse: () => const AppSetting(key: '', value: ''),
+          )
+          .value;
+      if (v == 'light') state = ThemeMode.light;
+    });
+    return ThemeMode.dark;
+  }
+
+  Future<void> set(ThemeMode m) async {
+    state = m;
+    await ref.read(dbProvider).into(ref.read(dbProvider).appSettings)
+        .insertOnConflictUpdate(
+            AppSettingsCompanion.insert(key: _kKey, value: m.name));
+  }
+}
+
+final themeModeProvider =
+    NotifierProvider<ThemeModeController, ThemeMode>(ThemeModeController.new);
 
 /// Filter-replacement alert channel selection (user requirements):
 /// app visible → in-app modal; unfocused → system push, whose tap re-opens
