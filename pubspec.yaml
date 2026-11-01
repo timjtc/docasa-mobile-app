@@ -63,10 +63,11 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
-  # DOCASA brand banner (dark/light variants chosen by theme brightness).
+  # DOCASA brand banner (dark/light variants chosen by theme brightness;
+  # *-t = tight-cropped transparent versions, per user 2026-11-01).
   assets:
-    - assets/docasa-logo-banner-dark.png
-    - assets/docasa-logo-banner-light.png
+    - assets/docasa-logo-banner-dark-t.png
+    - assets/docasa-logo-banner-light-t.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

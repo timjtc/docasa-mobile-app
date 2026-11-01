@@ -102,8 +102,8 @@ class _AppShellState extends ConsumerState<AppShell>
                 children: [
                   Image.asset(
                     cs.brightness == Brightness.dark
-                        ? 'assets/docasa-logo-banner-dark.png'
-                        : 'assets/docasa-logo-banner-light.png',
+                        ? 'assets/docasa-logo-banner-dark-t.png'
+                        : 'assets/docasa-logo-banner-light-t.png',
                     height: 30,
                     fit: BoxFit.contain,
                   ),
