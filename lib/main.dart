@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme.dart';
+import 'data/notifications.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'features/device/device_page.dart';
+import 'features/filter/filter_alert_modal.dart';
 import 'features/filter/filter_page.dart';
 import 'features/history/history_page.dart';
 import 'providers.dart';
@@ -33,8 +35,10 @@ class AppShell extends ConsumerStatefulWidget {
   ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends ConsumerState<AppShell> {
+class _AppShellState extends ConsumerState<AppShell>
+    with WidgetsBindingObserver {
   int _tab = 0;
+  bool _alertDialogOpen = false;
 
   static const _pages = [
     DashboardPage(),
@@ -47,6 +51,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Boot the recording pipeline (recorder + compactor + alert checks) and
     // auto-connect the (fake) device.
     Future.microtask(
@@ -54,11 +59,34 @@ class _AppShellState extends ConsumerState<AppShell> {
           .read(recordingServiceProvider)
           .start(ref.read(connectionProvider)),
     );
+    // Cold-started by a filter-notification tap → raise the modal directly.
+    Future.microtask(() async {
+      if (await LocalFilterAlertPort.didLaunchFromFilter()) {
+        ref.read(filterModalEventsProvider.notifier).fire();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    ref.read(appLifecycleProvider.notifier).update(state);
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    ref.listen(filterModalEventsProvider, (prev, next) {
+      if (next > (prev ?? 0) && !_alertDialogOpen && mounted) {
+        _alertDialogOpen = true;
+        showFilterReplaceModal(context).then((_) => _alertDialogOpen = false);
+      }
+    });
     return Scaffold(
       body: Column(
         children: [

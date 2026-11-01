@@ -24,10 +24,17 @@ abstract final class FilterAlertDecision {
 }
 
 /// flutter_local_notifications-backed port. Initialization failures are
-/// swallowed — including a denied POST_NOTIFICATIONS prompt (Phase 4: the
-/// request happens once at first init).
+/// swallowed — including a denied POST_NOTIFICATIONS prompt (the request
+/// happens once at first init). Tapping while the app process is alive
+/// replays the in-app modal; a cold start replays via [didLaunchFromFilter].
 class LocalFilterAlertPort implements FilterAlertPort {
-  LocalFilterAlertPort();
+  LocalFilterAlertPort({this.onTapped});
+
+  /// Fired when the notification is tapped while the app process is alive —
+  /// the caller opens the replacement modal (user requirement).
+  final void Function()? onTapped;
+
+  static const _payload = 'docasa_filter_alert';
 
   FlutterLocalNotificationsPlugin? _plugin;
 
@@ -38,6 +45,8 @@ class LocalFilterAlertPort implements FilterAlertPort {
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
+      onDidReceiveNotificationResponse:
+          onTapped != null ? (_) => onTapped!() : null,
     );
     try {
       // Android 13+ POST_NOTIFICATIONS runtime prompt (Phase 4, manifest tag).
@@ -51,6 +60,20 @@ class LocalFilterAlertPort implements FilterAlertPort {
     return _plugin = p;
   }
 
+  /// True when the app was cold-started by tapping our notification.
+  /// Errors in non-plugin environments (tests, missing platform channel) are
+  /// swallowed — no cold-start replay is the safe default.
+  static Future<bool> didLaunchFromFilter() async {
+    try {
+      final d = await FlutterLocalNotificationsPlugin()
+          .getNotificationAppLaunchDetails();
+      return d?.didNotificationLaunchApp == true &&
+          d?.notificationResponse?.payload == _payload;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Future<void> showFilterLow(double healthPct) async {
     try {
@@ -60,6 +83,7 @@ class LocalFilterAlertPort implements FilterAlertPort {
         title: 'DOCASA filter needs replacing',
         body:
             'Filter health is at ${healthPct.round()}%. Replace the filter soon.',
+        payload: _payload,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'docasa_filter',
@@ -70,7 +94,7 @@ class LocalFilterAlertPort implements FilterAlertPort {
         ),
       );
     } on Exception {
-      // Not initialized / no permission — Phase 4 concern.
+      // Uninitialized / no permission — the user sees the modal next session.
     }
   }
 }

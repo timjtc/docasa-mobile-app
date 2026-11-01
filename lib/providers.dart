@@ -1,3 +1,5 @@
+import 'dart:ui' show AppLifecycleState;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'ble/docasa_connection.dart';
@@ -72,13 +74,63 @@ class SettingsController extends Notifier<FilterSettings> {
   }
 }
 
-final alertPortProvider =
-    Provider<FilterAlertPort>((_) => LocalFilterAlertPort());
+/// Foreground-ness for alert channel choice; set by the root widget's
+/// WidgetsBindingObserver (main.dart).
+class AppLifecycle extends Notifier<AppLifecycleState> {
+  @override
+  AppLifecycleState build() => AppLifecycleState.resumed;
+
+  void update(AppLifecycleState s) => state = s;
+}
+
+final appLifecycleProvider =
+    NotifierProvider<AppLifecycle, AppLifecycleState>(AppLifecycle.new);
+
+/// Incremented whenever the app must raise the filter-replacement modal
+/// (in-app alert, push-tap replay, demo preview). The shell shows the dialog.
+class FilterModalEvents extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void fire() => state++;
+}
+
+final filterModalEventsProvider =
+    NotifierProvider<FilterModalEvents, int>(FilterModalEvents.new);
+
+/// Filter-replacement alert channel selection (user requirements):
+/// app visible → in-app modal; unfocused → system push, whose tap re-opens
+/// the app straight into the modal. The once-per-day presentation cap lives
+/// with [RecordingService] (`settings.lastAlertMs`).
+bool alertShouldUseInAppModal(AppLifecycleState s) =>
+    s == AppLifecycleState.resumed || s == AppLifecycleState.inactive;
+
+class _LifecycleAlertPort implements FilterAlertPort {
+  _LifecycleAlertPort(this._ref);
+
+  final Ref _ref;
+
+  @override
+  Future<void> showFilterLow(double healthPct) async {
+    if (alertShouldUseInAppModal(_ref.read(appLifecycleProvider))) {
+      _ref.read(filterModalEventsProvider.notifier).fire();
+    } else {
+      await LocalFilterAlertPort(
+        onTapped: () => _ref.read(filterModalEventsProvider.notifier).fire(),
+      ).showFilterLow(healthPct);
+    }
+  }
+}
+
+final alertPresenterProvider = Provider<FilterAlertPort>((ref) {
+  ref.onDispose(() {});
+  return _LifecycleAlertPort(ref);
+});
 
 final recordingServiceProvider = Provider<RecordingService>((ref) {
   final svc = RecordingService(
     db: ref.watch(dbProvider),
-    alerts: ref.watch(alertPortProvider),
+    alerts: ref.watch(alertPresenterProvider),
   );
   ref.onDispose(svc.dispose);
   return svc;

@@ -7,6 +7,7 @@ class FilterSettings {
     this.budgets = const FilterBudgets(),
     this.alertThresholdPct = 10,
     this.lastAlertMs = 0,
+    this.filterAlertAckMs = 0,
   });
 
   final FilterBudgets budgets;
@@ -17,15 +18,21 @@ class FilterSettings {
   /// Last time a low-filter alert fired (ms epoch) — re-alert at most daily.
   final int lastAlertMs;
 
+  /// The user last deferred ("replace later") — the modal reminds at most
+  /// once/day afterwards (presentation cap is [lastAlertMs]).
+  final int filterAlertAckMs;
+
   FilterSettings copyWith({
     FilterBudgets? budgets,
     int? alertThresholdPct,
     int? lastAlertMs,
+    int? filterAlertAckMs,
   }) =>
       FilterSettings(
         budgets: budgets ?? this.budgets,
         alertThresholdPct: alertThresholdPct ?? this.alertThresholdPct,
         lastAlertMs: lastAlertMs ?? this.lastAlertMs,
+        filterAlertAckMs: filterAlertAckMs ?? this.filterAlertAckMs,
       );
 }
 
@@ -38,6 +45,7 @@ class SettingsRepository {
   static const _kLoadBudget = 'filter.loadBudgetRpmUgS';
   static const _kThreshold = 'filter.alertThresholdPct';
   static const _kLastAlert = 'filter.lastAlertMs';
+  static const _kAck = 'filter.alertAckMs';
 
   Future<FilterSettings> load() async {
     final kv = <String, String>{
@@ -54,6 +62,7 @@ class SettingsRepository {
       alertThresholdPct:
           int.tryParse(kv[_kThreshold] ?? '') ?? 10,
       lastAlertMs: int.tryParse(kv[_kLastAlert] ?? '') ?? 0,
+      filterAlertAckMs: int.tryParse(kv[_kAck] ?? '') ?? 0,
     );
   }
 
@@ -62,6 +71,7 @@ class SettingsRepository {
         await _put(_kLoadBudget, s.budgets.loadBudgetRpmUgS.toString());
         await _put(_kThreshold, s.alertThresholdPct.toString());
         await _put(_kLastAlert, s.lastAlertMs.toString());
+        await _put(_kAck, s.filterAlertAckMs.toString());
       });
 
   Future<void> _put(String key, String value) async {

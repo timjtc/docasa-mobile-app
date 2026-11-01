@@ -7,6 +7,7 @@ import '../../data/history_seeder.dart';
 import '../../providers.dart';
 import '../../protocol/models.dart';
 import '../shared/widgets.dart';
+import '../filter/filter_alert_modal.dart';
 import 'device_picker.dart';
 
 /// Connection manager + device info + Phase 3 demo tools.
@@ -194,6 +195,22 @@ class DevicePage extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  // Demo-only alert preview (user requirement): raises the
+                  // replacement modal without waiting for real degradation.
+                  // Hidden in the prod transport (kRealBle).
+                  if (!kRealBle) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.warning_amber_outlined),
+                          label: const Text('Preview filter alert'),
+                          onPressed: () => requestFilterAlertModal(ref),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

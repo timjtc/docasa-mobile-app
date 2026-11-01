@@ -196,6 +196,27 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   Observed so far on the A34: BT permissions granted, scan cycles run correctly, **zero
   DOCASA advertisements seen** — purifier never powered in range; nothing app-side failed.
 
+- **D-021 — Filter-replacement alert flow (supersedes the Phase-5 gate on `resetFilter` UX)** · resolved · 2026-11-01 · app (+ firmware follow-up)
+  Context: Phase 5 security ruling (D-010) held `resetFilter` UI-gated forever; the user now
+  specifies the replacement flow in full (modal + push + daily reminder + counter reset).
+  Decision (all analyzer/54-test green, commit `92cba76`):
+  (a) Main channel = **in-app modal** — raised on connect-time or evaluation-time detection
+  of health ≤ threshold while the app is visible; options: "I'll replace it at a later
+  time" (records `filter.alertAckMs`, reminder capped at one per day via the existing
+  `lastAlertMs` presentation stamp) and "I just replaced the filter" (calls
+  `DocasaConnection.resetFilter()`, invalidates counter/health providers, re-arms the daily
+  cap by zeroing `lastAlertMs`).
+  (b) App unfocused → **system push**; tapping it while the process is alive replays the
+  modal; a cold start replays via `getNotificationAppLaunchDetails` payload check.
+  (c) Demo build only: "Preview filter alert" button raises the modal on demand;
+  prod build hides it (`kRealBle`).
+  (d) **Firmware follow-up (next maintainer flash)**: v4.1.0 still IGNORES `resetFilter`
+  (the write-chars handler no-ops it) — until the firmware accepts the command, the
+  "replaced" option in the prod build resets app-side provider state but the device
+  integrals keep accumulating; the commander write path is already exercised end-to-end.
+  Expected: accept the command with counter-zeroing, diff-gate PASS, bump
+  FIRMWARE_VERSION 4.1.1, close Phase 5 item.
+
 ### Backlog (unscheduled, non-blocking)
 
 - Rename Android `applicationId` from `com.example.docasa_app` before any distribution.
