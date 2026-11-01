@@ -234,6 +234,11 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
 
 ### Backlog (unscheduled, non-blocking)
 
+- AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only
+  drawing when the first loop pass hits `elapsed == 0`) — **out of additive scope** (they are
+  v3-baseline behavior; editing them breaks the §1.4 diff gate). Revisit as a v5-adjacent
+  option ONLY if the user lifts the additive-only constraint.
+
 - Rename Android `applicationId` from `com.example.docasa_app` before any distribution.
 - Plan OQ #2 (fan voltage rail) — verify at next bench session; no app/firmware impact.
 - ~~`tools/firmware-diff-check.sh` convenience script~~ — done in Phase 1 (D-015).
