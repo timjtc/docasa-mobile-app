@@ -160,3 +160,44 @@ New sketch `firmware/docasa-air-purifier-v5/` (byte-identical v4 seed; v4 stays 
 - Runtime verification (partition find, ring write/roll, offline drain over the air, reset
   zeroing st) happens at the bench reflash session (D-028 plan) — code is analyzer/gate-green
   per the Phase-4-prebuild pattern (D-017).
+
+---
+
+## Task 5 (2026-11-05, same session): flash-safety double-check (user request) — one real bug fixed
+
+The user asked to verify nothing breaks when the new firmware is flashed, what NVS holds, and
+whether new drivers are needed. Evidence collected on THIS host (purifier plugged into COM15):
+
+1. **On-flash proof, pre-flash**: esptool `read_flash 0x8000 0x1000` on COM15 read the live
+   partition table (MAC `20:50:0d:07:21:f8`; purifier's BT base). Decoded rows: `nvs
+   @0x9000/0x5000`, `otadata @0xe000/0x2000`, app0/app1/spiffs/coredump (Default-4MB scheme,
+   as v4.1.1 flashed). The v5 `partitions.csv` keeps **nvs + otadata byte-identical** → any
+   plain upload preserves the Phase-1 NVS counters without reinterpretation. `docasa_ring`
+   @0x200000/0x40000 overlays the never-used old spiffs region.
+   Post-flash boot: stale `otadata` names "ota_0" which no longer exists in the new table →
+   ROM falls back to the **factory app @0x10000** (exactly where the new build sits);
+   boot confirmation is a bench checklist item.
+   ⚠ Rule recorded for the maintainer: never run `erase_flash`/`erase_region` over NVS —
+   plain upload is preserving; a full erase resets the filter counters (data loss).
+2. **NVS contents clarified (documented for correctness)**: NVS holds only the counter set —
+   `fanSec`(u64), `pwfs`(u64), `onSec`(u32), `st1..st5`(u32 ×5, since replacement), `boot`
+   (u32, +1/boot) — ~9 keys, <1 KB, 5-min throttle (+ immediate persist on resetFilter).
+   The 60-day AIR-QUALITY SERIES never touches NVS: it lives in the 256 KB `docasa_ring`
+   partition, 16 B per 10-min window (16,384 slots = 114-day capacity, 144/day → 138 KB/60 d);
+   NVS would thrash under that write pattern.
+3. **Bug found & fixed during the double-check**: the offline-drain first-valid scan walked
+   slot-by-slot with 16-B flash reads INSIDE the BLE read callback — a from-oldest sync
+   (fresh install / stale cursor) could block the NimBLE host task for seconds and trip the
+   connection supervision timeout. Rewrites: `docasaOfflineFirstValid` now scans page-granular
+   (one 4-KB read = 256 slots); the read callback serves ≤ min(15, page-remaining) records and
+   touches at most one page per GATT read; the two 4-KB page buffers consolidated into one
+   shared `docasaRingPageBuf` static (host-task-only, no writer race). Cursor-advance now
+   jumps to the resolved `first` slot after the status read (holes below are skipped, per
+   §10.3 "first" semantics).
+4. **Gates after the fixes (fw-build-v42c)**: compile **736,655 B flash (56%) / 44,828 B RAM
+   (13%) / 0 warnings** (two-buffer build was 48,924 — consolidation reclaimed ~4 KB); diff
+   gate **PASS — 602 added / 0 removed** vs the frozen v3 baseline.
+5. **Drivers**: no new ones — the same USB-serial stack used for v4.1.1 already enumerates the
+   device on this host (esptool completed a full handshake on COM15). The one quirk: the CLI
+   *monitor* subcommand mis-resolves the user-home in some shells (C:\Windows temp error) —
+   harmless for flashing; serial observation at the bench can use any terminal at 115200.

@@ -1,17 +1,17 @@
 # Graph Report - docasa-mobile-app  (2026-11-05)
 
 ## Corpus Check
-- 98 files · ~57,495 words
+- 99 files · ~57,949 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 57 file(s) not represented in the graph (top: (none) 8, .xcconfig 8, .xml 7)
 
 ## Summary
-- 1340 nodes · 1794 edges · 114 communities (70 shown, 44 thin omitted)
+- 1345 nodes · 1798 edges · 115 communities (71 shown, 44 thin omitted)
 - Extraction: 94% EXTRACTED · 5% INFERRED · 1% AMBIGUOUS · INFERRED: 93 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d683049d`
+- Built from commit: `374cd5e8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -55,7 +55,7 @@
 - Local Notifications
 - AppSetting
 - Shared App Imports
-- stage.dart
+- package:flutter_test/flutter_test.dart
 - macOS App Icon Set
 - macOS Icon Densities
 - win32_window.cpp
@@ -76,7 +76,7 @@
 - Android Launcher Icons
 - iOS Icon Density Slots
 - iOS Icon Variants
-- StatelessWidget
+- filter_alert_modal_test.dart
 - PWA Maskable Icons
 - Android MainActivity
 - Android Icon Asset Family
@@ -92,7 +92,7 @@
 - PWA Web Icons
 - Agent Workflow Docs
 - Android xxhdpi Icons
-- DateTime
+- filter_health_test.dart
 - docasa_connection.dart
 - NimBLE Stack Choice
 - Filter Lifetime NVS Model
@@ -114,6 +114,7 @@
 - iPad 29pt Icon
 - Launch Asset Instructions
 - Maskable 512 Asset
+- installation
 
 ## God Nodes (most connected - your core abstractions)
 1. `Decision Log (ADR-lite)` - 24 edges
@@ -164,7 +165,7 @@
 - **Persistent XFS disk provisioning workflow (partition, format, UUID fstab mount)** — assets_itso_quickie_notes___centos_lab_a3_persistent_data_mount, assets_itso_quickie_notes___centos_fdisk, assets_itso_quickie_notes___centos_partprobe, assets_itso_quickie_notes___centos_mkfs_xfs, assets_itso_quickie_notes___centos_blkid, assets_itso_quickie_notes___centos_fstab, assets_itso_quickie_notes___centos_findmnt, assets_itso_quickie_notes___centos_xfs [INFERRED]
 - **Unix file permission model (mode bits, special bits, ACLs)** — assets_itso_quickie_notes___centos_file_permissions, assets_itso_quickie_notes___centos_suid, assets_itso_quickie_notes___centos_sgid, assets_itso_quickie_notes___centos_sticky_bit, assets_itso_quickie_notes___centos_acl [INFERRED]
 
-## Communities (114 total, 44 thin omitted)
+## Communities (115 total, 44 thin omitted)
 
 ### Community 0 - "ADB Test Workloop"
 Cohesion: 0.05
@@ -215,16 +216,16 @@ Cohesion: 0.07
 Nodes (28): dependencies, cupertino_icons, drift, fl_chart, flutter, flutter_blue_plus, flutter_local_notifications, flutter_riverpod (+20 more)
 
 ### Community 12 - "Core Data Layer Imports"
-Cohesion: 0.05
-Nodes (28): main, main, main, budgets, counters, main, now, connect (+20 more)
+Cohesion: 0.07
+Nodes (21): connect, day, db, disconnect, dispose, emit, floorMin, hour (+13 more)
 
 ### Community 13 - "CentOS Baseline Notes"
 Cohesion: 0.10
 Nodes (26): Bash Scripting (set -Eeuo pipefail sample scripts), blkid (Block Device UUIDs and FS Types), Cron Job Scheduler (crontab, crond, CRON FORMAT), DNF Package Manager (same commands as YUM), fdisk (Disk Partitioning), findmnt (Mount Inspection and fstab --verify), firewalld / firewall-cmd, fstab (/etc/fstab Persistent Mount via UUID) (+18 more)
 
 ### Community 14 - "App Shell Imports"
-Cohesion: 0.10
-Nodes (15): requestFilterAlertModal, _alertDialogOpen, _AppShellState, build, createState, didChangeAppLifecycleState, dispose, DocasaApp (+7 more)
+Cohesion: 0.09
+Nodes (16): requestFilterAlertModal, HistoryPage, _alertDialogOpen, AppShell, _AppShellState, build, createState, didChangeAppLifecycleState (+8 more)
 
 ### Community 15 - "Windows Flutter Shell"
 Cohesion: 0.12
@@ -235,8 +236,8 @@ Cohesion: 0.10
 Nodes (19): bucketCount, bucketMs, column, coverage, _floor, HistoryRepository, HistorySeries, isEmpty (+11 more)
 
 ### Community 17 - "Filter Health Stateful UI"
-Cohesion: 0.10
-Nodes (16): _budgetCard, _countersCard, createState, dispose, FilterPage, _FilterPageState, _healthCard, _healthColor (+8 more)
+Cohesion: 0.12
+Nodes (14): _budgetCard, _countersCard, createState, dispose, FilterPage, _FilterPageState, _healthCard, _healthColor (+6 more)
 
 ### Community 18 - "Linux Desktop Build"
 Cohesion: 0.10
@@ -259,8 +260,8 @@ Cohesion: 0.10
 Nodes (19): Air Quality Characteristic (JSON v1), Command Characteristic (write), App Connect Handshake, BLE Protocol Contract v1.0, Environment Characteristic (JSON v1), Filter Counters Characteristic (read-only), Golden Test Fixtures F1-F7 / X1-X6, JSON v1 Payload Format (+11 more)
 
 ### Community 23 - "Device Page Imports"
-Cohesion: 0.11
-Nodes (13): build, child, color, connState, icon, label, pm25, stage (+5 more)
+Cohesion: 0.07
+Nodes (26): AirStage, batteryPct, clamped, color, DomainClamps, fanRpm, fromIndex, index1 (+18 more)
 
 ### Community 24 - "Filter Budgets Core"
 Cohesion: 0.11
@@ -299,8 +300,8 @@ Cohesion: 0.11
 Nodes (17): airQualityUuid, batteryLevelUuid, batteryServiceUuid, commandUuid, deviceInformationServiceUuid, deviceName, DocasaContract, environmentUuid (+9 more)
 
 ### Community 33 - "Dashboard Widgets"
-Cohesion: 0.15
-Nodes (20): build, DashboardPage, SystemPage, build, DevicePage, startConnectFlow, build, _FilterReplaceDialog (+12 more)
+Cohesion: 0.14
+Nodes (21): build, DashboardPage, SystemPage, build, DevicePage, startConnectFlow, build, _FilterReplaceDialog (+13 more)
 
 ### Community 34 - "History Compactor SQL"
 Cohesion: 0.12
@@ -319,12 +320,12 @@ Cohesion: 0.26
 Nodes (10): AppSetting, AppSettingsCompanion, FilterEvent, FilterEventsCompanion, HourAggregate, HourAggregatesCompanion, MinuteAggregate, MinuteAggregatesCompanion (+2 more)
 
 ### Community 38 - "Shared App Imports"
-Cohesion: 0.12
-Nodes (4): main, main, _now, t
+Cohesion: 0.13
+Nodes (4): ManualConnection, main, _now, t
 
-### Community 39 - "stage.dart"
-Cohesion: 0.17
-Nodes (10): AirStage, batteryPct, clamped, color, DomainClamps, fanRpm, fromIndex, index1 (+2 more)
+### Community 39 - "package:flutter_test/flutter_test.dart"
+Cohesion: 0.20
+Nodes (3): main, main, main
 
 ### Community 40 - "macOS App Icon Set"
 Cohesion: 0.18
@@ -347,7 +348,7 @@ Cohesion: 0.22
 Nodes (4): _chunk, HistorySeeder, _insert, seed
 
 ### Community 47 - "App Theme Colors"
-Cohesion: 0.25
+Cohesion: 0.22
 Nodes (6): accent, cardBg, dark, DocasaTheme, light, scaffoldBg
 
 ### Community 48 - "Size"
@@ -367,8 +368,8 @@ Cohesion: 0.33
 Nodes (5): analyzer, exclude, include, linter, rules
 
 ### Community 53 - "Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff)"
-Cohesion: 0.22
-Nodes (8): Findings, Fix (D-025), Follow-ups, Procedure (methodically executed), Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff), Task 2 (2026-11-05, same session): History light-mode chart theming — D-026, Task 3 (2026-11-05, same session): filter-math simplification + gapless offline history — plans ratified (D-027/D-028), Task 4 (2026-11-05, same session): firmware v4.2.0 — code-complete, gates green (D-028)
+Cohesion: 0.20
+Nodes (9): Findings, Fix (D-025), Follow-ups, Procedure (methodically executed), Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff), Task 2 (2026-11-05, same session): History light-mode chart theming — D-026, Task 3 (2026-11-05, same session): filter-math simplification + gapless offline history — plans ratified (D-027/D-028), Task 4 (2026-11-05, same session): firmware v4.2.0 — code-complete, gates green (D-028) (+1 more)
 
 ### Community 55 - "Required Feature List"
 Cohesion: 0.60
@@ -389,10 +390,6 @@ Nodes (4): iOS App Icon 20x20@1x (iPad 20pt @1x slot) - default Flutter logo, Ap
 ### Community 59 - "iOS Icon Variants"
 Cohesion: 0.67
 Nodes (4): iOS App Icon 60x60@3x (180x180 px, blue Flutter-logo mark on white), AppIcon.appiconset (iOS icon asset set, 16 size variants), Docasa App (iOS bundle, CFBundleDisplayName 'Docasa App'), Stock Flutter Template Icon Artwork (Flutter logo blues #54C5F8/#29B6F6/#01579B on white)
-
-### Community 61 - "StatelessWidget"
-Cohesion: 0.50
-Nodes (3): ConnectionChip, StageHero, ValueTile
 
 ### Community 62 - "PWA Maskable Icons"
 Cohesion: 0.50
@@ -442,9 +439,17 @@ Nodes (3): 32x32 Density Variant of macOS App Icon, Flutter Logo Mark (32px Icon
 Cohesion: 0.67
 Nodes (3): PWA Maskable App Icon 192x192 (web/icons), Icon artwork (visual content unverified, vision unavailable; 192x192 8-bit RGBA PNG, maskable safe-zone), PWA Icon Set (web/manifest.json icons: Icon-192, Icon-512, Icon-maskable-192, Icon-maskable-512; this asset purpose=maskable)
 
+### Community 77 - "filter_health_test.dart"
+Cohesion: 0.33
+Nodes (4): budgets, counters, main, now
+
 ### Community 78 - "docasa_connection.dart"
 Cohesion: 0.14
 Nodes (12): connect, disconnect, dispose, DocasaConnection, readDeviceInfo, readFilterCounters, resetFilter, states (+4 more)
+
+### Community 114 - "installation"
+Cohesion: 0.50
+Nodes (3): installation, id, secret
 
 ## Ambiguous Edges - Review These
 - `macOS App Icon 1024x1024 PNG (AppIcon.appiconset, 512x512 @2x master variant)` → `App icon visual content (unverified - vision unavailable in this run)`  [AMBIGUOUS]
@@ -488,20 +493,20 @@ Nodes (12): connect, disconnect, dispose, DocasaConnection, readDeviceInfo, read
 
 ## Knowledge Gaps
 - **590 isolated node(s):** `PATH`, `PATH`, `_open`, `schemaVersion`, `dart_entrypoint_arguments` (+585 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 787 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 791 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **44 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `AppDatabase` connect `AppDatabase` to `database.dart`, `Fake BLE Connection State`, `Core Data Layer Imports`, `Drift Database Root`, `Filter Budgets Core`, `Recording Service`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
 - **What connects `PATH`, `PATH`, `_open` to the rest of the system?**
   _590 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ADB Test Workloop` be split into smaller, more focused modules?**
   _Cohesion score 0.05067920585161965 - nodes in this community are weakly interconnected._
 - **Why does `Win32Window` connect `Win32 Window Handler` to `win32_window.cpp`, `Win32 Callback Types`, `Windows Flutter Shell`, `Size`, `Win32 Runner Resources`, `Windows Flutter Shell C++`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **Should `database.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.04223469660518578 - nodes in this community are weakly interconnected._
 

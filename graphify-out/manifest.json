@@ -846,15 +846,21 @@
     "semantic_hash": "8e0ae58e362a6636bdfccbc04da2c58c"
   },
   "docs/sessions/2026-11-05-ble-connect-triage.md": {
-    "mtime": 1793868776.5420036,
-    "seen": 1793868797.3930957,
-    "ast_hash": "09d40bd53d3f078e48ec2a064bb71398",
+    "mtime": 1793869898.4283304,
+    "seen": 1793869914.0409968,
+    "ast_hash": "6da7e6dd4962bda8a32ad09b50049992",
     "semantic_hash": ""
   },
   "docs/20261105-Prompt-Scratchpad.md": {
     "mtime": 1793867376.4301476,
     "seen": 1793868797.3930519,
     "ast_hash": "be8a7cef3125875266584a1122716dca",
+    "semantic_hash": ""
+  },
+  "inventory.yaml": {
+    "mtime": 1793869113.6824527,
+    "seen": 1793869914.040748,
+    "ast_hash": "e12de388da18f9c31a8fa2e8dcbceb9c",
     "semantic_hash": ""
   }
 }

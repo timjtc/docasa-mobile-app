@@ -715,6 +715,8 @@ volatile bool docasaSysSubscribed  = false;
 volatile bool docasaBattSubscribed = false;
 
 // --- v4.2 offline-history state (Contract v1.1 §10, D-028) ---
+static uint8_t docasaRingPageBuf[DOCASA_RING_PAGE_BYTES];   // shared 4 KB page read buffer
+// (BLE-host task only — never races the loop-side writer)
 const esp_partition_t* docasaRingPart = nullptr; // docasa_ring data partition (0x40)
 uint32_t         docasaRingBootId      = 1;             // NVS "boot" counter — +1 per boot
 uint32_t         docasaRingHeadSlot    = 0;             // next window slot to write (per boot)
@@ -858,22 +860,33 @@ void docasaOfflineArm(uint32_t afterSlot) {
   docasaOfflineCursorArmed   = true;
 }
 
-// Walk `from` → end until the first valid record (reads whole pages via the
-// flat read API below; bounded by ring capacity).
+// Walk `from` → end until the first valid record. Page-granular: one 4 KB
+// flash read covers 256 slots, so even a from-oldest scan stays well under a
+// second and never risks the BLE supervision timeout inside a read callback.
 uint32_t docasaOfflineFirstValid(uint32_t from) {
-  uint8_t rec[DOCASA_RING_RECORD_BYTES];
-  uint32_t s = from;
-  while (s < docasaOfflineEndSlot) {
-    if (docasaRingRead(s, rec)) return s;
-    s++;
+  if (docasaRingPart == nullptr || from >= docasaRingHeadSlot) return docasaRingHeadSlot;
+  uint32_t page = (from % DOCASA_RING_CAP_RECORDS) / DOCASA_RING_RECS_PER_PAGE;
+  uint32_t headPage = ((docasaRingHeadSlot - 1) % DOCASA_RING_CAP_RECORDS) / DOCASA_RING_RECS_PER_PAGE;
+  for (uint32_t p = page; ; p = (p + 1) == DOCASA_RING_CAP_RECORDS / DOCASA_RING_RECS_PER_PAGE ? 0 : p + 1) {
+    if (esp_partition_read(docasaRingPart, p * DOCASA_RING_PAGE_BYTES, docasaRingPageBuf,
+                           DOCASA_RING_PAGE_BYTES) != ESP_OK)
+      return docasaRingHeadSlot;
+    for (uint32_t r = 0; r < DOCASA_RING_RECS_PER_PAGE; r++) {
+      uint32_t slot = p * DOCASA_RING_RECS_PER_PAGE + r;
+      if (slot < from) continue;                     // skip below-cursor records in the first page
+      if (docasaRingValid(docasaRingPageBuf + r * DOCASA_RING_RECORD_BYTES)) return slot;
+    }
+    if (p == headPage) break;                        // scanned everything up to head
   }
-  return docasaOfflineEndSlot;
+  return docasaRingHeadSlot;
 }
 
 // Offline History read serving (read-only characteristic, §10.3): first read
 // after arming = ring status JSON; further reads = packed records in slot
-// order (≤15 × 16 B at MTU 247); empty body = drained; the drain stops at the
-// first invalid record (torn/power-loss → ≤1-window phone-side gap).
+// order (≤ min(15, page-remaining) × 16 B per read); empty body = drained;
+// the drain stops at the first invalid record (torn/power-loss → ≤1-window
+// phone-side gap). Each read touches at most ONE flash page — bounded work
+// inside the BLE host task, never risks the supervision timeout.
 class DocasaOfflineReadCallbacks : public NimBLECharacteristicCallbacks {
   void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
     if (!docasaOfflineCursorArmed || docasaRingPart == nullptr) return;
@@ -887,18 +900,27 @@ class DocasaOfflineReadCallbacks : public NimBLECharacteristicCallbacks {
                        DOCASA_PROTOCOL_VERSION,
                        (unsigned long)docasaRingBootId,
                        (unsigned long)docasaOfflineFirstSlot,
-                       (unsigned long)(docasaOfflineEndSlot > docasaOfflineNextSlot
-                            ? docasaOfflineEndSlot - docasaOfflineNextSlot : 0));
+                       (unsigned long)(docasaOfflineEndSlot > docasaOfflineFirstSlot
+                            ? docasaOfflineEndSlot - docasaOfflineFirstSlot : 0));
       pCharacteristic->setValue((const uint8_t*)statusJson, (size_t)n);
+      docasaOfflineNextSlot = docasaOfflineFirstSlot; // serve from the resolved start (skip holes)
       return;
     }
     if (docasaOfflineNextSlot >= docasaOfflineEndSlot) return;   // drained → empty body
+    uint32_t idx  = docasaOfflineNextSlot % DOCASA_RING_CAP_RECORDS;
+    uint32_t page = idx / DOCASA_RING_RECS_PER_PAGE;
+    if (esp_partition_read(docasaRingPart, page * DOCASA_RING_PAGE_BYTES, docasaRingPageBuf,
+                           DOCASA_RING_PAGE_BYTES) != ESP_OK) return;
+    uint32_t serve = DOCASA_RING_RECS_PER_PAGE - (idx % DOCASA_RING_RECS_PER_PAGE); // page bound
+    if (serve > docasaOfflineEndSlot - docasaOfflineNextSlot)
+      serve = docasaOfflineEndSlot - docasaOfflineNextSlot;
+    if (serve > 15) serve = 15;                                  // MTU-247 GATT bound
     uint8_t out[15 * DOCASA_RING_RECORD_BYTES];
     size_t n = 0;
-    uint8_t rec[DOCASA_RING_RECORD_BYTES];
-    while (docasaOfflineNextSlot < docasaOfflineEndSlot && n < sizeof(out)) {
-      if (!docasaRingRead(docasaOfflineNextSlot, rec)) break;    // invalid stops the drain
-      memcpy(out + n, rec, DOCASA_RING_RECORD_BYTES);
+    for (uint32_t r = 0; r < serve; r++) {
+      uint32_t off = (idx % DOCASA_RING_RECS_PER_PAGE + r) * DOCASA_RING_RECORD_BYTES;
+      if (!docasaRingValid(docasaRingPageBuf + off)) break;      // invalid stops the drain
+      memcpy(out + n, docasaRingPageBuf + off, DOCASA_RING_RECORD_BYTES);
       n += DOCASA_RING_RECORD_BYTES;
       docasaOfflineNextSlot++;
     }

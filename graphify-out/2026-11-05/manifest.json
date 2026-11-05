@@ -324,9 +324,9 @@
     "semantic_hash": ""
   },
   "tools/firmware-diff-check.sh": {
-    "mtime": 1793557261.9901009,
-    "seen": 1793860284.5792332,
-    "ast_hash": "465aace25a96b860ca38fce66eb78f7f",
+    "mtime": 1793868296.839706,
+    "seen": 1793868797.392891,
+    "ast_hash": "3df0a9dde3e7d8b1b967dcdb5afb5717",
     "semantic_hash": ""
   },
   "web/manifest.json": {
@@ -846,14 +846,14 @@
     "semantic_hash": "8e0ae58e362a6636bdfccbc04da2c58c"
   },
   "docs/sessions/2026-11-05-ble-connect-triage.md": {
-    "mtime": 1793867119.574395,
-    "seen": 1793867136.5750997,
-    "ast_hash": "08e1dfe7e0c43ed1983c0ccbffc26cbe",
+    "mtime": 1793868776.5420036,
+    "seen": 1793868797.3930957,
+    "ast_hash": "09d40bd53d3f078e48ec2a064bb71398",
     "semantic_hash": ""
   },
   "docs/20261105-Prompt-Scratchpad.md": {
-    "mtime": 1793866608.3971746,
-    "seen": 1793867136.5750551,
+    "mtime": 1793867376.4301476,
+    "seen": 1793868797.3930519,
     "ast_hash": "be8a7cef3125875266584a1122716dca",
     "semantic_hash": ""
   }
