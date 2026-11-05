@@ -11,28 +11,42 @@ set -u
 cd "$(dirname "$0")/.."
 
 BASE="firmware/baseline/docasa-air-purifier-v3.ino"
-CUR="firmware/docasa-air-purifier-v4/docasa-air-purifier-v4.ino"
+# Active-sketch parameter (D-028e): first non-flag arg, default = the v5 lineage.
+CUR="firmware/docasa-air-purifier-v5/docasa-air-purifier-v5.ino"
+for _a in "$@"; do
+  if [[ "$_a" != --* ]]; then CUR="$_a"; fi
+done
 
 if [[ ! -f "$BASE" || ! -f "$CUR" ]]; then
   echo "FATAL: missing $BASE or $CUR"
   exit 2
 fi
 
-diff -w -U0 "$BASE" "$CUR" > /tmp/docasa-fw-diff.txt
+# Whitespace-insensitive diff — standalone `diff` is missing on some Windows
+# shells, so fall back to `git diff --no-index` (repo tooling is always here).
+_diff_out=$(diff -w -U0 "$BASE" "$CUR" 2>/dev/null) || \
+_diff_out=$(git diff --no-index --ignore-all-space --unified=0 -- "$BASE" "$CUR")
 
 # Unified-diff format: removed lines start with '-', added with '+' (minus the
 # '---'/'+++' file headers). Counts include empty lines correctly.
-removed=$(( $(grep -c "^-" /tmp/docasa-fw-diff.txt) - $(grep -c "^---" /tmp/docasa-fw-diff.txt) ))
-added=$(( $(grep -c "^+" /tmp/docasa-fw-diff.txt) - $(grep -c "^+++" /tmp/docasa-fw-diff.txt) ))
+removed=$(( $(printf '%s\n' "$_diff_out" | grep -c "^-") -
+             $(printf '%s\n' "$_diff_out" | grep -c "^---") ))
+added=$(( $(printf '%s\n' "$_diff_out" | grep -c "^+") -
+           $(printf '%s\n' "$_diff_out" | grep -c "^+++") ))
 
 echo "baseline lines  : $(wc -l < "$BASE")"
 echo "current  lines  : $(wc -l < "$CUR")"
 echo "added lines     : $added"
 echo "removed/changed : $removed"
 
-if [[ "${1:-}" == "--verbose" ]]; then
+VERBOSE=0
+for _a in "$@"; do
+  if [[ "$_a" == "--verbose" ]]; then VERBOSE=1; fi
+done
+
+if [[ "$VERBOSE" -eq 1 ]]; then
   echo "--- added hunks ---"
-  grep -E "^\+[^+]" /tmp/docasa-fw-diff.txt
+  printf '%s\n' "$_diff_out" | grep -E "^\+[^+]"
 fi
 
 if [[ "$removed" -eq 0 ]]; then
@@ -41,6 +55,6 @@ if [[ "$removed" -eq 0 ]]; then
 else
   echo "GATE: FAIL — $removed line(s) removed or modified vs baseline."
   echo "      Requires explicit user approval before merge (Plan §1.4). Offending lines:"
-  grep -E "^-[^-]" /tmp/docasa-fw-diff.txt | head -20
+  printf '%s\n' "$_diff_out" | grep -E "^-[^-]" | head -20
   exit 1
 fi

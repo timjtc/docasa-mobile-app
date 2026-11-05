@@ -121,3 +121,42 @@ and D-028 (offline-history batch + contract v1.1). Contract bumped **v1.0 → v1
 
 Deferred by decision: security/pairing (D-010) → contract §9 (v1.2); real-cartridge budget
 numbers (D-011 placeholders remain; the multiplier makes demo tuning a one-tap affair).
+
+---
+
+## Task 4 (2026-11-05, same session): firmware v4.2.0 — code-complete, gates green (D-028)
+
+New sketch `firmware/docasa-air-purifier-v5/` (byte-identical v4 seed; v4 stays frozen at
+4.1.1, D-028e), plus `partitions.csv` alongside it. Implementing Contract v1.1:
+
+- **Additions (261 insertions over the v4 parent; v3-baseline gate: 580 added / 0 removed/
+  changed — PASS):** `esp_partition.h` include; Offline-UUID + ring constants; GATT pointer +
+  drain-cursor statics; ring module (`docasaRingBegin` — partition find data/0x40 + NVS
+  boot-counter `boot`; `docasaRingValid` — sensor-domain check doubles as the torn-write
+  marker, no checksum needed; `docasaRingRead`; `docasaRingWinClose` — 16 B LE record with
+  erase-ahead on 4 KB page transitions ≈ 1 erase per 2.56 days; `docasaRingTick` — 1 Hz slice
+  attributing seconds to the global st counters (reset by resetFilter) AND the in-flight
+  envelope window (never reset); `docasaOfflineArm`; `docasaOfflineFirstValid`;
+  `DocasaOfflineReadCallbacks` — status JSON `{"v","boot","first","count"}` on the first read
+  after arming, ≤15×16 B packed records per read, empty body = drained, stop-at-first-invalid;
+  `docasaBuildFilterCountersFull` + `docasaPublishFilterFull` — `"st"` array (§4.4) into a
+  dedicated 192 B buffer so the shared v1 `buf[96]` is never touched), plus the four
+  pre-approved insertion points (setup/loop untouched), `offlineLog` command branch
+  (absent → oldest; malformed-after → ignore per X9), `resetFilter` zeroes+persists st,
+  serial dump now shows `st=[…] dirtyH=… ringHead=…`, disconnect disarms the cursor.
+- **Only modified existing line: `DOCASA_FW_VERSION` → `"4.2.0"`** (v4-owned line, invisible
+  to the v3-baseline gate; v4→v5 delta confirmed: 261 insertions, 1 changed line).
+- **Partition table verified byte-accurate** (`docasa-air-purifier-v5.ino.partitions.bin`):
+  nvs / otadata / app factory 0x1F0000 / docasa_ring type 0x01 subtype **0x40** size
+  **0x40000** — matches §10.2 exactly.
+- **Gates:** compile
+  `arduino-cli compile --fqbn esp32:esp32:esp32 --build-property "build.partitions=partitions.csv"
+  --build-path <tmp>/fw-build-v42 firmware/docasa-air-purifier-v5` → **736,623 B flash (56%),
+  40,732 B RAM (12%), 0 warnings** (v4.1.1 was 733,019/40,444 — +3.6 KB ring code). No menu
+  value for custom partitions in core 3.3.12 — the build-property route is the recorded shape.
+- **Tool hardening:** `firmware-diff-check.sh` — active-sketch arg (default v5), `--verbose`
+  flag no longer swallowed, and a `git diff --no-index` fallback (standalone `diff` is missing
+  on stock Windows shells; also no longer writes /tmp, which is unreadable in some shells).
+- Runtime verification (partition find, ring write/roll, offline drain over the air, reset
+  zeroing st) happens at the bench reflash session (D-028 plan) — code is analyzer/gate-green
+  per the Phase-4-prebuild pattern (D-017).

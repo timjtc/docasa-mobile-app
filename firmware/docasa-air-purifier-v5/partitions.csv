@@ -1,0 +1,12 @@
+# Name,   Type, SubType, Offset,  Size,  Flags
+# DOCASA v4.2.0 partition table (D-028):
+# - app at 0x10000 sized 0x1F0000 (~2 MB; v4.1.1 builds 733 KB — headroom for growth)
+# - docasa_ring: dedicated 256 KB data partition (subtype 0x40) for the offline
+#   history envelope ring (Contract v1.1 §10) — 16,384 records × 16 B = 4096
+#   windows × 256 records/page; runway ≈ 4.6 months at 144 records/day before
+#   the oldest page is recycled.
+# - remainder left unallocated (no OTA, no SPIFFS use in the current sketch).
+nvs,          data, nvs,     0x9000,  0x5000,
+otadata,      data, ota,     0xe000,  0x2000,
+app,          app,  factory, 0x10000, 0x1F0000,
+docasa_ring,  data, 0x40,    ,        0x40000,
