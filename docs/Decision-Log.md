@@ -244,6 +244,32 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   the maintainer (FastLED `objs.a` linker issue, OneDrive sketchbook/cache) are documented
   in `firmware/README.md` § Windows troubleshooting.
 
+- **D-024 — Development host re-provisioned on Windows 11 (D-013/D-014 pins preserved)** ·
+  resolved · 2026-11-05 · process
+  Context: prior host retired; the new Windows 11 24H2 machine had none of the project
+  tooling on PATH (no flutter/dart/adb/arduino-cli). Environment is a live dependency of
+  every gate ritual, so the replacement is recorded rather than assumed.
+  Decision: full CLI re-provision, pins unchanged — Flutter 3.47.9/Dart 3.13.7 at
+  `~/development/flutter` (SHA-256-verified zip); Android SDK at `~/Android/Sdk`
+  (platform-tools, platforms;android-37.0, build-tools 37.0.0 + AGP-pulled 36.0.0, NDK
+  28.2.13676358, licenses accepted); arduino-cli 1.5.1 in `~/.local/bin` + esp32 core
+  3.3.12 + library pins D-013/D-014 (NimBLE-Arduino 2.5.2 **git-sourced at tag `2.5.2` —
+  absent from the Library-Manager index, needs `library.enable_unsafe_install: true`**;
+  ArduinoJson 7.4.3, FastLED 3.10.9, Adafruit ST7789/GFX/BusIO/BME680/UnifiedSensor/
+  PM25AQI); graphify 0.9.102 (uv tool, already present); `sqlite3.dll` in `~/.local/bin`
+  for Drift tests. Java unchanged (Adoptium JDK 21). Windows-only constraints adopted:
+  **Developer Mode ON** (flutter plugin symlinks), `platforms/android-37` ← junction to
+  `android-37.0` (AGP 9.1 desugar task requires the literal hash; warning is harmless),
+  user env ANDROID_HOME/JAVA_HOME/PATH set outside the repo.
+  Notes: verified live on 2026-11-05 — `flutter doctor` green (Android toolchain 37.0.0),
+  `flutter analyze` 0 issues, `flutter test` 54/54, firmware v4.1.1 compile
+  733,019 B flash 55% / 40,444 B RAM 12% (0 warnings), `tools/firmware-diff-check.sh`
+  PASS, BLE-test artifact `releases/docasa-ble-test-20261105.apk` built, installed and
+  launched on the re-authorized Samsung A34 (device picker + FBP D-020 trail; G4 runtime
+  gate unchanged). No source changes: the plugin-registrant "modifications" from `pub get`
+  were EOL-only churn and reverted. Setup flows for the maintainer: `docs/App-ADB-Test.md`
+  and `firmware/README.md` unchanged in content.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

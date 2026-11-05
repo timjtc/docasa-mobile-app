@@ -300,17 +300,30 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
 
 ---
 
-## 11. Environment facts & project state (updated 2026-10-31 — G4 practice session)
+## 11. Environment facts & project state (updated 2026-11-05 — Windows 11 re-provision, D-024)
 
-### Toolchain (D-013 pins)
-- **Flutter 3.47.9 stable / Dart 3.13.7** — CLI on PATH (added to `~/.bashrc`; prefix bash
-  calls with `export PATH="$HOME/development/flutter/bin:$PATH"`). Builds also work via
-  Android Studio.
-- **arduino-cli 1.5.1** (`~/.local/bin`) + **ESP32 Arduino core 3.3.12** + libraries pinned
-  (D-013/D-014; NimBLE 2.5.2, ArduinoJson 7.4.3). FQBN is `esp32:esp32:esp32` (`esp32dev`
-  removed in core 3.x).
+### Toolchain (D-013 pins preserved; CLI-only, no Android Studio)
+- **Flutter 3.47.9 stable / Dart 3.13.7** at `~/development/flutter` (re-install, zip
+  SHA-256-verified). CLI on PATH via `~/.bashrc`; prefix bash calls with
+  `export PATH="$HOME/development/flutter/bin:$PATH"`.
+- **Android SDK** at `~/Android/Sdk`: platform-tools, `platforms;android-37.0`, build-tools
+  37.0.0 (+36.0.0 auto-pulled by AGP), NDK 28.2.13676358, licenses accepted. Windows quirk
+  (D-024): `platforms/android-37` exists as a **junction → `android-37.0`** because AGP 9.1's
+  desugar task asks for the literal `android-37` hash; the "inconsistent location" warning is
+  harmless.
+- **arduino-cli 1.5.1** (`~/.local/bin`, Windows exe) + **ESP32 Arduino core 3.3.12** +
+  libraries pinned: NimBLE-Arduino **2.5.2 (git-sourced at tag `2.5.2` — absent from the
+  Library-Manager index; requires `library.enable_unsafe_install: true` in the CLI config)**,
+  ArduinoJson 7.4.3, FastLED 3.10.9, Adafruit ST7789 1.12.0 / GFX 1.13.0 / BusIO 1.17.4 /
+  BME680 2.0.6 / Unified Sensor 1.1.15 / PM25 AQI 2.0.0. FQBN is `esp32:esp32:esp32`
+  (`esp32dev` removed in core 3.x). Sketchbook: `~/Documents/Arduino`; CLI data:
+  `AppData/Local/Arduino15`.
 - Target device: ESP32 **WROOM** (D-001). All hardware code lives under `firmware/`.
-- Host has `libsqlite3.so.0` → Drift `NativeDatabase.memory()` works in `flutter test`.
+- Windows host facts (D-024): **Developer Mode must be ON** (flutter plugin symlinks);
+  user env `ANDROID_HOME`/`JAVA_HOME` set and PATH extended for flutter/.local/bin/platform-
+  tools; `sqlite3.dll` (3.54.1) placed in `~/.local/bin` (on PATH) → Drift
+  `NativeDatabase.memory()` works in `flutter test`; graphify 0.9.102 (uv tool) usable for
+  `graphify query`/`update`.
 
 ### Git state
 - Branch `main`: `3f77473` (initial) → `458ceda`, `084eacd` (**Phase 0**, tag `gate/G0`) →
@@ -330,7 +343,9 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
 - App: `flutter analyze` (0 issues) · `flutter test` (54 passed) ·
   `flutter build apk --debug` ✓.
 - Firmware: `arduino-cli compile --fqbn esp32:esp32:esp32 --build-path /tmp/opencode/fw-build-v41 firmware/docasa-air-purifier-v4`
-  (v4.1: 732,643 B flash 55%, 40,572 B RAM 12%, 0 warnings) + `bash tools/firmware-diff-check.sh`.
+  (v4.1: 732,643 B flash 55%, 40,572 B RAM 12%, 0 warnings; v4.1.1 re-verified on the Windows
+  host 2026-11-05: 733,019 B flash 55%, 40,444 B RAM 12%, 0 warnings) + `bash
+  tools/firmware-diff-check.sh`.
 - Drift schema changes: `dart run build_runner build --delete-conflicting-outputs`.
 - Export scripts: `bash tools/build-demo-apk.sh` (emulator, "DOCASA Demo") and
   `bash tools/build-ble-test-apk.sh` (real FBLP + picker, "DOCASA BLE Test") →
@@ -340,7 +355,9 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
   launch `-n com.example.docasa_app/ble/com.example.docasa_app.MainActivity`
   (**activity class stays under `com.example.docasa_app`** — applicationId suffix changes only
   the package name; aapt-verified, D-020; do not use `.ble/.` shorthand).
-- Test phone: Samsung A34 (SM-A346E, Android 14), USB debugging on, `adb` at
+- Test phone: Samsung A34 (SM-A346E, Android 16 / API 36 as of 2026-11-05), USB debugging on
+  (**re-authorized on the Windows host 2026-11-05 — revoke + re-toggle USB debugging resets a
+  stale grant after a host key change**), `adb` at
   `~/Android/Sdk/platform-tools/adb`. Notes file: `docs/App-ADB-Test.md`.
 
 ### App dependency pins (D-016/D-018)
