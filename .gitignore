@@ -53,3 +53,6 @@ firmware/**/*.hex
 .widget_preview/
 .opencode/
 releases/
+
+# tool-generated install credentials — never commit
+/inventory.yaml
