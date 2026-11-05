@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../ble/fake/fake_docasa_connection.dart';
+import '../../ble/fbp/fbp_docasa_connection.dart';
 import '../../core/format.dart';
 import '../../data/history_compactor.dart';
 import '../../data/history_seeder.dart';
@@ -10,17 +12,112 @@ import '../shared/widgets.dart';
 import '../filter/filter_alert_modal.dart';
 import 'device_picker.dart';
 
-/// Connection manager + device info + Phase 3 demo tools.
-class DevicePage extends ConsumerWidget {
+/// Connection manager + device info + developer options (demo/dev tools,
+/// D-030: hidden by default; enabled by tapping the Device information card
+/// 7 times; disabled from a switch inside the section).
+class DevicePage extends ConsumerStatefulWidget {
   const DevicePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DevicePage> createState() => _DevicePageState();
+}
+
+/// Tracks the 7-tap "Device information" pattern. Taps must land within
+/// 2.5 s of each other or the counter resets.
+class DevTapTracker {
+  int count = 0;
+  DateTime last = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Returns true exactly when the seventh consecutive quick tap lands
+  /// (then resets, so a fresh run is needed to re-enable).
+  bool tap() {
+    final now = DateTime.now();
+    if (now.difference(last) > const Duration(milliseconds: 2500)) count = 0;
+    last = now;
+    if (++count < 7) return false;
+    count = 0;
+    return true;
+  }
+}
+
+class _DevicePageState extends ConsumerState<DevicePage> {
+  final DevTapTracker _devTaps = DevTapTracker();
+
+  void _onInfoCardTap() {
+    if (ref.read(devOptionsProvider)) return; // already enabled
+    if (_devTaps.tap()) {
+      ref.read(devOptionsProvider.notifier).set(true);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Developer options enabled'),
+        duration: Duration(seconds: 2),
+      ));
+    }
+  }
+
+  Future<void> _seedTwoMonths() async {
+    final conn = ref.read(connectionProvider);
+    final connected =
+        ref.read(connectionStateProvider).value == DocasaConnectionState.connected;
+    if (!connected) {
+      _snack('Connect the purifier first — seeding is pushed to the device');
+      return;
+    }
+    final totals = await const TwoMonthSeeder().seed(ref.read(dbProvider));
+    // Fresh filter story: reset the alert pipeline so the demo's replacement
+    // prompt re-arms (D-021's daily cap would otherwise silence it).
+    final s = ref.read(settingsProvider);
+    await ref
+        .read(settingsProvider.notifier)
+        .update(s.copyWith(lastAlertMs: 0, filterAlertAckMs: 0));
+    // Device counters adopt the seeded story (v1.1 §5 dev channel, D-030):
+    // the real transport writes NVS over the air; the fake echoes into its
+    // emulator state — either way the health basis reads "since replacement".
+    try {
+      if (conn is FbpDocasaConnection) {
+        await conn.setUsage(
+          fs: totals.fanSeconds,
+          pwfs: totals.pmWeightedFanSeconds,
+          onSeconds: totals.powerOnSeconds,
+          stSeconds: totals.stageSeconds,
+        );
+      } else if (conn is FakeDocasaConnection) {
+        await conn.setUsage(
+          fs: totals.fanSeconds,
+          pwfs: totals.pmWeightedFanSeconds,
+          onSeconds: totals.powerOnSeconds,
+          stSeconds: totals.stageSeconds,
+        );
+      }
+    } on Exception {
+      _snack('Seeded history — device counters not pushed (not a v4.2.1 device)');
+    }
+    ref.invalidate(filterCountersProvider);
+    ref.invalidate(filterHealthProvider);
+    ref.read(historyEpochProvider.notifier).bump();
+    // D-030 demo requirement: with the seeded dirty story, setting the
+    // sensitivity on the Filter page evaluates immediately; also prompt the
+    // alert flow right after seeding (Sensitive → 0% → replacement modal).
+    await ref.read(recordingServiceProvider).evaluateNow();
+    _snack('Seeded 2 months — '
+        '${totals.dirtySeconds ~/ 3600} h dirty air; device counters adopted');
+  }
+
+  void _snack(String text) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(text), duration: const Duration(seconds: 3)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final conn = ref.watch(connectionProvider);
     final state = ref.watch(connectionStateProvider).value ??
         DocasaConnectionState.disconnected;
     final info = ref.watch(deviceInfoProvider).value;
     final counters = ref.watch(filterCountersProvider).value;
+    final devOptions = ref.watch(devOptionsProvider);
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -71,7 +168,9 @@ class DevicePage extends ConsumerWidget {
                       const SizedBox(width: 8),
                       FilledButton.icon(
                         icon: const Icon(Icons.bluetooth),
-                        label: Text(state == DocasaConnectionState.connected ? 'Reconnect' : 'Connect'),
+                        label: Text(state == DocasaConnectionState.connected
+                            ? 'Reconnect'
+                            : 'Connect'),
                         onPressed: state == DocasaConnectionState.connected
                             ? () async {
                                 await conn.disconnect();
@@ -111,21 +210,25 @@ class DevicePage extends ConsumerWidget {
           const SizedBox(height: 12),
           if (info != null)
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Device information',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    _kv('Manufacturer', info.manufacturer),
-                    _kv('Model', info.model),
-                    _kv('Firmware', info.firmwareRevision),
-                    _kv('Hardware', info.hardwareRevision),
-                    _kv('Protocol', 'v1 (JSON)'),
-                    _kv('Time sync', 'sent on every connect'),
-                  ],
+              child: GestureDetector(
+                onTap: _onInfoCardTap,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Device information',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      _kv('Manufacturer', info.manufacturer),
+                      _kv('Model', info.model),
+                      _kv('Firmware', info.firmwareRevision),
+                      _kv('Hardware', info.hardwareRevision),
+                      _kv('Protocol', 'v1 (JSON)'),
+                      _kv('Time sync', 'sent on every connect'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -156,65 +259,75 @@ class DevicePage extends ConsumerWidget {
               ),
             ),
           const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Demo data (Phase 3)',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Backfill a week of simulated history (device "off" '
-                    'overnight) to exercise the day/week/month charts, or '
-                    'clear all recorded history.',
-                    style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Clear history'),
-                        onPressed: () async {
-                          await wipeHistory(ref.read(dbProvider));
-                          ref.read(historyEpochProvider.notifier).bump();
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      FilledButton.tonalIcon(
-                        icon: const Icon(Icons.auto_awesome),
-                        label: const Text('Seed 7 days'),
-                        onPressed: () async {
-                          await const HistorySeeder()
-                              .seed(ref.read(dbProvider), days: 7);
-                          ref.read(historyEpochProvider.notifier).bump();
-                        },
-                      ),
-                    ],
-                  ),
-                  // Demo-only alert preview (user requirement): raises the
-                  // replacement modal without waiting for real degradation.
-                  // Hidden in the prod transport (kRealBle).
-                  if (!kRealBle) ...[
+          if (devOptions)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text('Developer options',
+                              style:
+                                  TextStyle(fontWeight: FontWeight.w600)),
+                        ),
+                        Switch(
+                          value: true,
+                          onChanged: (_) =>
+                              ref.read(devOptionsProvider.notifier).set(false),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      'Demo/dev tools. Re-seeding REPLACES the history '
+                      'timeline and (on a connected v4.2.1 device) pushes '
+                      'usage counters into the device NVS so the filter '
+                      'story matches.',
+                      style:
+                          TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         OutlinedButton.icon(
-                          icon: const Icon(Icons.warning_amber_outlined),
-                          label: const Text('Preview filter alert'),
-                          onPressed: () => requestFilterAlertModal(ref),
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Clear history'),
+                          onPressed: () async {
+                            await wipeHistory(ref.read(dbProvider));
+                            ref.read(historyEpochProvider.notifier).bump();
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton.tonalIcon(
+                          icon: const Icon(Icons.auto_awesome),
+                          label: const Text('Seed demo data (2 months)'),
+                          onPressed: _seedTwoMonths,
                         ),
                       ],
                     ),
+                    // Demo-only alert preview (D-021): raises the replacement
+                    // modal without waiting for the seeded story.
+                    if (!kRealBle) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.warning_amber_outlined),
+                            label: const Text('Preview filter alert'),
+                            onPressed: () => requestFilterAlertModal(ref),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
+          const SizedBox(height: 12),
         ],
       ),
     );

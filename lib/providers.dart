@@ -60,7 +60,6 @@ final settingsRepoProvider =
 
 final settingsProvider =
     NotifierProvider<SettingsController, FilterSettings>(SettingsController.new);
-
 class SettingsController extends Notifier<FilterSettings> {
   @override
   FilterSettings build() {
@@ -75,6 +74,34 @@ class SettingsController extends Notifier<FilterSettings> {
     await ref.read(settingsRepoProvider).save(s);
   }
 }
+
+/// Developer options visibility (Device page), persisted `ui.devOptions`.
+/// ON = 7 quick taps on the Device information card (D-030); OFF via the
+/// switch inside the section.
+class DevOptionsNotifier extends Notifier<bool> {
+  static const _kKey = 'ui.devOptions';
+
+  @override
+  bool build() {
+    final db = ref.watch(dbProvider);
+    db.select(db.appSettings).get().then(
+          (rows) =>
+              state = rows.any((r) => r.key == _kKey && r.value == '1'),
+        );
+    return false;
+  }
+
+  Future<void> set(bool on) async {
+    state = on;
+    final db = ref.watch(dbProvider);
+    await db.into(db.appSettings).insertOnConflictUpdate(
+          AppSettingsCompanion.insert(key: _kKey, value: on ? '1' : '0'),
+        );
+  }
+}
+
+final devOptionsProvider =
+    NotifierProvider<DevOptionsNotifier, bool>(DevOptionsNotifier.new);
 
 /// Foreground-ness for alert channel choice; set by the root widget's
 /// WidgetsBindingObserver (main.dart).

@@ -373,6 +373,37 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   picker row now renders `DOCASA-AirPurifier` with the §D-002 subtitle.
   Notes: pickers that filter by NAME now also match (the app's §1 rule ORs name and UUID).
 
+- **D-030 — Developer options + demo seeding chain (slider, 2-month story, device-counter dev channel)** ·
+  resolved · 2026-11-05 · app (+ firmware v4.2.1, dev-channel contract addendum)
+  Context: panel demonstration needs (a) the sensitivity as a 3-stop slider, (b) a seeded
+  2-month mostly-dirty story that drives Sensitive → 0 % + an immediate replacement prompt,
+  and (c) the seeded story mirrored into the DEVICE counters so health/alerts read from the
+  device itself ("transmit the seeded data to the NVS").
+  Decision:
+  (a) Filter sensitivity is a **3-stop Slider** (Relaxed ×1.5 / Normal ×1.0 / Sensitive ×0.5;
+    labels under the track); a sensitivity CHANGE evaluates alerts immediately (no 5-min wait).
+  (b) `TwoMonthSeeder`: minute-cadence direct aggregate seeding (~57k rows) — mostly
+    POOR/BAD/HAZARD minutes (85 % dirty band), device "off" overnight → REPLACES the timeline;
+    returns `UsageTotals` (fs/pwfs/on/st[5]).
+  (c) **Device-page Developer options**: hidden by default; the Device information card must
+    be tapped 7× (2.5 s inactivity reset) to reveal the section; the section's own switch
+    disables it; 'Demo data (Phase 3)' renamed 'Developer options'.
+  (d) **Dev channel (firmware v4.2.1 addendum to §5)**: `{"cmd":"setUsage",fs,pwfs,"on","st"}`
+    — validated u64×2/u32/array[5] — writes the usage counters into NVS+RAM (persist now).
+    This is a REPLACEMENT of the device counters for the demo story; gated behind the app's
+    developer options; security gate stays with v1.2 (D-010).
+  (e) Seeding flow: REPLACES app history (fresh aggregates + the SAME story counters pushed
+    via the connected transport — FBLP over BLE; the fake echoes for the emulator build) +
+    resets the D-021 daily-cap stamps (lastAlertMs/filterAlertAckMs = 0) so the replacement
+    prompt re-arms on every seeded demo; 'Seed demo data (2 months)' appears only in
+    Developer options.
+  Verified live on the A34 + flashed v4.2.1: seed → SnackBar "960 h dirty air", Filter page
+  reads seeded `st[2..4]` = 268,980/2,317,920/869,100 s from the device; slider → Normal =
+  **4 %** + immediate alert modal; Sensitive = **0 %** + the earlier immediate modal; the
+  Device information 7-tap reveals the section (screenshots in the session doc).
+  Gates: analyzer 0 issues, **74/74 tests** (+3: seeding ranges/projection, fake-transport
+  echo, 7-tap tracker); firmware compile 738,567 B (56 %) / 0 warnings; diff gate PASS.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

@@ -34,10 +34,16 @@ class RecordingService {
   final HistoryCompactor compactor = const HistoryCompactor();
   late final SettingsRepository settings = SettingsRepository(_db);
 
+  /// Alert evaluation (Contract §6.1 + D-021 cadence). Public so the Filter
+  /// page can prompt immediately after a sensitivity change (D-030 demo
+  /// requirement: setting Sensitive must move health to 0% and alert NOW).
+  Future<void> evaluateNow() => _evaluateAlerts(_conn!);
+
   StreamSubscription<DocasaConnectionState>? _stateSub;
   Timer? _compactTimer;
   Timer? _alertTimer;
 
+  DocasaConnection? _conn;
   bool _started = false;
 
   /// Wires everything to [conn] and auto-connects (Phase 3 fake drives the
@@ -45,6 +51,7 @@ class RecordingService {
   Future<void> start(DocasaConnection conn) async {
     if (_started) return;
     _started = true;
+    _conn = conn;
     await compactor.run(_db); // settle aggregates from previous sessions
     _stateSub = conn.states.listen((s) {
       if (s == DocasaConnectionState.connected) {
@@ -79,11 +86,15 @@ class RecordingService {
       final counters = await conn.readFilterCounters();
       final s = await settings.load();
       final rate = await estimateLoadRatePerDay(_db);
+      final dirtyRate = await estimateDirtyRatePerDay(_db);
       final health = computeFilterHealth(
         counters: counters,
         budgets: s.budgets,
         now: _now(),
+        basis: s.basis,
+        sensitivity: s.sensitivity,
         loadRatePerDay: rate,
+        dirtyRatePerDaySec: dirtyRate,
       );
       final nowMs = _now().millisecondsSinceEpoch;
       if (FilterAlertDecision.shouldNotify(

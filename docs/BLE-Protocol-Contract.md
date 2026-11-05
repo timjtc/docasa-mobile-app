@@ -119,6 +119,7 @@ The app may render these as-is; there is no explicit "booting" flag in v1.
 | `{"cmd":"resetFilter"}` | Zeroes `fanSec` + `pwfs` + `st` (v1.1) (`onSec` preserved) and **persists immediately** (a cut right after replacement cannot resurrect counters from the 5-min throttle window). After physical filter replacement. | GATT write ACK; app MUST re-read Filter Counters and confirm zeros |
 | `{"cmd":"time","epoch":1769472000}` | Stores volatile epoch (uint32, unix seconds). Re-sent on **every** connect (Plan §5). Device epoch is untrusted across reboots (7.13). | GATT write ACK |
 | `{"cmd":"offlineLog","after":4100}` (v1.1) | Arms the Offline History read cursor (§10): `after` = the last window slot the app consumed **for this bootId**; device drains slots > `after` up to head. Absent `after` → drain from oldest. App-initiated; only on connect. | GATT write ACK |
+| `{"cmd":"setUsage","fs":…,"pwfs":…,"on":…,"st":[…]}` (v1.1 dev channel — D-030) | Developer-options channel: REPLACES the usage counters (`fs`/`pwfs` u64, `on` hours, `st[5]` seconds) with the seeded story; persisted to NVS immediately. Gate behind security at v1.2 (D-010). | GATT write ACK |
 
 Error semantics (v1/v1.1): unknown commands, unknown keys, malformed JSON, missing fields
 (e.g. `time` without `epoch`, `offlineLog` with non-integer slot) → **ignored silently,

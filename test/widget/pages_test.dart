@@ -136,15 +136,41 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [dbProvider.overrideWithValue(db)],
+        overrides: [
+          dbProvider.overrideWithValue(db),
+          connectionStateProvider
+              .overrideWith((ref) => Stream.value(DocasaConnectionState.connected)),
+          deviceInfoProvider.overrideWith(
+              (ref) async => const DocasaDeviceInfo(
+                  manufacturer: 'DOCASA',
+                  model: 'DOCASA Air Purifier',
+                  firmwareRevision: '4.2.1',
+                  hardwareRevision: 'ESP32-WROOM-v3')),
+        ],
         child: const MaterialApp(home: DevicePage()),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.textContaining('device emulator'), findsOneWidget);
-    expect(find.text('Connect'), findsOneWidget);
-    expect(find.text('Seed 7 days'), findsOneWidget);
+    expect(find.text('Reconnect'), findsOneWidget); // connected state now
+    // D-030: demo tools hide behind dev options — 7 quick taps on the
+    // Device information card reveal them.
+    expect(find.byType(GestureDetector), findsWidgets);
+    expect(find.text('Seed demo data (2 months)'), findsNothing);
+    for (var i = 0; i < 7; i++) {
+      await tester.tap(find.textContaining('Device information'));
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    await tester.pumpAndSettle();
+    // The Developer options card sits below the fold — bring it up.
+    await tester.scrollUntilVisible(
+      find.text('Developer options'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Developer options'), findsOneWidget);
+    expect(find.text('Seed demo data (2 months)'), findsOneWidget);
   });
 
   testWidgets('app shell boots, auto-connects the emulator, dashboard goes live',

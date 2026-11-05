@@ -86,6 +86,22 @@ class FakeDocasaConnection implements DocasaConnection {
   @override
   Future<void> resetFilter() async => _gen.resetFilter();
 
+  /// v1.1 (D-030 dev channel): fake-transport echo of the seeded usage
+  /// counters so the demo (emulator) build tells the same story.
+  Future<void> setUsage({
+    required int fs,
+    required int pwfs,
+    required int onSeconds,
+    required List<int> stSeconds,
+  }) async {
+    _gen.setUsage(
+      fanSeconds: fs,
+      pmWeightedFanSeconds: pwfs,
+      powerOnSeconds: onSeconds,
+      stageSeconds: stSeconds,
+    );
+  }
+
   void _onTick() {
     if (++_uptime % _outageEverySec == 0) {
       disconnect();

@@ -249,6 +249,21 @@ class FbpDocasaConnection implements DocasaConnection {
   Future<void> resetFilter() async =>
       _writeCommand(DocasaCodec.encodeResetFilterCommand());
 
+  /// v1.1 (D-030 dev channel): push seeded usage counters into the device
+  /// NVS — the demo health story runs from the device counters themselves.
+  Future<void> setUsage({
+    required int fs,
+    required int pwfs,
+    required int onSeconds,
+    required List<int> stSeconds,
+  }) =>
+      _writeCommand(DocasaCodec.encodeSetUsageCommand(
+        fanSeconds: fs,
+        pmWeightedFanSeconds: pwfs,
+        powerOnSeconds: onSeconds,
+        stageSeconds: stSeconds,
+      ));
+
   Future<void> _writeCommand(String json) async {
     final services = await _device!.discoverServices();
     for (final s in services) {

@@ -210,7 +210,7 @@ abstract final class DocasaCodec {
         if (c.stageSeconds.isNotEmpty) 'st': c.stageSeconds,
       });
 
-  // Commands (Contract §5). Time sync is re-sent on every connect.
+  /// Commands (Contract §5). Time sync is re-sent on every connect.
 
   static String encodeResetFilterCommand() => jsonEncode(<String, dynamic>{
         'cmd': 'resetFilter',
@@ -220,6 +220,24 @@ abstract final class DocasaCodec {
       jsonEncode(<String, dynamic>{
         'cmd': 'time',
         'epoch': epochSeconds,
+      });
+
+  /// v1.1 (D-030) — Developer-options channel: pushes seeded usage counters
+  /// into the device NVS (`setUsage` accepted by firmware ≥ 4.2.1). Not part
+  /// of the public §5 command set at this point in time: gate writes behind
+  /// security at v1.2 (D-010 remains).
+  static String encodeSetUsageCommand({
+    required int fanSeconds,
+    required int pmWeightedFanSeconds,
+    required int powerOnSeconds,
+    required List<int> stageSeconds,
+  }) =>
+      jsonEncode(<String, dynamic>{
+        'cmd': 'setUsage',
+        'fs': fanSeconds,
+        'pwfs': pmWeightedFanSeconds,
+        'on': powerOnSeconds ~/ 3600,
+        'st': stageSeconds,
       });
 
   /// Mirrors the firmware's fixed-decimal rounding so emulated payloads are

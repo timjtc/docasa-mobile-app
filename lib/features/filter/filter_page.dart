@@ -234,19 +234,33 @@ class _FilterPageState extends ConsumerState<FilterPage> {
             Text('Filter sensitivity',
                 style: TextStyle(
                     fontWeight: FontWeight.w600, color: cs.onSurface)),
-            const SizedBox(height: 8),
-            SegmentedButton<FilterSensitivity>(
-              segments: [
-                for (final s in FilterSensitivity.values)
-                  ButtonSegment(value: s, label: Text(s.label.split(' (')[0])),
+            const SizedBox(height: 4),
+            Slider(
+              value: FilterSensitivity.values
+                  .indexOf(settings.sensitivity)
+                  .toDouble(),
+              min: 0,
+              max: FilterSensitivity.values.length - 1.toDouble(),
+              divisions: FilterSensitivity.values.length - 1,
+              label: FilterSensitivity.values
+                  .indexOf(settings.sensitivity)
+                  .toString(),
+              onChanged: (v) => _updateSetting(
+                (x) => x.copyWith(
+                    sensitivity: FilterSensitivity.values[v.round()]),
+              ),
+            ),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Relaxed', style: TextStyle(fontSize: 11)),
+                Text('Normal', style: TextStyle(fontSize: 11)),
+                Text('Sensitive', style: TextStyle(fontSize: 11)),
               ],
-              selected: {settings.sensitivity},
-              onSelectionChanged: (s) =>
-                  _updateSetting((x) => x.copyWith(sensitivity: s.first)),
             ),
             const SizedBox(height: 8),
             Text(
-              'Applies to both bases — a more sensitive setting spends the '
+              'Applies to both bases — sliding toward Sensitive spends the '
               'budget faster (scales the budget ×'
               '${settings.sensitivity.multiplier}); the replacement date '
               'moves sooner/later accordingly. Placeholder budget numbers '
@@ -262,10 +276,18 @@ class _FilterPageState extends ConsumerState<FilterPage> {
   Future<void> _updateSetting(
       FilterSettings Function(FilterSettings) f) async {
     final s = ref.read(settingsProvider);
+    final before = s.sensitivity;
+    final after = f(s).sensitivity;
     await ref
         .read(settingsProvider.notifier)
         .update(f(s));
     ref.invalidate(filterHealthProvider);
+    // D-030 demo requirement: a Sensitive setting under the seeded story
+    // must land at 0% and prompt the replacement modal IMMEDIATELY (the
+    // 5-min evaluation timer otherwise waits too long for the panel).
+    if (after != before) {
+      await ref.read(recordingServiceProvider).evaluateNow();
+    }
   }
 
   static Color _healthColor(double? pct) {

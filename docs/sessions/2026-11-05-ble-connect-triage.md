@@ -247,3 +247,27 @@ advertises NO name by default (a v4.1.0-era regression vs §1's "Flags + complet
 it predates the reflash). Fix: additive `adv->setName(DOCASA_BLE_NAME)` before `adv->start()`.
 Gates: compile 736,943 B (56%) / 44,828 B RAM (13%) / 0 warnings; diff gate PASS. Reflashed
 live (NVS + ring persisted through the cycle); the picker now renders `DOCASA-AirPurifier`.
+
+## Task 8 (2026-11-05, same session): dev options + demo chain (D-030) — verified LIVE end-to-end
+
+User requirements implemented and exercised on the phone (all screenshots in tmp):
+1. **Sensitivity slider (3 stops)** — the Filter page's segmented control became a Slider
+   (Relaxed/Normal/Sensitive labeled under the track; changes persist). Verified live:
+   tap-Normal → **4 %** under the seeded story (960 h / 1000 h) with the alert modal firing
+   immediately (threshold 10 %); Sensitive → **0 %**.
+2. **TwoMonthSeeder (D-030)** — minute-cadence direct aggregate seeding (~57k rows instead of
+   3.4M raws), deterministic dirty-skew (≈85 % POOR+ minutes), device "off" overnight,
+   REPLACES the timeline, returns UsageTotals (fs/pwfs/on/st[5]).
+3. **Dev options + 7-tap** — `DevOptionsNotifier` (KV `ui.devOptions`) + `DevTapTracker`
+   (unit-tested); the section renders ONLY when on, own Switch disables; verified by driving
+   7 taps on 'Device information'.
+4. **Device-counter dev channel (firmware v4.2.1)** — `{"cmd":"setUsage",fs,pwfs,"on","st"}`
+   validated + NVS/RAM write + persist; both transports echo it (FBLP over the air; the fake
+   mutates its generator state). Verified over the air: the Device page read back the seeded
+   totals right after seeding (762 h / 960 h).
+5. **Seeding resets the D-021 daily cap** (lastAlertMs/filterAlertAckMs → 0) so the demo
+   prompt re-arms every seeding (user's "prompt immediate replacement" requirement).
+6. Immediate alert on sensitivity change fires `RecordingService.evaluateNow()` (public).
+
+RESIDUAL for the next bench: the seeded numbers leave Normal at 4 % by design (so sliding to
+Sensitive lands CLEAN at 0 %); st totals drift with post-seed live deltas (real wins).

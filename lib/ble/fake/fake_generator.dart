@@ -87,6 +87,7 @@ class FakeDocasaGenerator {
   int _fanSeconds;
   int _pwfs;
   int _onSeconds;
+  List<int> _stSeconds = [0, 0, 0, 0, 0]; // v1.1 (§4.4 "st") — fake-transport basis
 
   /// Simulated seconds elapsed since generator start.
   int elapsed = 0;
@@ -95,11 +96,29 @@ class FakeDocasaGenerator {
         fanSeconds: _fanSeconds,
         pmWeightedFanSeconds: _pwfs,
         powerOnHours: _onSeconds ~/ 3600,
+        stageSeconds: List<int>.of(_stSeconds),
       );
+
+  void setUsage({
+    required int fanSeconds,
+    required int pmWeightedFanSeconds,
+    required int powerOnSeconds,
+    required List<int> stageSeconds,
+  }) {
+    // v1.1 (D-030 dev channel, fake-transport echo): push demo totals into
+    // the emulated NVS; subsequent 1 Hz accumulation continues on top.
+    _fanSeconds = fanSeconds;
+    _pwfs = pmWeightedFanSeconds;
+    _onSeconds = powerOnSeconds;
+    if (stageSeconds.length == 5) _stSeconds = List<int>.of(stageSeconds);
+  }
 
   void resetFilter() {
     _fanSeconds = 0;
     _pwfs = 0;
+    for (var i = 0; i < 5; i++) {
+      _stSeconds[i] = 0; // v1.1 resetFilter order
+    }
     // powerOnHours is device lifecycle — NOT reset (Contract §5).
   }
 
@@ -157,6 +176,7 @@ class FakeDocasaGenerator {
     _fanSeconds += fanRpm;
     _pwfs += fanRpm * pm25;
     _onSeconds++;
+    _stSeconds[stage - 1] += 1; // v1.1 (D-027): per-stage exposure basis
 
     return FakeTick(
       air: AirQualitySample(pm1: pm1, pm25: pm25, pm10: pm10, stage: stage),

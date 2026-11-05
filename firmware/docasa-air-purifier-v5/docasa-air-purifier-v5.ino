@@ -659,7 +659,7 @@ void updateAndDrawParticles() {
 // --- Identity & protocol constants (Contract §1–§2) ---
 #define DOCASA_BLE_NAME         "DOCASA-AirPurifier"
 #define DOCASA_PROTOCOL_VERSION 1
-const char* DOCASA_FW_VERSION = "4.2.0";  // D-005/D-015/D-022/D-028: NVS + BLE + resetFilter + offline ring
+const char* DOCASA_FW_VERSION = "4.2.1";  // D-005/D-015/D-022/D-028/D-030: NVS + BLE + resetFilter + ring + setUsage
 // --- v4.2 = Contract v1.1 (D-027/D-028): sketch lives in docasa-air-purifier-v5/,
 // seeded byte-identical from the FROZEN v4.1.1 `docasa-air-purifier-v4/` (D-028e).
 
@@ -998,6 +998,32 @@ class DocasaCmdCallbacks : public NimBLECharacteristicCallbacks {
       for (int _si = 0; _si < 5; _si++) docasaStSeconds[_si] = 0;   // v1.1 (D-027/D-028): exposure basis resets with the cartridge
       docasaNvsPersist();
       Serial.println("[DOCASA IO] resetFilter — usage integrals zeroed (onSec preserved)");
+    } else if (cmd != nullptr && strcmp(cmd, "setUsage") == 0) {
+      // v4.2.1 (D-030) — Developer-options channel (gated to the app's dev
+      // mode): push seeded usage counters into the emulated NVS. Contract
+      // §5's dev addendum; security gate lands at v1.2 (D-010).
+      if (doc["fs"].is<uint64_t>() && doc["pwfs"].is<uint64_t>() &&
+          doc["on"].is<uint32_t>() && doc["st"].is<JsonArray>() &&
+          doc["st"].as<JsonArray>().size() == 5) {
+        docasaFanSeconds       = doc["fs"].as<uint64_t>();
+        docasaPmWeightedFanSec = doc["pwfs"].as<uint64_t>();
+        docasaPowerOnSeconds   = doc["on"].as<uint32_t>() * 3600UL;
+        JsonArray stArr = doc["st"].as<JsonArray>();
+        for (uint8_t i = 0; i < 5; i++) {
+          docasaStSeconds[i] = stArr[i];
+        }
+        docasaNvsPersist();   // seeded counters survive like real ones
+        Serial.printf("[DOCASA IO] setUsage — fs=%llu pwfs=%llu st=%lu/%lu/%lu/%lu/%lu\n",
+                      (unsigned long long)docasaFanSeconds,
+                      (unsigned long long)docasaPmWeightedFanSec,
+                      (unsigned long)docasaStSeconds[0],
+                      (unsigned long)docasaStSeconds[1],
+                      (unsigned long)docasaStSeconds[2],
+                      (unsigned long)docasaStSeconds[3],
+                      (unsigned long)docasaStSeconds[4]);
+      } else {
+        Serial.println("[DOCASA IO] cmd ignored — setUsage malformed");
+      }
     } else if (cmd != nullptr && strcmp(cmd, "offlineLog") == 0) {
       // v1.1 (D-028, §5/§10.3): arm the Offline History drain cursor.
       // Absent "after" → drain from the oldest valid record (§5 default);
