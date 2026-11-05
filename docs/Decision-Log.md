@@ -290,6 +290,21 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   Notes: G4 checklist remainder (walk-away backoff, restart persistence, push) and G1/G2
   formalities still owed; debugPrint trail stays until after G4 (D-020d).
 
+- **D-026 — History chart theming made theme-derived (light-mode tooltip + axis invisible)** ·
+  resolved · 2026-11-05 · app
+  Context: light mode left the History line chart dark-styled — axis labels (`Colors.white54`
+  h-coded) invisible and the touch tooltip unreadable. Root cause in fl_chart 1.3.0 defaults:
+  the chart never configured `LineTouchData`, and the default tooltip assigns the text the
+  LINE color (`cs.primary` — pale in the light scheme) on a hard-coded `blueGrey.darken(15)`
+  bubble.
+  Decision: theme-derive both — `_axisStyle` uses `Theme.of(context).colorScheme.onSurfaceVariant`;
+  explicit `LineTouchTooltipData` with bubble `cs.primaryContainer` and item text
+  `cs.onPrimaryContainer` (bold 14; raw `toString` parity with the previous default items).
+  Verified on the A34 in BOTH themes (hold-press capture; fast tap clears the tooltip on
+  touch-up so it never shows). Analyzer 0 issues, 54/54 tests; artifact rebuilt + reinstalled.
+  Notes: dark-mode bubble hue changes from neutral blueGrey to the dark-teal primaryContainer
+  (house accent family) — accepted as part of the theming task.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

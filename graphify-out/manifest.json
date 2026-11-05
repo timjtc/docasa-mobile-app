@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "lib/features/history/history_page.dart": {
-    "mtime": 1793557261.919915,
-    "seen": 1793860284.579144,
-    "ast_hash": "809b26fd418fb952a2dcec568219f216",
+    "mtime": 1793860704.7892668,
+    "seen": 1793861283.1403756,
+    "ast_hash": "fe30e3370a463aa0ff68f9d621257bb8",
     "semantic_hash": ""
   },
   "lib/features/shared/widgets.dart": {
@@ -228,14 +228,14 @@
     "semantic_hash": ""
   },
   "linux/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1793859557.7201767,
-    "seen": 1793860284.5791664,
+    "mtime": 1793860715.3406894,
+    "seen": 1793861283.1403968,
     "ast_hash": "d07afe003d5837167bdd357d593f20a0",
     "semantic_hash": "d07afe003d5837167bdd357d593f20a0"
   },
   "linux/flutter/generated_plugin_registrant.h": {
-    "mtime": 1793859557.707177,
-    "seen": 1793860284.5791698,
+    "mtime": 1793860715.337159,
+    "seen": 1793861283.1404002,
     "ast_hash": "d295462c9da9f7fef22dc86c34492318",
     "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
   },
@@ -258,8 +258,8 @@
     "semantic_hash": ""
   },
   "macos/Flutter/GeneratedPluginRegistrant.swift": {
-    "mtime": 1793859557.83052,
-    "seen": 1793860284.5791826,
+    "mtime": 1793860715.37433,
+    "seen": 1793861283.1404123,
     "ast_hash": "e9d47a0a3c7b079708626c5a09b96f99",
     "semantic_hash": "e9d47a0a3c7b079708626c5a09b96f99"
   },
@@ -336,14 +336,14 @@
     "semantic_hash": ""
   },
   "windows/flutter/generated_plugin_registrant.cc": {
-    "mtime": 1793859557.7654493,
-    "seen": 1793860284.579239,
+    "mtime": 1793860715.3572915,
+    "seen": 1793861283.1404696,
     "ast_hash": "35b30f5c6d01ec851350fe90d9f3b410",
     "semantic_hash": "35b30f5c6d01ec851350fe90d9f3b410"
   },
   "windows/flutter/generated_plugin_registrant.h": {
-    "mtime": 1793859557.7521627,
-    "seen": 1793860284.579243,
+    "mtime": 1793860715.3532734,
+    "seen": 1793861283.1404727,
     "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
     "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
   },
@@ -462,9 +462,9 @@
     "semantic_hash": ""
   },
   "docs/Decision-Log.md": {
-    "mtime": 1793860231.1356268,
-    "seen": 1793860284.5793135,
-    "ast_hash": "0ed0c102a60dddebc331ddcec94d7c8d",
+    "mtime": 1793861269.9674704,
+    "seen": 1793861283.1405494,
+    "ast_hash": "935ff3ae2a28fc46963ed1bf9a17fb07",
     "semantic_hash": ""
   },
   "docs/Development-Process.md": {
@@ -846,9 +846,15 @@
     "semantic_hash": "8e0ae58e362a6636bdfccbc04da2c58c"
   },
   "docs/sessions/2026-11-05-ble-connect-triage.md": {
-    "mtime": 1793860231.1356268,
-    "seen": 1793860284.5793421,
-    "ast_hash": "1ad732eb18a04fb71feb0d4904cee730",
+    "mtime": 1793861183.0201936,
+    "seen": 1793861283.1406012,
+    "ast_hash": "bdfb1f3dd81c6e3999a00d262d8b0bb0",
+    "semantic_hash": ""
+  },
+  "docs/20261105-Prompt-Scratchpad.md": {
+    "mtime": 1793861232.7860546,
+    "seen": 1793861283.140526,
+    "ast_hash": "7dcb901e3429cf60ce69f4f328c7cafc",
     "semantic_hash": ""
   }
 }

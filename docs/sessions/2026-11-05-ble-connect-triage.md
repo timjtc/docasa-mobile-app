@@ -66,3 +66,29 @@ both sides and are left untouched.
   handshake read of fw 4.1.1 is strong evidence but not the formal gate.
 - After G4: restore `withServices` scan filtering + consider kDebugMode-gating the trail
   (D-020d/D-019 notes unchanged).
+
+---
+
+## Task 2 (2026-11-05, same session): History light-mode chart theming — D-026
+
+Report: in light mode the History line chart showed dark-mode-colored tooltip and axis labels
+(text/numbers invisible).
+
+Analysis (fl_chart 1.3.0 source, not guessed):
+- Axis labels: `_axisStyle` was hard-coded `Colors.white54` (invisible on the light card).
+- Tooltip: the chart never configured `LineTouchData`, so fl_chart's defaults applied —
+  bubble `Colors.blueGrey.darken(15)`, text tinted the LINE color (`cs.primary`), which in
+  the light scheme resolves pale → unreadable on the dark bubble.
+
+Fix (theme-derived, both modes build-time correct):
+- `_axisStyle` → `Theme.of(context).colorScheme.onSurfaceVariant`.
+- Explicit `LineTouchTooltipData`: bubble `cs.primaryContainer`, item text
+  `cs.onPrimaryContainer` (bold 14, raw `s.y.toString()` parity with the old default).
+
+Runtime verification on the phone (BLE-test artifact rebuilt + reinstalled; Day/PM2.5):
+- Light: axis numbers dark on card ✓; hold-press → cyan container bubble, dark bold numbers ✓.
+- Dark: axis light ✓; bubble dark-teal with light numbers ✓ (house accent family; differs
+  from the old neutral blueGrey only in hue).
+- Capture trick (this phone): fast `input tap` never shows the tooltip (it clears on
+  touch-up); use `input swipe X Y X Y <long-dur>` as a press-hold and screencap mid-hold.
+- Gates: analyze 0 issues, 54/54 tests.

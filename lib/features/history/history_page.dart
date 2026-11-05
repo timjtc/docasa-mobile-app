@@ -194,12 +194,32 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         ),
         gridData: const FlGridData(show: true, drawVerticalLine: false),
         borderData: FlBorderData(show: false),
+        // Theme-paired tooltip bubble: fl_chart's default is dark, with text
+        // tinted the line color (pale in light mode → unreadable, D-026).
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (_) => cs.primaryContainer,
+            getTooltipItems: (spots) => [
+              for (final s in spots)
+                LineTooltipItem(
+                  s.y.toString(),
+                  TextStyle(
+                    color: cs.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  TextStyle get _axisStyle =>
-      const TextStyle(fontSize: 10, color: Colors.white54);
+  TextStyle get _axisStyle => TextStyle(
+      fontSize: 10,
+      // Theme-derived: white54 was invisible on the light theme card (D-026).
+      color: Theme.of(context).colorScheme.onSurfaceVariant);
 
   String _xLabel(double ms) {
     final d = DateTime.fromMillisecondsSinceEpoch(ms.toInt());
