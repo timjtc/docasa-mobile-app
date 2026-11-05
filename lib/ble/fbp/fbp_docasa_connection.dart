@@ -208,9 +208,9 @@ class FbpDocasaConnection implements DocasaConnection {
     BluetoothService? find(Guid g) => services.firstWhere((s) => s.uuid == g);
     final svc = find(Guid(DocasaContract.deviceInformationServiceUuid));
     Future<String> read(String uuid) async {
-      final c = svc?.characteristics.firstWhere(
-        (c) => c.uuid.str128 == uuid,
-      );
+      // Guid equality normalizes short-form IDs ('2A29') to the full
+      // 128-bit runtime form; `str128 == uuid` never matched (D-025).
+      final c = svc?.characteristics.firstWhere((c) => c.uuid == Guid(uuid));
       return utf8.decode(await c?.read() ?? const []);
     }
 

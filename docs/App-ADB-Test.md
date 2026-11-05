@@ -46,3 +46,17 @@ Notes: -r reinstalls preserving data; if you change --dart-define=DOCASA_REAL_BL
   stage maps to the same retry spinner, so the failing stage is unknown until probed:
   Serial (does `time sync` line appear?), nRF-connect G2 checklist (incl. 2A26==4.1.1,
   3× 1 Hz JSON subscribes), and `adb logcat -s flutter` FBP trail during a pick.
+
+## Session 4 (2026-11-05, Windows host — connect-hang ROOT-CAUSED + fixed, D-025)
+
+- Fresh rebuild + `adb install -r` of `docasa-ble-test-20261105.apk` first (consistency as
+  ordered). adb `unauthorized` after a daemon restart → run `adb kill-server && adb devices`
+  and accept the RSA prompt on the phone; a re-toggle/revoke is only needed after a host key
+  change.
+- Flake suggested previously was ruled out: the trail shows link + MTU 247 + discovery (5
+  services) all GATT_SUCCESS every cycle, then `Bad state: No element` in `readDeviceInfo`
+  — short-form Contract IDs (`'2A29'`) were string-compared against the 128-bit runtime
+  UUID. One-line fix (Guid equality). Verified live: pick → CONNECTED ~1.4 s, stream live.
+- Full record: `docs/sessions/2026-11-05-ble-connect-triage.md`.
+- UI-driving note for this phone: `uiautomator dump` sees Flutter screens only as one NAF
+  node — drive via `screencap -p` + read the image + `input tap x y` instead.

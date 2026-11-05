@@ -270,6 +270,26 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   were EOL-only churn and reverted. Setup flows for the maintainer: `docs/App-ADB-Test.md`
   and `firmware/README.md` unchanged in content.
 
+- **D-025 — BLE connect-hang root cause: short-form DIS UUID string comparison (logcat probe)** ·
+  resolved · 2026-11-05 · app
+  Context: §11 next-step (1) closure — app picker lists `DOCASA-AirPurifier` but selecting it
+  left CONNECTING + center spinner forever. Ran the playbook's logcat layer live on a fresh
+  rebuild of the BLE-test artifact (Samsung A34, re-authorized): link stage fully healthy
+  (connect → MTU 247 GATT_SUCCESS → `discoverServices` **5 services GATT_SUCCESS**) then
+  `FBP: link failed: Bad state: No element` at `readDeviceInfo.read` — `c.uuid.str128 == uuid`
+  compared the full 128-bit runtime UUID against the Contract's short-form `'2A29'…` constants
+  DIS constants (never equal); the custom telemetry constants are full-form, which is why the
+  picker worked. Never reached before because earlier practice rounds saw zero DOCASA ads (no
+  hardware in range). Firmware exonerated (DIS values verified over the air post-fix).
+  Decision: one-line fix — `readDeviceInfo` characteristic lookup compares via
+  `c.uuid == Guid(uuid)` (Guid `==` normalizes short-form to the full 128-bit lowercase form;
+  a genuinely missing characteristic still throws the same `StateError` → backoff). Analyzer
+  0 issues, 54/54 tests, BLE-test artifact rebuilt + reinstalled, verified live: pick →
+  connected in ~1.4 s, `handshake device info: mfg=DOCASA model=DOCASA Air Purifier fw=4.1.1`,
+  CCCDs subscribed, first complete frame decoded, dashboard streaming real PM values.
+  Notes: G4 checklist remainder (walk-away backoff, restart persistence, push) and G1/G2
+  formalities still owed; debugPrint trail stays until after G4 (D-020d).
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

@@ -1,17 +1,23 @@
-# Graph Report - docasa-app  (2026-11-05)
+# Graph Report - docasa-mobile-app  (2026-11-05)
 
 ## Corpus Check
-- 30 files · ~52,649 words
+- 97 files · ~54,074 words
 - Verdict: corpus is large enough that graph structure adds value.
+- Unclassified: 54 file(s) not represented in the graph (top: .xcconfig 8, (none) 7, .xml 7)
 
 ## Summary
-- 1324 nodes · 1778 edges · 104 communities (70 shown, 34 thin omitted)
+- 1336 nodes · 1791 edges · 113 communities (70 shown, 43 thin omitted)
 - Extraction: 94% EXTRACTED · 5% INFERRED · 1% AMBIGUOUS · INFERRED: 93 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
+## Graph Freshness
+- Built from commit: `766c9869`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
+
 ## Community Hubs (Navigation)
 - ADB Test Workloop
-- Drift Column Schema
+- database.dart
 - BLE Codec Contracts
 - Fake BLE Connection State
 - Apple Icon Asset Catalogs
@@ -47,30 +53,29 @@
 - History Compactor SQL
 - History Page Imports
 - Local Notifications
-- Drift Settings Data Classes
+- AppSetting
 - Shared App Imports
 - Air Stage Models
 - macOS App Icon Set
 - macOS Icon Densities
-- Connection Implementations
+- win32_window.cpp
 - Win32 Window Handler
 - Docasa Brand Artwork
 - Win32 Callback Types
 - Fake Generator Imports
 - App Theme Colors
-- Win32 Point Geometry
+- Size
 - CentOS ACL Labs
 - iOS Runner Shell
 - Analyzer Lint Config
 - Plugin Registrant Hook
-- Filter Page Wiring
-- Filter Health Tests
+- Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff)
+- AppDatabase
 - Required Feature List
 - iOS Launch Images
 - Android Launcher Icons
 - iOS Icon Density Slots
 - iOS Icon Variants
-- Device Picker Widget
 - App Widget Companions
 - PWA Maskable Icons
 - Android MainActivity
@@ -88,7 +93,7 @@
 - Agent Workflow Docs
 - Android xxhdpi Icons
 - Manual Connection Types
-- BLE Connection Implementations
+- docasa_connection.dart
 - NimBLE Stack Choice
 - Filter Lifetime NVS Model
 - iOS Marketing Icon
@@ -114,30 +119,32 @@
 1. `Decision Log (ADR-lite)` - 24 edges
 2. `Win32Window` - 21 edges
 3. `Bench Runbook — flashing & G1/G2 verification` - 16 edges
-4. `Filter-Health Math — NVS counters to health % to projections` - 13 edges
-5. `Firmware README (ESP32/hardware)` - 13 edges
+4. `Firmware README (ESP32/hardware)` - 13 edges
+5. `Filter-Health Math — NVS counters to health % to projections` - 13 edges
 6. `dependencies` - 12 edges
 7. `Development Process` - 12 edges
 8. `FlutterWindow` - 10 edges
-9. `Runner Windows Executable (BINARY_NAME)` - 10 edges
-10. `Ponytail Skill (lazy senior dev mode, MIT, github.com/DietrichGebert/ponytail)` - 10 edges
+9. `Gate G2 — BLE telemetry checklist (nRF Connect)` - 10 edges
+10. `D-022 — Firmware v4.1.1 accepts resetFilter` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `arduino-cli flash procedure (upload --fqbn esp32:esp32:esp32)` --semantically_similar_to--> `Windows Arduino IDE flash procedure for v4.1.1`  [INFERRED] [semantically similar]
   docs/Bench-Runbook.md → firmware/README.md
 - `ManualConnection` --implements--> `DocasaConnection`  [EXTRACTED]
   test/data/history_test.dart → lib/ble/docasa_connection.dart
-- `web/index.html (Flutter web shell: base href $FLUTTER_BASE_HREF, docasa_app title, manifest.json, favicon.png, apple-touch Icon-192, flutter_bootstrap.js)` --conceptually_related_to--> `BINARY_NAME docasa_app (Linux executable name)`  [INFERRED]
-  web/index.html → linux/CMakeLists.txt
-- `linux/CMakeLists.txt (Linux desktop build config, CMake 3.13, project runner, C++14, GTK3 via pkg-config)` --conceptually_related_to--> `windows/CMakeLists.txt (Windows desktop build config, CMake 3.14, multi-config Debug/Profile/Release, Unicode, C++17, /W4 /WX /EHsc)`  [INFERRED]
-  linux/CMakeLists.txt → windows/CMakeLists.txt
-- `web/index.html - Flutter web entry page referencing the icon as apple-touch-icon` --references--> `Icon-192.png - PWA app icon, 192x192 8-bit RGB PNG (visual content unverified)`  [EXTRACTED]
-  web/index.html → web/icons/Icon-192.png
+- `D-003 — JSON v1 encoded with ArduinoJson 7.x` --references--> `ArduinoJson 7.4.3 (by Benoit Blanchon)`  [INFERRED]
+  docs/Decision-Log.md → firmware/README.md
+- `D-003 — JSON v1 encoded with ArduinoJson 7.x` --references--> `NimBLE-Arduino 2.5.2 (by h2zero)`  [INFERRED]
+  docs/Decision-Log.md → firmware/README.md
+- `Windows Arduino IDE flash procedure for v4.1.1` --references--> `D-022 — Firmware v4.1.1 accepts resetFilter`  [INFERRED]
+  firmware/README.md → docs/Decision-Log.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
+- **Phase-gated lifecycle (Phases 0-6)** — docs_development_process_phase_gated_lifecycle, docs_development_process_phase_0_foundations, docs_development_process_phase_1_firmware_nvs, docs_development_process_phase_2_firmware_ble, docs_development_process_phase_3_app_core, docs_development_process_phase_4_app_device_integration, docs_development_process_phase_5_commands_security, docs_development_process_phase_6_future_deferred [EXTRACTED 1.00]
+- **resetFilter write lifecycle (security ruling - alert flow - firmware acceptance)** — docs_bench_runbook_resetfilter_command, docs_decision_log_d_010, docs_decision_log_d_021, docs_decision_log_d_022, docs_filter_health_math_fansec_counter, docs_filter_health_math_pwfs_counter [EXTRACTED 1.00]
 - **Ponytail Skill Family (6 skills: ponytail, review, audit, debt, gain, help; shared repo DietrichGebert/ponytail)** — commandcode_skills_ponytail_skill_ponytail_mode, commandcode_skills_ponytail_review_skill_ponytail_review_skill, commandcode_skills_ponytail_audit_skill_ponytail_audit_skill, commandcode_skills_ponytail_debt_skill_ponytail_debt_skill, commandcode_skills_ponytail_gain_skill_ponytail_gain_skill, commandcode_skills_ponytail_help_skill_ponytail_help_skill [EXTRACTED 1.00]
 - **PWA app icon set (web/icons)** — web_icons_icon_192, web_icons_icon_512, web_icons_icon_maskable_192, web_icons_icon_maskable_512, web_manifest [EXTRACTED 1.00]
 - **Docasa iOS Home-Screen Icon (stock Flutter artwork via AppIcon.appiconset)** — ios_runner_assets_xcassets_appicon_appiconset_icon_app_60x60_3x_app_icon, ios_runner_assets_xcassets_appicon_appiconset_icon_app_60x60_3x_appiconset, ios_runner_assets_xcassets_appicon_appiconset_icon_app_60x60_3x_docasa_app, ios_runner_assets_xcassets_appicon_appiconset_icon_app_60x60_3x_flutter_logo_artwork [INFERRED 0.75]
@@ -151,21 +158,19 @@
 - **Android ic_launcher density set** — android_app_src_main_res_mipmap_hdpi_ic_launcher_appicon [INFERRED 0.95]
 - **Launcher icon resource set (@mipmap/ic_launcher) selected by screen density at runtime** — android_app_src_main_res_mipmap_xhdpi_ic_launcher, android_app_src_main_res_mipmap_xxxhdpi_ic_launcher [INFERRED 0.95]
 - **AppIcon Asset Set (iOS app icon family: all resolutions + Contents.json manifest)** — ios_runner_assets_xcassets_appicon_appiconset_icon_app_29x29_1x, ios_runner_assets_xcassets_appicon_appiconset_icon_app_29x29_3x, ios_runner_assets_xcassets_appicon_appiconset_icon_app_60x60_2x, ios_runner_assets_xcassets_appicon_appiconset_icon_app_76x76_1x [INFERRED 0.95]
-- **macOS AppIcon Size Variant Set (16-1024px)** — macos_runner_assets_xcassets_appicon_appiconset_app_icon_16, macos_runner_assets_xcassets_appicon_appiconset_app_icon_32, macos_runner_assets_xcassets_appicon_appiconset_app_icon_64, macos_runner_assets_xcassets_appicon_appiconset_app_icon_128, macos_runner_assets_xcassets_appicon_appiconset_app_icon_256, macos_runner_assets_xcassets_appicon_appiconset_app_icon_512, macos_runner_assets_xcassets_appicon_appiconset_app_icon_1024 [INFERRED 0.95]
-- **Phase-gated lifecycle (Phases 0-6)** — docs_development_process_phase_gated_lifecycle, docs_development_process_phase_0_foundations, docs_development_process_phase_1_firmware_nvs, docs_development_process_phase_2_firmware_ble, docs_development_process_phase_3_app_core, docs_development_process_phase_4_app_device_integration, docs_development_process_phase_5_commands_security, docs_development_process_phase_6_future_deferred [EXTRACTED 1.00]
-- **resetFilter write lifecycle (security ruling - alert flow - firmware acceptance)** — docs_bench_runbook_resetfilter_command, docs_decision_log_d_010, docs_decision_log_d_021, docs_decision_log_d_022, docs_filter_health_math_fansec_counter, docs_filter_health_math_pwfs_counter [EXTRACTED 1.00]
 - **Hardware bench flash & gate verification workflow** — docs_bench_runbook_flash_procedure_arduino_cli, docs_bench_runbook_gate_g1_persistence_behavior, docs_bench_runbook_gate_g2_ble_telemetry_checklist, docs_bench_runbook_nrf_connect, firmware_readme_windows_flash_procedure_v411 [INFERRED 0.95]
+- **macOS AppIcon Size Variant Set (16-1024px)** — macos_runner_assets_xcassets_appicon_appiconset_app_icon_16, macos_runner_assets_xcassets_appicon_appiconset_app_icon_32, macos_runner_assets_xcassets_appicon_appiconset_app_icon_64, macos_runner_assets_xcassets_appicon_appiconset_app_icon_128, macos_runner_assets_xcassets_appicon_appiconset_app_icon_256, macos_runner_assets_xcassets_appicon_appiconset_app_icon_512, macos_runner_assets_xcassets_appicon_appiconset_app_icon_1024 [INFERRED 0.95]
+- **Apache HTTP service bring-up and diagnosis under firewalld/SELinux** — assets_itso_quickie_notes___centos_httpd, assets_itso_quickie_notes___centos_firewalld, assets_itso_quickie_notes___centos_systemctl, assets_itso_quickie_notes___centos_selinux, assets_itso_quickie_notes___centos_lab_a4_package_service_firewall, assets_itso_quickie_notes___centos_lab_d1_broken_web_service [INFERRED]
 - **Persistent XFS disk provisioning workflow (partition, format, UUID fstab mount)** — assets_itso_quickie_notes___centos_lab_a3_persistent_data_mount, assets_itso_quickie_notes___centos_fdisk, assets_itso_quickie_notes___centos_partprobe, assets_itso_quickie_notes___centos_mkfs_xfs, assets_itso_quickie_notes___centos_blkid, assets_itso_quickie_notes___centos_fstab, assets_itso_quickie_notes___centos_findmnt, assets_itso_quickie_notes___centos_xfs [INFERRED]
 - **Unix file permission model (mode bits, special bits, ACLs)** — assets_itso_quickie_notes___centos_file_permissions, assets_itso_quickie_notes___centos_suid, assets_itso_quickie_notes___centos_sgid, assets_itso_quickie_notes___centos_sticky_bit, assets_itso_quickie_notes___centos_acl [INFERRED]
-- **Apache HTTP service bring-up and diagnosis under firewalld/SELinux** — assets_itso_quickie_notes___centos_httpd, assets_itso_quickie_notes___centos_firewalld, assets_itso_quickie_notes___centos_systemctl, assets_itso_quickie_notes___centos_selinux, assets_itso_quickie_notes___centos_lab_a4_package_service_firewall, assets_itso_quickie_notes___centos_lab_d1_broken_web_service [INFERRED]
 
-## Communities (104 total, 34 thin omitted)
+## Communities (113 total, 43 thin omitted)
 
 ### Community 0 - "ADB Test Workloop"
 Cohesion: 0.05
 Nodes (55): App ADB Test Notes, ADB build/install/launch loop, FBP debugPrint log tags (FBP: / [FBP-Android]), G4 practice session 2026-10-31 on A34, Parallel-install APK artifacts (dev / DOCASA Demo / DOCASA BLE Test), Samsung A34 test phone (SM-A346E, Android 14), Session 3: maintainer flash + connect troubleshooting (2026-11-01), Bench Runbook — flashing & G1/G2 verification (+47 more)
 
-### Community 1 - "Drift Column Schema"
+### Community 1 - "database.dart"
 Cohesion: 0.04
 Nodes (74): _, actualTableName, _alias, aliasedName, allSchemaEntities, allTables, attachedDatabase, batteryPct (+66 more)
 
@@ -186,8 +191,8 @@ Cohesion: 0.06
 Nodes (32): AppSettings, batteryPct, batteryV, charging, fanRpm, FilterEvents, HourAggregates, hourStartMs (+24 more)
 
 ### Community 6 - "BLE Connection Layer"
-Cohesion: 0.06
-Nodes (31): connect, disconnect, dispose, DocasaConnection, readDeviceInfo, readFilterCounters, resetFilter, states (+23 more)
+Cohesion: 0.08
+Nodes (21): connect, disconnect, dispose, _gen, _lastTimeSyncEpoch, _onTick, _outageEverySec, readDeviceInfo (+13 more)
 
 ### Community 7 - "FBP Connection Core"
 Cohesion: 0.06
@@ -210,8 +215,8 @@ Cohesion: 0.07
 Nodes (28): dependencies, cupertino_icons, drift, fl_chart, flutter, flutter_blue_plus, flutter_local_notifications, flutter_riverpod (+20 more)
 
 ### Community 12 - "Core Data Layer Imports"
-Cohesion: 0.07
-Nodes (21): connect, day, db, disconnect, dispose, emit, floorMin, hour (+13 more)
+Cohesion: 0.05
+Nodes (28): main, main, main, budgets, counters, main, now, connect (+20 more)
 
 ### Community 13 - "CentOS Baseline Notes"
 Cohesion: 0.10
@@ -226,8 +231,8 @@ Cohesion: 0.12
 Nodes (4): wWinMain(), CreateAndAttachConsole(), GetCommandLineArguments(), Utf8FromUtf16()
 
 ### Community 16 - "History Bucketing Types"
-Cohesion: 0.09
-Nodes (21): bucketCount, bucketMs, column, coverage, _floor, HistoryMetric, HistoryRange, HistoryRepository (+13 more)
+Cohesion: 0.10
+Nodes (19): bucketCount, bucketMs, column, coverage, _floor, HistoryRepository, HistorySeries, isEmpty (+11 more)
 
 ### Community 17 - "Filter Health Stateful UI"
 Cohesion: 0.10
@@ -238,8 +243,8 @@ Cohesion: 0.10
 Nodes (22): APPLICATION_ID com.example.docasa_app (GTK app identifier), APPLY_STANDARD_SETTINGS (Linux: cxx_std_14, -Wall -Werror, -O3+NDEBUG outside Debug), BINARY_NAME docasa_app (Linux executable name), Linux Bundle Install (relocatable bundle under build dir; AOT lib installed only for non-Debug), linux/CMakeLists.txt (Linux desktop build config, CMake 3.13, project runner, C++14, GTK3 via pkg-config), flutter_assemble target (linux/flutter/CMakeLists.txt: tool_backend.sh, ephemeral libflutter_linux_gtk.so, icudtl.dat, libapp.so AOT), GTK/GLIB/GIO pkg-config dependencies (Flutter Linux embedder), Linux Runner Executable (main.cc, my_application.cc, generated_plugin_registrant.cc; links flutter + PkgConfig::GTK) (+14 more)
 
 ### Community 19 - "Drift Database Root"
-Cohesion: 0.10
-Nodes (13): AppDatabase, _buffer, _db, flush, _flushInterval, _flushRows, _flushTimer, _onTelemetry (+5 more)
+Cohesion: 0.11
+Nodes (12): _buffer, _db, flush, _flushInterval, _flushRows, _flushTimer, _onTelemetry, _recorded (+4 more)
 
 ### Community 20 - "Web Favicon Assets"
 Cohesion: 0.10
@@ -247,7 +252,7 @@ Nodes (20): Flutter default launcher icon (template branding asset), Web Favicon
 
 ### Community 21 - "Filter Health Engine"
 Cohesion: 0.10
-Nodes (18): computeFilterHealth, consumed, estimateLoadRatePerDay, FilterBudgets, FilterHealth, hourBudgetRpmS, hourFrac, loadBinding (+10 more)
+Nodes (17): computeFilterHealth, consumed, estimateLoadRatePerDay, FilterHealth, hourBudgetRpmS, hourFrac, loadBinding, loadBudgetRpmUgS (+9 more)
 
 ### Community 22 - "BLE Characteristics Contract"
 Cohesion: 0.10
@@ -255,34 +260,34 @@ Nodes (19): Air Quality Characteristic (JSON v1), Command Characteristic (write)
 
 ### Community 23 - "Device Page Imports"
 Cohesion: 0.11
-Nodes (12): build, child, color, connState, icon, label, pm25, stage (+4 more)
+Nodes (13): build, child, color, connState, icon, label, pm25, stage (+5 more)
 
 ### Community 24 - "Filter Budgets Core"
 Cohesion: 0.11
-Nodes (15): alertThresholdPct, budgets, copyWith, _db, filterAlertAckMs, _kAck, _kHourBudget, _kLastAlert (+7 more)
+Nodes (16): FilterBudgets, alertThresholdPct, budgets, copyWith, _db, filterAlertAckMs, _kAck, _kHourBudget (+8 more)
 
 ### Community 25 - "FBP Device Picker"
-Cohesion: 0.11
-Nodes (13): build, conn, createState, dev, dispose, initState, _isValid, _other (+5 more)
+Cohesion: 0.09
+Nodes (15): build, conn, createState, dev, _DevicePickerSheet, _DevicePickerSheetState, dispose, initState (+7 more)
 
 ### Community 26 - "Ponytail Audit Skills"
 Cohesion: 0.11
 Nodes (19): Audit Evidence Rules (concrete failure case required; grep tree incl. tests/fixtures/config before calling code unused; shortcut: comment is a decision not a finding unless load crosses it), Audit Finding Categories (bug, risk/security+data loss, scale/load, missing test, speed, lean), ponytail-audit Skill (whole-repo quality audit, ranked, one-shot), Debt Ledger Row (file:line, what was simplified, ceiling, upgrade trigger; no-trigger rows flagged as rot risk), ponytail-debt Skill (harvest shortcut: comments into one debt ledger), Ponytail Benchmark Figures (Opus 5.5, 39 tasks x 5 runs, 18 with hidden checks; LOC 47%, output tokens 55%, cost 74%, time 59%; hidden checks 97% vs 96%; tests where logic needs one 98% vs 68%), Ponytail Honesty Boundary (benchmark averages only; never invent per-repo savings; real per-repo figures come from /ponytail-debt), ponytail-gain Skill (measured-impact scoreboard, one-shot display) (+11 more)
 
 ### Community 27 - "History Repository"
-Cohesion: 0.12
-Nodes (14): _axisStyle, build, _chart, createState, _donutCard, _HistoryPageState, _legendRow, _metric (+6 more)
+Cohesion: 0.13
+Nodes (12): HistoryMetric, HistoryRange, _axisStyle, _chart, createState, _donutCard, _legendRow, _metric (+4 more)
 
 ### Community 28 - "Win32 Runner Resources"
-Cohesion: 0.16
-Nodes (6): EnableNonClientDpiScaling, Scale(), Win32Window::Win32Window(), WindowClassRegistrar, class_registered_, instance_
+Cohesion: 0.18
+Nodes (6): Scale(), Win32Window::Win32Window(), WindowClassRegistrar, class_registered_, instance_, WindowClassRegistrar::UnregisterWindowClass()
 
 ### Community 29 - "Recording Service"
 Cohesion: 0.11
 Nodes (15): _alerts, _alertTimer, compactor, _compactTimer, _db, _defaultNow, dispose, _evaluateAlerts (+7 more)
 
 ### Community 30 - "Windows Flutter Shell C++"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (4): FlutterWindow, flutter_controller_, FlutterWindow::FlutterWindow(), project_
 
 ### Community 31 - "Number Formatting"
@@ -294,8 +299,8 @@ Cohesion: 0.11
 Nodes (17): airQualityUuid, batteryLevelUuid, batteryServiceUuid, commandUuid, deviceInformationServiceUuid, deviceName, DocasaContract, environmentUuid (+9 more)
 
 ### Community 33 - "Dashboard Widgets"
-Cohesion: 0.19
-Nodes (16): build, DashboardPage, SystemPage, build, DevicePage, startConnectFlow, build, _FilterReplaceDialog (+8 more)
+Cohesion: 0.15
+Nodes (20): build, DashboardPage, SystemPage, build, DevicePage, startConnectFlow, build, _FilterReplaceDialog (+12 more)
 
 ### Community 34 - "History Compactor SQL"
 Cohesion: 0.12
@@ -309,13 +314,13 @@ Nodes (3): _body, _kv, showFilterReplaceModal
 Cohesion: 0.14
 Nodes (12): didLaunchFromFilter, FilterAlertDecision, FilterAlertPort, _init, LocalFilterAlertPort, NoopFilterAlertPort, _payload, _plugin (+4 more)
 
-### Community 37 - "Drift Settings Data Classes"
+### Community 37 - "AppSetting"
 Cohesion: 0.26
 Nodes (10): AppSetting, AppSettingsCompanion, FilterEvent, FilterEventsCompanion, HourAggregate, HourAggregatesCompanion, MinuteAggregate, MinuteAggregatesCompanion (+2 more)
 
 ### Community 38 - "Shared App Imports"
-Cohesion: 0.15
-Nodes (3): main, _now, t
+Cohesion: 0.12
+Nodes (4): main, main, _now, t
 
 ### Community 39 - "Air Stage Models"
 Cohesion: 0.17
@@ -329,13 +334,9 @@ Nodes (12): macOS App Icon 1024px (app_icon_1024.png), macOS App Icon 128x128 @1
 Cohesion: 0.18
 Nodes (11): App Icon 1024px (macOS Runner density variant, 512x512@2x), App Icon 128px (macOS Runner density variant, 128x128@1x), App Icon 16px (macOS Runner density variant, 16x16@1x), App Icon 256px (macOS Runner, 256x256@1x and 128x128@2x), Docasa App Icon Artwork (visual content unverified - vision unavailable), App Icon 32px (macOS Runner density variant, 32x32@1x and 16x16@2x), App Icon 512px (macOS Runner density variant, 512x512@1x and 256x256@2x), App Icon 64px (macOS Runner density variant, 32x32@2x) (+3 more)
 
-### Community 42 - "Connection Implementations"
-Cohesion: 0.20
-Nodes (3): main, main, main
-
 ### Community 43 - "Win32 Window Handler"
-Cohesion: 0.24
-Nodes (4): Win32Window, child_content_, quit_on_close_, window_handle_
+Cohesion: 0.18
+Nodes (7): Point, x, y, Win32Window, child_content_, quit_on_close_, window_handle_
 
 ### Community 44 - "Docasa Brand Artwork"
 Cohesion: 0.31
@@ -346,12 +347,12 @@ Cohesion: 0.22
 Nodes (4): _chunk, HistorySeeder, _insert, seed
 
 ### Community 47 - "App Theme Colors"
-Cohesion: 0.22
+Cohesion: 0.25
 Nodes (6): accent, cardBg, dark, DocasaTheme, light, scaffoldBg
 
-### Community 48 - "Win32 Point Geometry"
-Cohesion: 0.21
-Nodes (6): Point, x, y, Size, height, width
+### Community 48 - "Size"
+Cohesion: 0.50
+Nodes (3): Size, height, width
 
 ### Community 49 - "CentOS ACL Labs"
 Cohesion: 0.38
@@ -365,9 +366,9 @@ Nodes (7): Docasa iOS Runner App (Flutter iOS shell), AppIcon.appiconset (iOS ap
 Cohesion: 0.33
 Nodes (5): analyzer, exclude, include, linter, rules
 
-### Community 54 - "Filter Health Tests"
+### Community 53 - "Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff)"
 Cohesion: 0.33
-Nodes (4): budgets, counters, main, now
+Nodes (5): Findings, Fix (D-025), Follow-ups, Procedure (methodically executed), Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff)
 
 ### Community 55 - "Required Feature List"
 Cohesion: 0.60
@@ -441,9 +442,15 @@ Nodes (3): 32x32 Density Variant of macOS App Icon, Flutter Logo Mark (32px Icon
 Cohesion: 0.67
 Nodes (3): PWA Maskable App Icon 192x192 (web/icons), Icon artwork (visual content unverified, vision unavailable; 192x192 8-bit RGBA PNG, maskable safe-zone), PWA Icon Set (web/manifest.json icons: Icon-192, Icon-512, Icon-maskable-192, Icon-maskable-512; this asset purpose=maskable)
 
+### Community 78 - "docasa_connection.dart"
+Cohesion: 0.14
+Nodes (12): connect, disconnect, dispose, DocasaConnection, readDeviceInfo, readFilterCounters, resetFilter, states (+4 more)
+
 ## Ambiguous Edges - Review These
 - `macOS App Icon 1024x1024 PNG (AppIcon.appiconset, 512x512 @2x master variant)` → `App icon visual content (unverified - vision unavailable in this run)`  [AMBIGUOUS]
   macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png · relation: conceptually_related_to
+- `onSec — merged power-on seconds counter (u32)` → `Filter-Health Math — NVS counters to health % to projections`  [AMBIGUOUS]
+  docs/Filter-Health-Math.md · relation: conceptually_related_to
 - `Flutter default launcher icon (template branding asset)` → `Icon-192.png - PWA app icon, 192x192 8-bit RGB PNG (visual content unverified)`  [AMBIGUOUS]
   web/icons/Icon-192.png · relation: conceptually_related_to
 - `App Brand Logo (icon visual content, unverified)` → `Icon-512.png - PWA app icon, 512x512 8-bit RGB PNG (visual content unverified)`  [AMBIGUOUS]
@@ -460,6 +467,8 @@ Nodes (3): PWA Maskable App Icon 192x192 (web/icons), Icon artwork (visual conte
   macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png · relation: conceptually_related_to
 - `Flutter Default macOS Template Icon (possible unverified artwork)` → `App Icon 64px (macOS Runner density variant, 32x32@2x)`  [AMBIGUOUS]
   macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_64.png · relation: implements
+- `Angular Bent Device Shape (Maroon / Olive / Navy / Teal Segments)` → `'Portable Air Purifier' Tagline / Product Positioning`  [AMBIGUOUS]
+  assets/docasa-logo-banner-dark-t.png · relation: conceptually_related_to
 - `Flutter default placeholder app icon` → `Docasa iOS App Icon 40x40@1x (iPad)`  [AMBIGUOUS]
   ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png · relation: conceptually_related_to
 - `iOS launch screen placeholder visual (LaunchImage asset)` → `LaunchImage@2x.png`  [AMBIGUOUS]
@@ -476,28 +485,24 @@ Nodes (3): PWA Maskable App Icon 192x192 (web/icons), Icon artwork (visual conte
   ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png · relation: references
 - `PWA Maskable App Icon 192x192 (web/icons)` → `Icon artwork (visual content unverified, vision unavailable; 192x192 8-bit RGBA PNG, maskable safe-zone)`  [AMBIGUOUS]
   web/icons/Icon-maskable-192.png · relation: conceptually_related_to
-- `onSec — merged power-on seconds counter (u32)` → `Filter-Health Math — NVS counters to health % to projections`  [AMBIGUOUS]
-  docs/Filter-Health-Math.md · relation: conceptually_related_to
-- `'Portable Air Purifier' Tagline / Product Positioning` → `Angular Bent Device Shape (Maroon / Olive / Navy / Teal Segments)`  [AMBIGUOUS]
-  assets/docasa-logo-banner-dark-t.png · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **595 isolated node(s):** `_open`, `schemaVersion`, `_avgCols`, `customUpdate`, `hour_aggregates` (+590 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 779 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **590 isolated node(s):** `states`, `telemetry`, `readDeviceInfo`, `readFilterCounters`, `syncTime` (+585 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 783 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Win32Window` connect `Win32 Window Handler` to `Win32 Callback Types`, `Windows Flutter Shell`, `Win32 Point Geometry`, `Win32 Runner Resources`, `Windows Flutter Shell C++`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **What connects `_open`, `schemaVersion`, `_avgCols` to the rest of the system?**
-  _595 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `AppDatabase` connect `AppDatabase` to `database.dart`, `Fake BLE Connection State`, `Core Data Layer Imports`, `Drift Database Root`, `Filter Budgets Core`, `Recording Service`?**
+  _High betweenness centrality (0.057) - this node is a cross-community bridge._
+- **What connects `states`, `telemetry`, `readDeviceInfo` to the rest of the system?**
+  _590 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ADB Test Workloop` be split into smaller, more focused modules?**
   _Cohesion score 0.05067920585161965 - nodes in this community are weakly interconnected._
-- **Why does `AppDatabase` connect `Drift Database Root` to `Drift Column Schema`, `Core Data Layer Imports`, `Recording Service`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Should `Drift Column Schema` be split into smaller, more focused modules?**
+- **Why does `Win32Window` connect `Win32 Window Handler` to `win32_window.cpp`, `Win32 Callback Types`, `Windows Flutter Shell`, `Size`, `Win32 Runner Resources`, `Windows Flutter Shell C++`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Should `database.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.04223469660518578 - nodes in this community are weakly interconnected._
 
 ### Low-confidence Hints
@@ -505,5 +510,5 @@ _AMBIGUOUS edges — the extractor was unsure. Verify before acting on these._
 
 - **What is the exact relationship between `macOS App Icon 1024x1024 PNG (AppIcon.appiconset, 512x512 @2x master variant)` and `App icon visual content (unverified - vision unavailable in this run)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `Flutter default launcher icon (template branding asset)` and `Icon-192.png - PWA app icon, 192x192 8-bit RGB PNG (visual content unverified)`?**
+- **What is the exact relationship between `onSec — merged power-on seconds counter (u32)` and `Filter-Health Math — NVS counters to health % to projections`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._

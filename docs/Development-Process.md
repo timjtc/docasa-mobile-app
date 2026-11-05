@@ -393,14 +393,16 @@ per D-017.
   real FBLP transport with device picker, handshake device verification, reconnect
   backoff, permission gate — verified up to "scans run, no DOCASA advertisement yet"
   (device was unpowered; firmware advertisement remains THE unverified runtime surface).
-- **Next (in order):** (1) close the app↔device connection failure — v4.1.1 is flashed
-  (maintainer, 2026-11-01) and the app's picker SEES the device (service-UUID ad at
-  −61 dBm), but connect stays "Connecting" — run the 3-layer probe: device Serial
-  (`time sync` line = CCCD reached), nRF Connect G2 checklist (`Bench-Runbook.md`,
-  incl. 2A26 == `4.1.1`), and the app `logcat -s flutter` FBP trail; the failing-stage
-  answer names firmware-fix vs app-fix. (2) G1/G2 checklist formally → `gate-reports/G1/2.md`.
-  (3) G4 checklist with the BLE-test artifact → `gate-reports/G4.md`; after G4 restore
-  `withServices` scan filtering and review the debugPrints.
+- **Next (in order):** (1) ~~close the app↔device connection failure~~ **CLOSED 2026-11-05,
+  D-025** — the `logcat -s flutter` layer of the 3-layer probe pinpointed an app-side bug
+  (short-form DIS UUIDs vs 128-bit runtime form in `readDeviceInfo`); fixed with Guid
+  equality, verified live on the A34 (pick → connected ≤2 s, handshake read fw `4.1.1`
+  over the air, telemetry streaming). Session record:
+  `docs/sessions/2026-11-05-ble-connect-triage.md`. (2) G1/G2 checklist formally →
+  `gate-reports/G1/2.md` (Serial + nRF Connect — the over-the-air handshake is evidence,
+  not the formal gate). (3) G4 checklist remainder with the BLE-test artifact (walk-away
+  backoff reconnect, history across restarts, threshold push) → `gate-reports/G4.md`;
+  after G4 restore `withServices` scan filtering and review the debugPrints.
 - **Needs user input:** nothing blocking; filter-cartridge numbers for exact budgets when
   chosen (D-018 placeholders active).
 - **Firmware untouched since `75394c9`;** codec/golden contract is frozen (Contract v1.0).

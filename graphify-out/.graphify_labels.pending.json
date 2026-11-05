@@ -1,0 +1,20 @@
+{
+  "1": "database.dart",
+  "37": "AppSetting",
+  "42": "win32_window.cpp",
+  "48": "Size",
+  "53": "Session log — 2026-11-05: BLE \"Connecting\" hang triage (Windows host, post-handoff)",
+  "54": "AppDatabase",
+  "60": "AirStage?",
+  "78": "docasa_connection.dart",
+  "81": "c_users_timothyjtc_proj_docasa_mobile_app_ios_runner_generatedpluginregistrant_h",
+  "104": "AppDatabase",
+  "105": "DocasaConnection",
+  "106": "DocasaConnectionState",
+  "107": "DocasaTelemetry",
+  "108": "FilterBudgets",
+  "109": "HistoryMetric",
+  "110": "HistoryRange",
+  "111": "HistoryRepository",
+  "112": "RecordingService"
+}
