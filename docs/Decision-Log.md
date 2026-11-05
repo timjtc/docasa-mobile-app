@@ -232,6 +232,18 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   reports 4.1.1 on boot; nRF Connect/Serial corroboration point: write `{"cmd":"resetFilter"}`
   → Serial logs "usage integrals zeroed", counters read back 0, `on` unchanged.
 
+- **D-023 — Branding assets + dark/light theme toggle** · resolved · 2026-11-01 · app
+  Context: user supplied banner artwork and requested the header redo.
+  Decision: header = user-supplied PNG banner top-left (tight-cropped transparent variants
+  `assets/docasa-logo-banner-dark-t.png` / `-light-t.png`, nav-asset-registered, chosen by
+  theme brightness) + a moon/sun-icon Switch top-right toggling dark (house default,
+  persisted `ui.themeMode` in the KV table, no migration) and a new `DocasaTheme.light()`
+  (same cyan seed). SafeArea retained per earlier notification-bar fix.
+  Notes: original square-crop assets removed; demo + BLE-test exports rebuilt with the
+  new branding (releases 2026-11-01 evening builds). Windows-Arduino toolchain blockers for
+  the maintainer (FastLED `objs.a` linker issue, OneDrive sketchbook/cache) are documented
+  in `firmware/README.md` § Windows troubleshooting.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

@@ -34,3 +34,15 @@ Notes: -r reinstalls preserving data; if you change --dart-define=DOCASA_REAL_BL
 - Open item: zero DOCASA advertisements seen so far — purifier was never powered in range.
   Next step: bench day (flash v4.1.0 + G1/G2 per docs/Bench-Runbook.md), then the picker
   should surface `DOCASA-AirPurifier` and G4 proceeds.
+
+## Session 3 (2026-11-01, maintainer flash + connect troubleshooting)
+
+- More pull of the week: maintainer's Windows IDE fought FastLED (`objs.a` linker errors +
+  OneDrive-corrupted archives) — fixes + troubleshooting table now in `firmware/README.md`;
+  isolation sketches (FastLED-only, NimBLE-only) provided to prove library-vs-environment.
+- v4.1.1 IS flashed on the purifier and the app's picker detects it
+  ("service §D-002 · −61 dBm" row) — advertise path confirmed at the app level.
+- Open issue: after selecting the device, the Air tab stays "Connecting…" — every failure
+  stage maps to the same retry spinner, so the failing stage is unknown until probed:
+  Serial (does `time sync` line appear?), nRF-connect G2 checklist (incl. 2A26==4.1.1,
+  3× 1 Hz JSON subscribes), and `adb logcat -s flutter` FBP trail during a pick.

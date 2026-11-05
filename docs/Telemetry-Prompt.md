@@ -1,0 +1,1 @@
+Since we're performing remote testing, we need a simple way to transmit the logs. I have a public VPS with public IP running, maybe we can use that as a telemetry server that the app can contact and connect to so it can transmit the logcat logs.

@@ -317,13 +317,17 @@ Trigger: product direction decision, recorded as a new Decision-Log entry.
   `3e85ae1` (**Phase 3**, tag `gate/G3`) → `475ac45` (Phase 3 closeout) → `65273f6`
   (Phase 4 pre-build, D-017) → `a33a8ff`/`a272559` (UI fixes) → `8ae7224` (demo export) →
   `403abb3` (BLE-test export, D-019) → `35ddf2a`, `c89b04d` (live G4 practice: permission fix,
-  device picker + handshake verification, D-020).
+  device picker + handshake verification, D-020) → `e8acbce`→`4be0871` (maintainer flash
+  prep + Filter-Health-Math doc + backlog) → `0c8051b` **filter-replacement alert flow**
+  (D-021: modal/push/1-day reminder + counter reset) → `318e4c8` **firmware v4.1.1**
+  (resetFilter accepted, D-022) → `6565851`–`a98097d` **branding + dark/light toggle**
+  (D-023).
 - Firmware commit `75394c9` = **v4.1.0** (Phases 1+2 merged, D-015): NVS counters (u64,
   5-min throttle) + NimBLE GATT per Contract v1.0; behavior gate `tools/firmware-diff-check.sh`
   **must stay PASS (0 removed/changed lines)** before every firmware commit.
 
 ### Verify commands & artifacts
-- App: `flutter analyze` (0 issues) · `flutter test` (52 passed) ·
+- App: `flutter analyze` (0 issues) · `flutter test` (54 passed) ·
   `flutter build apk --debug` ✓.
 - Firmware: `arduino-cli compile --fqbn esp32:esp32:esp32 --build-path /tmp/opencode/fw-build-v41 firmware/docasa-air-purifier-v4`
   (v4.1: 732,643 B flash 55%, 40,572 B RAM 12%, 0 warnings) + `bash tools/firmware-diff-check.sh`.
@@ -372,10 +376,14 @@ per D-017.
   real FBLP transport with device picker, handshake device verification, reconnect
   backoff, permission gate — verified up to "scans run, no DOCASA advertisement yet"
   (device was unpowered; firmware advertisement remains THE unverified runtime surface).
-- **Next (in order):** (1) bench day — flash v4.1.0 + G1/G2 from `Bench-Runbook.md`
-  (ESP32 in range → picker should show `DOCASA-AirPurifier`); (2) run G4 checklist
-  (`Development-Process §7`) with the BLE-test artifact → `gate-reports/G4.md`;
-  (3) after G4, restore `withServices` scan filtering and review the debugPrints.
+- **Next (in order):** (1) close the app↔device connection failure — v4.1.1 is flashed
+  (maintainer, 2026-11-01) and the app's picker SEES the device (service-UUID ad at
+  −61 dBm), but connect stays "Connecting" — run the 3-layer probe: device Serial
+  (`time sync` line = CCCD reached), nRF Connect G2 checklist (`Bench-Runbook.md`,
+  incl. 2A26 == `4.1.1`), and the app `logcat -s flutter` FBP trail; the failing-stage
+  answer names firmware-fix vs app-fix. (2) G1/G2 checklist formally → `gate-reports/G1/2.md`.
+  (3) G4 checklist with the BLE-test artifact → `gate-reports/G4.md`; after G4 restore
+  `withServices` scan filtering and review the debugPrints.
 - **Needs user input:** nothing blocking; filter-cartridge numbers for exact budgets when
   chosen (D-018 placeholders active).
 - **Firmware untouched since `75394c9`;** codec/golden contract is frozen (Contract v1.0).
