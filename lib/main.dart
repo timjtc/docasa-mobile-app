@@ -83,6 +83,17 @@ class _AppShellState extends ConsumerState<AppShell>
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    // v1.1 (D-028): one offline-history drain per transition to "connected".
+    ref.listen(connectionStateProvider, (prev, next) {
+      final s = next.value;
+      if (s != null) {
+        ref.read(offlineSyncTriggerProvider).onState(
+              s,
+              ref.read(offlineSyncProvider),
+              ref.read(connectionProvider),
+            );
+      }
+    });
     ref.listen(filterModalEventsProvider, (prev, next) {
       if (next > (prev ?? 0) && !_alertDialogOpen && mounted) {
         _alertDialogOpen = true;

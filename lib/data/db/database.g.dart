@@ -3103,6 +3103,662 @@ class FilterEventsCompanion extends UpdateCompanion<FilterEvent> {
   }
 }
 
+class $DeviceWindowsTable extends DeviceWindows
+    with TableInfo<$DeviceWindowsTable, DeviceWindow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DeviceWindowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _bootIdMeta = const VerificationMeta('bootId');
+  @override
+  late final GeneratedColumn<int> bootId = GeneratedColumn<int>(
+    'boot_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _slotMeta = const VerificationMeta('slot');
+  @override
+  late final GeneratedColumn<int> slot = GeneratedColumn<int>(
+    'slot',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _windowStartMsMeta = const VerificationMeta(
+    'windowStartMs',
+  );
+  @override
+  late final GeneratedColumn<int> windowStartMs = GeneratedColumn<int>(
+    'window_start_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pmMinMeta = const VerificationMeta('pmMin');
+  @override
+  late final GeneratedColumn<int> pmMin = GeneratedColumn<int>(
+    'pm_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pmMeanMeta = const VerificationMeta('pmMean');
+  @override
+  late final GeneratedColumn<int> pmMean = GeneratedColumn<int>(
+    'pm_mean',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pmMaxMeta = const VerificationMeta('pmMax');
+  @override
+  late final GeneratedColumn<int> pmMax = GeneratedColumn<int>(
+    'pm_max',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stage1SecMeta = const VerificationMeta(
+    'stage1Sec',
+  );
+  @override
+  late final GeneratedColumn<int> stage1Sec = GeneratedColumn<int>(
+    'stage1_sec',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stage2SecMeta = const VerificationMeta(
+    'stage2Sec',
+  );
+  @override
+  late final GeneratedColumn<int> stage2Sec = GeneratedColumn<int>(
+    'stage2_sec',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stage3SecMeta = const VerificationMeta(
+    'stage3Sec',
+  );
+  @override
+  late final GeneratedColumn<int> stage3Sec = GeneratedColumn<int>(
+    'stage3_sec',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stage4SecMeta = const VerificationMeta(
+    'stage4Sec',
+  );
+  @override
+  late final GeneratedColumn<int> stage4Sec = GeneratedColumn<int>(
+    'stage4_sec',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stage5SecMeta = const VerificationMeta(
+    'stage5Sec',
+  );
+  @override
+  late final GeneratedColumn<int> stage5Sec = GeneratedColumn<int>(
+    'stage5_sec',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    bootId,
+    slot,
+    windowStartMs,
+    pmMin,
+    pmMean,
+    pmMax,
+    stage1Sec,
+    stage2Sec,
+    stage3Sec,
+    stage4Sec,
+    stage5Sec,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'device_windows';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DeviceWindow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('boot_id')) {
+      context.handle(
+        _bootIdMeta,
+        bootId.isAcceptableOrUnknown(data['boot_id']!, _bootIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bootIdMeta);
+    }
+    if (data.containsKey('slot')) {
+      context.handle(
+        _slotMeta,
+        slot.isAcceptableOrUnknown(data['slot']!, _slotMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_slotMeta);
+    }
+    if (data.containsKey('window_start_ms')) {
+      context.handle(
+        _windowStartMsMeta,
+        windowStartMs.isAcceptableOrUnknown(
+          data['window_start_ms']!,
+          _windowStartMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_windowStartMsMeta);
+    }
+    if (data.containsKey('pm_min')) {
+      context.handle(
+        _pmMinMeta,
+        pmMin.isAcceptableOrUnknown(data['pm_min']!, _pmMinMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pmMinMeta);
+    }
+    if (data.containsKey('pm_mean')) {
+      context.handle(
+        _pmMeanMeta,
+        pmMean.isAcceptableOrUnknown(data['pm_mean']!, _pmMeanMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pmMeanMeta);
+    }
+    if (data.containsKey('pm_max')) {
+      context.handle(
+        _pmMaxMeta,
+        pmMax.isAcceptableOrUnknown(data['pm_max']!, _pmMaxMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pmMaxMeta);
+    }
+    if (data.containsKey('stage1_sec')) {
+      context.handle(
+        _stage1SecMeta,
+        stage1Sec.isAcceptableOrUnknown(data['stage1_sec']!, _stage1SecMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stage1SecMeta);
+    }
+    if (data.containsKey('stage2_sec')) {
+      context.handle(
+        _stage2SecMeta,
+        stage2Sec.isAcceptableOrUnknown(data['stage2_sec']!, _stage2SecMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stage2SecMeta);
+    }
+    if (data.containsKey('stage3_sec')) {
+      context.handle(
+        _stage3SecMeta,
+        stage3Sec.isAcceptableOrUnknown(data['stage3_sec']!, _stage3SecMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stage3SecMeta);
+    }
+    if (data.containsKey('stage4_sec')) {
+      context.handle(
+        _stage4SecMeta,
+        stage4Sec.isAcceptableOrUnknown(data['stage4_sec']!, _stage4SecMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stage4SecMeta);
+    }
+    if (data.containsKey('stage5_sec')) {
+      context.handle(
+        _stage5SecMeta,
+        stage5Sec.isAcceptableOrUnknown(data['stage5_sec']!, _stage5SecMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stage5SecMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {bootId, slot};
+  @override
+  DeviceWindow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DeviceWindow(
+      bootId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}boot_id'],
+      )!,
+      slot: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}slot'],
+      )!,
+      windowStartMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}window_start_ms'],
+      )!,
+      pmMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pm_min'],
+      )!,
+      pmMean: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pm_mean'],
+      )!,
+      pmMax: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pm_max'],
+      )!,
+      stage1Sec: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stage1_sec'],
+      )!,
+      stage2Sec: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stage2_sec'],
+      )!,
+      stage3Sec: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stage3_sec'],
+      )!,
+      stage4Sec: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stage4_sec'],
+      )!,
+      stage5Sec: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stage5_sec'],
+      )!,
+    );
+  }
+
+  @override
+  $DeviceWindowsTable createAlias(String alias) {
+    return $DeviceWindowsTable(attachedDatabase, alias);
+  }
+}
+
+class DeviceWindow extends DataClass implements Insertable<DeviceWindow> {
+  final int bootId;
+  final int slot;
+  final int windowStartMs;
+  final int pmMin;
+  final int pmMean;
+  final int pmMax;
+  final int stage1Sec;
+  final int stage2Sec;
+  final int stage3Sec;
+  final int stage4Sec;
+  final int stage5Sec;
+  const DeviceWindow({
+    required this.bootId,
+    required this.slot,
+    required this.windowStartMs,
+    required this.pmMin,
+    required this.pmMean,
+    required this.pmMax,
+    required this.stage1Sec,
+    required this.stage2Sec,
+    required this.stage3Sec,
+    required this.stage4Sec,
+    required this.stage5Sec,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['boot_id'] = Variable<int>(bootId);
+    map['slot'] = Variable<int>(slot);
+    map['window_start_ms'] = Variable<int>(windowStartMs);
+    map['pm_min'] = Variable<int>(pmMin);
+    map['pm_mean'] = Variable<int>(pmMean);
+    map['pm_max'] = Variable<int>(pmMax);
+    map['stage1_sec'] = Variable<int>(stage1Sec);
+    map['stage2_sec'] = Variable<int>(stage2Sec);
+    map['stage3_sec'] = Variable<int>(stage3Sec);
+    map['stage4_sec'] = Variable<int>(stage4Sec);
+    map['stage5_sec'] = Variable<int>(stage5Sec);
+    return map;
+  }
+
+  DeviceWindowsCompanion toCompanion(bool nullToAbsent) {
+    return DeviceWindowsCompanion(
+      bootId: Value(bootId),
+      slot: Value(slot),
+      windowStartMs: Value(windowStartMs),
+      pmMin: Value(pmMin),
+      pmMean: Value(pmMean),
+      pmMax: Value(pmMax),
+      stage1Sec: Value(stage1Sec),
+      stage2Sec: Value(stage2Sec),
+      stage3Sec: Value(stage3Sec),
+      stage4Sec: Value(stage4Sec),
+      stage5Sec: Value(stage5Sec),
+    );
+  }
+
+  factory DeviceWindow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DeviceWindow(
+      bootId: serializer.fromJson<int>(json['bootId']),
+      slot: serializer.fromJson<int>(json['slot']),
+      windowStartMs: serializer.fromJson<int>(json['windowStartMs']),
+      pmMin: serializer.fromJson<int>(json['pmMin']),
+      pmMean: serializer.fromJson<int>(json['pmMean']),
+      pmMax: serializer.fromJson<int>(json['pmMax']),
+      stage1Sec: serializer.fromJson<int>(json['stage1Sec']),
+      stage2Sec: serializer.fromJson<int>(json['stage2Sec']),
+      stage3Sec: serializer.fromJson<int>(json['stage3Sec']),
+      stage4Sec: serializer.fromJson<int>(json['stage4Sec']),
+      stage5Sec: serializer.fromJson<int>(json['stage5Sec']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'bootId': serializer.toJson<int>(bootId),
+      'slot': serializer.toJson<int>(slot),
+      'windowStartMs': serializer.toJson<int>(windowStartMs),
+      'pmMin': serializer.toJson<int>(pmMin),
+      'pmMean': serializer.toJson<int>(pmMean),
+      'pmMax': serializer.toJson<int>(pmMax),
+      'stage1Sec': serializer.toJson<int>(stage1Sec),
+      'stage2Sec': serializer.toJson<int>(stage2Sec),
+      'stage3Sec': serializer.toJson<int>(stage3Sec),
+      'stage4Sec': serializer.toJson<int>(stage4Sec),
+      'stage5Sec': serializer.toJson<int>(stage5Sec),
+    };
+  }
+
+  DeviceWindow copyWith({
+    int? bootId,
+    int? slot,
+    int? windowStartMs,
+    int? pmMin,
+    int? pmMean,
+    int? pmMax,
+    int? stage1Sec,
+    int? stage2Sec,
+    int? stage3Sec,
+    int? stage4Sec,
+    int? stage5Sec,
+  }) => DeviceWindow(
+    bootId: bootId ?? this.bootId,
+    slot: slot ?? this.slot,
+    windowStartMs: windowStartMs ?? this.windowStartMs,
+    pmMin: pmMin ?? this.pmMin,
+    pmMean: pmMean ?? this.pmMean,
+    pmMax: pmMax ?? this.pmMax,
+    stage1Sec: stage1Sec ?? this.stage1Sec,
+    stage2Sec: stage2Sec ?? this.stage2Sec,
+    stage3Sec: stage3Sec ?? this.stage3Sec,
+    stage4Sec: stage4Sec ?? this.stage4Sec,
+    stage5Sec: stage5Sec ?? this.stage5Sec,
+  );
+  DeviceWindow copyWithCompanion(DeviceWindowsCompanion data) {
+    return DeviceWindow(
+      bootId: data.bootId.present ? data.bootId.value : this.bootId,
+      slot: data.slot.present ? data.slot.value : this.slot,
+      windowStartMs: data.windowStartMs.present
+          ? data.windowStartMs.value
+          : this.windowStartMs,
+      pmMin: data.pmMin.present ? data.pmMin.value : this.pmMin,
+      pmMean: data.pmMean.present ? data.pmMean.value : this.pmMean,
+      pmMax: data.pmMax.present ? data.pmMax.value : this.pmMax,
+      stage1Sec: data.stage1Sec.present ? data.stage1Sec.value : this.stage1Sec,
+      stage2Sec: data.stage2Sec.present ? data.stage2Sec.value : this.stage2Sec,
+      stage3Sec: data.stage3Sec.present ? data.stage3Sec.value : this.stage3Sec,
+      stage4Sec: data.stage4Sec.present ? data.stage4Sec.value : this.stage4Sec,
+      stage5Sec: data.stage5Sec.present ? data.stage5Sec.value : this.stage5Sec,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DeviceWindow(')
+          ..write('bootId: $bootId, ')
+          ..write('slot: $slot, ')
+          ..write('windowStartMs: $windowStartMs, ')
+          ..write('pmMin: $pmMin, ')
+          ..write('pmMean: $pmMean, ')
+          ..write('pmMax: $pmMax, ')
+          ..write('stage1Sec: $stage1Sec, ')
+          ..write('stage2Sec: $stage2Sec, ')
+          ..write('stage3Sec: $stage3Sec, ')
+          ..write('stage4Sec: $stage4Sec, ')
+          ..write('stage5Sec: $stage5Sec')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    bootId,
+    slot,
+    windowStartMs,
+    pmMin,
+    pmMean,
+    pmMax,
+    stage1Sec,
+    stage2Sec,
+    stage3Sec,
+    stage4Sec,
+    stage5Sec,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DeviceWindow &&
+          other.bootId == this.bootId &&
+          other.slot == this.slot &&
+          other.windowStartMs == this.windowStartMs &&
+          other.pmMin == this.pmMin &&
+          other.pmMean == this.pmMean &&
+          other.pmMax == this.pmMax &&
+          other.stage1Sec == this.stage1Sec &&
+          other.stage2Sec == this.stage2Sec &&
+          other.stage3Sec == this.stage3Sec &&
+          other.stage4Sec == this.stage4Sec &&
+          other.stage5Sec == this.stage5Sec);
+}
+
+class DeviceWindowsCompanion extends UpdateCompanion<DeviceWindow> {
+  final Value<int> bootId;
+  final Value<int> slot;
+  final Value<int> windowStartMs;
+  final Value<int> pmMin;
+  final Value<int> pmMean;
+  final Value<int> pmMax;
+  final Value<int> stage1Sec;
+  final Value<int> stage2Sec;
+  final Value<int> stage3Sec;
+  final Value<int> stage4Sec;
+  final Value<int> stage5Sec;
+  final Value<int> rowid;
+  const DeviceWindowsCompanion({
+    this.bootId = const Value.absent(),
+    this.slot = const Value.absent(),
+    this.windowStartMs = const Value.absent(),
+    this.pmMin = const Value.absent(),
+    this.pmMean = const Value.absent(),
+    this.pmMax = const Value.absent(),
+    this.stage1Sec = const Value.absent(),
+    this.stage2Sec = const Value.absent(),
+    this.stage3Sec = const Value.absent(),
+    this.stage4Sec = const Value.absent(),
+    this.stage5Sec = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DeviceWindowsCompanion.insert({
+    required int bootId,
+    required int slot,
+    required int windowStartMs,
+    required int pmMin,
+    required int pmMean,
+    required int pmMax,
+    required int stage1Sec,
+    required int stage2Sec,
+    required int stage3Sec,
+    required int stage4Sec,
+    required int stage5Sec,
+    this.rowid = const Value.absent(),
+  }) : bootId = Value(bootId),
+       slot = Value(slot),
+       windowStartMs = Value(windowStartMs),
+       pmMin = Value(pmMin),
+       pmMean = Value(pmMean),
+       pmMax = Value(pmMax),
+       stage1Sec = Value(stage1Sec),
+       stage2Sec = Value(stage2Sec),
+       stage3Sec = Value(stage3Sec),
+       stage4Sec = Value(stage4Sec),
+       stage5Sec = Value(stage5Sec);
+  static Insertable<DeviceWindow> custom({
+    Expression<int>? bootId,
+    Expression<int>? slot,
+    Expression<int>? windowStartMs,
+    Expression<int>? pmMin,
+    Expression<int>? pmMean,
+    Expression<int>? pmMax,
+    Expression<int>? stage1Sec,
+    Expression<int>? stage2Sec,
+    Expression<int>? stage3Sec,
+    Expression<int>? stage4Sec,
+    Expression<int>? stage5Sec,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (bootId != null) 'boot_id': bootId,
+      if (slot != null) 'slot': slot,
+      if (windowStartMs != null) 'window_start_ms': windowStartMs,
+      if (pmMin != null) 'pm_min': pmMin,
+      if (pmMean != null) 'pm_mean': pmMean,
+      if (pmMax != null) 'pm_max': pmMax,
+      if (stage1Sec != null) 'stage1_sec': stage1Sec,
+      if (stage2Sec != null) 'stage2_sec': stage2Sec,
+      if (stage3Sec != null) 'stage3_sec': stage3Sec,
+      if (stage4Sec != null) 'stage4_sec': stage4Sec,
+      if (stage5Sec != null) 'stage5_sec': stage5Sec,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DeviceWindowsCompanion copyWith({
+    Value<int>? bootId,
+    Value<int>? slot,
+    Value<int>? windowStartMs,
+    Value<int>? pmMin,
+    Value<int>? pmMean,
+    Value<int>? pmMax,
+    Value<int>? stage1Sec,
+    Value<int>? stage2Sec,
+    Value<int>? stage3Sec,
+    Value<int>? stage4Sec,
+    Value<int>? stage5Sec,
+    Value<int>? rowid,
+  }) {
+    return DeviceWindowsCompanion(
+      bootId: bootId ?? this.bootId,
+      slot: slot ?? this.slot,
+      windowStartMs: windowStartMs ?? this.windowStartMs,
+      pmMin: pmMin ?? this.pmMin,
+      pmMean: pmMean ?? this.pmMean,
+      pmMax: pmMax ?? this.pmMax,
+      stage1Sec: stage1Sec ?? this.stage1Sec,
+      stage2Sec: stage2Sec ?? this.stage2Sec,
+      stage3Sec: stage3Sec ?? this.stage3Sec,
+      stage4Sec: stage4Sec ?? this.stage4Sec,
+      stage5Sec: stage5Sec ?? this.stage5Sec,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (bootId.present) {
+      map['boot_id'] = Variable<int>(bootId.value);
+    }
+    if (slot.present) {
+      map['slot'] = Variable<int>(slot.value);
+    }
+    if (windowStartMs.present) {
+      map['window_start_ms'] = Variable<int>(windowStartMs.value);
+    }
+    if (pmMin.present) {
+      map['pm_min'] = Variable<int>(pmMin.value);
+    }
+    if (pmMean.present) {
+      map['pm_mean'] = Variable<int>(pmMean.value);
+    }
+    if (pmMax.present) {
+      map['pm_max'] = Variable<int>(pmMax.value);
+    }
+    if (stage1Sec.present) {
+      map['stage1_sec'] = Variable<int>(stage1Sec.value);
+    }
+    if (stage2Sec.present) {
+      map['stage2_sec'] = Variable<int>(stage2Sec.value);
+    }
+    if (stage3Sec.present) {
+      map['stage3_sec'] = Variable<int>(stage3Sec.value);
+    }
+    if (stage4Sec.present) {
+      map['stage4_sec'] = Variable<int>(stage4Sec.value);
+    }
+    if (stage5Sec.present) {
+      map['stage5_sec'] = Variable<int>(stage5Sec.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DeviceWindowsCompanion(')
+          ..write('bootId: $bootId, ')
+          ..write('slot: $slot, ')
+          ..write('windowStartMs: $windowStartMs, ')
+          ..write('pmMin: $pmMin, ')
+          ..write('pmMean: $pmMean, ')
+          ..write('pmMax: $pmMax, ')
+          ..write('stage1Sec: $stage1Sec, ')
+          ..write('stage2Sec: $stage2Sec, ')
+          ..write('stage3Sec: $stage3Sec, ')
+          ..write('stage4Sec: $stage4Sec, ')
+          ..write('stage5Sec: $stage5Sec, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3113,6 +3769,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HourAggregatesTable hourAggregates = $HourAggregatesTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   late final $FilterEventsTable filterEvents = $FilterEventsTable(this);
+  late final $DeviceWindowsTable deviceWindows = $DeviceWindowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3123,6 +3780,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     hourAggregates,
     appSettings,
     filterEvents,
+    deviceWindows,
   ];
 }
 
@@ -4692,6 +5350,331 @@ typedef $$FilterEventsTableProcessedTableManager =
       FilterEvent,
       PrefetchHooks Function()
     >;
+typedef $$DeviceWindowsTableCreateCompanionBuilder =
+    DeviceWindowsCompanion Function({
+      required int bootId,
+      required int slot,
+      required int windowStartMs,
+      required int pmMin,
+      required int pmMean,
+      required int pmMax,
+      required int stage1Sec,
+      required int stage2Sec,
+      required int stage3Sec,
+      required int stage4Sec,
+      required int stage5Sec,
+      Value<int> rowid,
+    });
+typedef $$DeviceWindowsTableUpdateCompanionBuilder =
+    DeviceWindowsCompanion Function({
+      Value<int> bootId,
+      Value<int> slot,
+      Value<int> windowStartMs,
+      Value<int> pmMin,
+      Value<int> pmMean,
+      Value<int> pmMax,
+      Value<int> stage1Sec,
+      Value<int> stage2Sec,
+      Value<int> stage3Sec,
+      Value<int> stage4Sec,
+      Value<int> stage5Sec,
+      Value<int> rowid,
+    });
+
+class $$DeviceWindowsTableFilterComposer
+    extends Composer<_$AppDatabase, $DeviceWindowsTable> {
+  $$DeviceWindowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get bootId => $composableBuilder(
+    column: $table.bootId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get windowStartMs => $composableBuilder(
+    column: $table.windowStartMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pmMin => $composableBuilder(
+    column: $table.pmMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pmMean => $composableBuilder(
+    column: $table.pmMean,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pmMax => $composableBuilder(
+    column: $table.pmMax,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stage1Sec => $composableBuilder(
+    column: $table.stage1Sec,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stage2Sec => $composableBuilder(
+    column: $table.stage2Sec,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stage3Sec => $composableBuilder(
+    column: $table.stage3Sec,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stage4Sec => $composableBuilder(
+    column: $table.stage4Sec,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stage5Sec => $composableBuilder(
+    column: $table.stage5Sec,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DeviceWindowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $DeviceWindowsTable> {
+  $$DeviceWindowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get bootId => $composableBuilder(
+    column: $table.bootId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get slot => $composableBuilder(
+    column: $table.slot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get windowStartMs => $composableBuilder(
+    column: $table.windowStartMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pmMin => $composableBuilder(
+    column: $table.pmMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pmMean => $composableBuilder(
+    column: $table.pmMean,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pmMax => $composableBuilder(
+    column: $table.pmMax,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stage1Sec => $composableBuilder(
+    column: $table.stage1Sec,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stage2Sec => $composableBuilder(
+    column: $table.stage2Sec,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stage3Sec => $composableBuilder(
+    column: $table.stage3Sec,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stage4Sec => $composableBuilder(
+    column: $table.stage4Sec,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stage5Sec => $composableBuilder(
+    column: $table.stage5Sec,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DeviceWindowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DeviceWindowsTable> {
+  $$DeviceWindowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get bootId =>
+      $composableBuilder(column: $table.bootId, builder: (column) => column);
+
+  GeneratedColumn<int> get slot =>
+      $composableBuilder(column: $table.slot, builder: (column) => column);
+
+  GeneratedColumn<int> get windowStartMs => $composableBuilder(
+    column: $table.windowStartMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pmMin =>
+      $composableBuilder(column: $table.pmMin, builder: (column) => column);
+
+  GeneratedColumn<int> get pmMean =>
+      $composableBuilder(column: $table.pmMean, builder: (column) => column);
+
+  GeneratedColumn<int> get pmMax =>
+      $composableBuilder(column: $table.pmMax, builder: (column) => column);
+
+  GeneratedColumn<int> get stage1Sec =>
+      $composableBuilder(column: $table.stage1Sec, builder: (column) => column);
+
+  GeneratedColumn<int> get stage2Sec =>
+      $composableBuilder(column: $table.stage2Sec, builder: (column) => column);
+
+  GeneratedColumn<int> get stage3Sec =>
+      $composableBuilder(column: $table.stage3Sec, builder: (column) => column);
+
+  GeneratedColumn<int> get stage4Sec =>
+      $composableBuilder(column: $table.stage4Sec, builder: (column) => column);
+
+  GeneratedColumn<int> get stage5Sec =>
+      $composableBuilder(column: $table.stage5Sec, builder: (column) => column);
+}
+
+class $$DeviceWindowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DeviceWindowsTable,
+          DeviceWindow,
+          $$DeviceWindowsTableFilterComposer,
+          $$DeviceWindowsTableOrderingComposer,
+          $$DeviceWindowsTableAnnotationComposer,
+          $$DeviceWindowsTableCreateCompanionBuilder,
+          $$DeviceWindowsTableUpdateCompanionBuilder,
+          (
+            DeviceWindow,
+            BaseReferences<_$AppDatabase, $DeviceWindowsTable, DeviceWindow>,
+          ),
+          DeviceWindow,
+          PrefetchHooks Function()
+        > {
+  $$DeviceWindowsTableTableManager(_$AppDatabase db, $DeviceWindowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DeviceWindowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DeviceWindowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DeviceWindowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> bootId = const Value.absent(),
+                Value<int> slot = const Value.absent(),
+                Value<int> windowStartMs = const Value.absent(),
+                Value<int> pmMin = const Value.absent(),
+                Value<int> pmMean = const Value.absent(),
+                Value<int> pmMax = const Value.absent(),
+                Value<int> stage1Sec = const Value.absent(),
+                Value<int> stage2Sec = const Value.absent(),
+                Value<int> stage3Sec = const Value.absent(),
+                Value<int> stage4Sec = const Value.absent(),
+                Value<int> stage5Sec = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DeviceWindowsCompanion(
+                bootId: bootId,
+                slot: slot,
+                windowStartMs: windowStartMs,
+                pmMin: pmMin,
+                pmMean: pmMean,
+                pmMax: pmMax,
+                stage1Sec: stage1Sec,
+                stage2Sec: stage2Sec,
+                stage3Sec: stage3Sec,
+                stage4Sec: stage4Sec,
+                stage5Sec: stage5Sec,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int bootId,
+                required int slot,
+                required int windowStartMs,
+                required int pmMin,
+                required int pmMean,
+                required int pmMax,
+                required int stage1Sec,
+                required int stage2Sec,
+                required int stage3Sec,
+                required int stage4Sec,
+                required int stage5Sec,
+                Value<int> rowid = const Value.absent(),
+              }) => DeviceWindowsCompanion.insert(
+                bootId: bootId,
+                slot: slot,
+                windowStartMs: windowStartMs,
+                pmMin: pmMin,
+                pmMean: pmMean,
+                pmMax: pmMax,
+                stage1Sec: stage1Sec,
+                stage2Sec: stage2Sec,
+                stage3Sec: stage3Sec,
+                stage4Sec: stage4Sec,
+                stage5Sec: stage5Sec,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$DeviceWindowsTable, DeviceWindow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DeviceWindowsTable,
+                    DeviceWindow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DeviceWindowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DeviceWindowsTable,
+      DeviceWindow,
+      $$DeviceWindowsTableFilterComposer,
+      $$DeviceWindowsTableOrderingComposer,
+      $$DeviceWindowsTableAnnotationComposer,
+      $$DeviceWindowsTableCreateCompanionBuilder,
+      $$DeviceWindowsTableUpdateCompanionBuilder,
+      (
+        DeviceWindow,
+        BaseReferences<_$AppDatabase, $DeviceWindowsTable, DeviceWindow>,
+      ),
+      DeviceWindow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4706,4 +5689,6 @@ class $AppDatabaseManager {
       $$AppSettingsTableTableManager(_db, _db.appSettings);
   $$FilterEventsTableTableManager get filterEvents =>
       $$FilterEventsTableTableManager(_db, _db.filterEvents);
+  $$DeviceWindowsTableTableManager get deviceWindows =>
+      $$DeviceWindowsTableTableManager(_db, _db.deviceWindows);
 }

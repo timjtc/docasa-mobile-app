@@ -120,10 +120,54 @@ abstract final class DocasaCodec {
 
   static FilterCounters decodeFilterCounters(String payload) {
     final m = _parse(payload);
+    // v1.1 (§4.4 "st"): optional, additive in v1. Absent/invalid → empty list
+    // (X7/X8): the app falls back to load-based health (D-027).
+    var st = const <int>[];
+    if (m['st'] is List) {
+      final l = m['st'] as List;
+      if (l.every((e) => e is num)) {
+        st = [for (final e in l) e.round()];
+      }
+    }
     return FilterCounters(
       fanSeconds: _reqU64(m, 'fs', payload),
       pmWeightedFanSeconds: _reqU64(m, 'pwfs', payload),
       powerOnHours: _reqU64(m, 'on', payload),
+      stageSeconds: st,
+    );
+  }
+
+  /// Contract v1.1 §10.1 — decode one 16-byte offline record: pmMin/pmMean/
+  /// pmMax u16 LE + 5 × u16 LE stage seconds. Little-endian, sensor-domain
+  /// validity (≤999 µg/m³; stage seconds ≤ 600) — invalid bytes (torn
+  /// power-loss write) throw [MalformedPayloadException] so the transport
+  /// stops the drain at the first invalid record (§10.3).
+  static OfflineWindowSample decodeOfflineRecord(
+    List<int> bytes,
+    int offset,
+  ) {
+    int u16(int i) => bytes[offset + i] | (bytes[offset + i + 1] << 8);
+    if (offset + 16 > bytes.length) {
+      throw MalformedPayloadException('offline record truncated');
+    }
+    final pmMin = u16(0), pmMean = u16(2), pmMax = u16(4);
+    final st = [for (var s = 0; s < 5; s++) u16(6 + 2 * s)];
+    const maxPm = 999, maxStageSec = 600;
+    if (pmMin > maxPm ||
+        pmMean > maxPm ||
+        pmMax > maxPm ||
+        st.any((s) => s > maxStageSec)) {
+      final hex = StringBuffer();
+      for (final b in bytes.sublist(offset, offset + 16)) {
+        hex.write(b.toRadixString(16).padLeft(2, '0'));
+      }
+      throw MalformedPayloadException('offline record fails §10.1 domain: $hex');
+    }
+    return OfflineWindowSample(
+      pmMin: pmMin,
+      pmMean: pmMean,
+      pmMax: pmMax,
+      stageSeconds: st,
     );
   }
 
@@ -163,6 +207,7 @@ abstract final class DocasaCodec {
         'fs': c.fanSeconds,
         'pwfs': c.pmWeightedFanSeconds,
         'on': c.powerOnHours,
+        if (c.stageSeconds.isNotEmpty) 'st': c.stageSeconds,
       });
 
   // Commands (Contract §5). Time sync is re-sent on every connect.

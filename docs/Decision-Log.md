@@ -360,6 +360,19 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   v3 baseline.
   Notes: contract §9 keeps only security-pairing (D-010) + later reserves.
 
+- **D-029 — Advertised name restored to ADV payload (Contract §1 conformance)** ·
+  resolved · 2026-11-05 · firmware
+  Context: user report via nRF Connect + the app picker — the peripheral carries the service
+  UUID but NO name ("N/A"). Root: NimBLE-Arduino 2.x does not include the GAP name in the
+  advertising payload by default; the v4.1.0 BLE setup never set it explicitly, so §1's
+  "Flags + complete local name" was silently unfulfilled across v4.1.x.
+  Decision: additive line in `docasaBleBegin()` — `adv->setName(DOCASA_BLE_NAME);` before
+  `start()` (fits the 31-byte ADV: flags 3 + name 19 + UUID in scan response per §1). Gates:
+  compile 736,943 B (56%) / 44,828 B RAM (13%) / 0 warnings; diff gate PASS. Reflashed reusing
+  the custom-partition upload path (NVS + ring data persisted). Verified over the air: the
+  picker row now renders `DOCASA-AirPurifier` with the §D-002 subtitle.
+  Notes: pickers that filter by NAME now also match (the app's §1 rule ORs name and UUID).
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

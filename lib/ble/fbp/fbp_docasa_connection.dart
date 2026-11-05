@@ -40,6 +40,11 @@ class FbpDocasaConnection implements DocasaConnection {
   @override
   Stream<DocasaTelemetry> get telemetry => _telemetryCtrl.stream;
 
+  /// The device currently targeted by connectTo (null until the user picks).
+  /// Used by the offline-sync orchestration (D-028); the interface is
+  /// unchanged.
+  BluetoothDevice? get pickedDevice => _picked;
+
   void _emit(DocasaConnectionState s) {
     debugPrint('FBP: state → $s');
     _statesCtrl.add(s);

@@ -24,6 +24,11 @@ abstract final class DocasaContract {
   static const String batteryServiceUuid = '180F';
   static const String batteryLevelUuid = '2A19';
 
+  // v1.1 (D-028): Offline History characteristic + ring record geometry (§10).
+  static const String offlineUuid = 'd0ca5a79-bb2b-478b-abed-9ac1441cd635';
+  static const int offlineRecordBytes = 16;
+  static const int offlineWindowMs = 600000;
+
   /// Payload `"v"` field consumed/produced by the codec.
   static const int payloadVersion = 1;
 }

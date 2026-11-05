@@ -10,6 +10,7 @@ import 'data/db/database.dart';
 import 'data/filter_health.dart';
 import 'data/history_repository.dart';
 import 'data/notifications.dart';
+import 'data/offline_sync.dart';
 import 'data/recording_service.dart';
 import 'data/settings_repository.dart';
 import 'protocol/models.dart';
@@ -192,16 +193,52 @@ final historyProvider = FutureProvider.autoDispose
       .load(ref.watch(dbProvider), arg.$1, arg.$2);
 });
 
-/// Merged filter-health view (counters + budgets + recent rate estimate).
+final offlineSyncProvider = Provider<OfflineSyncService>((ref) {
+  final svc = OfflineSyncService(
+    ref.watch(dbProvider),
+    ref.watch(settingsRepoProvider),
+  );
+  ref.onDispose(() {});
+  return svc;
+});
+
+/// Kicks one offline-history drain per "connected" transition (real BLE only;
+/// degrades silently on fake/emulator streams where there is no FBP device).
+class _OfflineSyncTrigger {
+  int _lastRunState = 0;
+
+  void onState(DocasaConnectionState s, OfflineSyncService svc,
+      DocasaConnection conn) {
+    if (s != DocasaConnectionState.connected) {
+      _lastRunState = 0;
+      return;
+    }
+    if (_lastRunState == 1) return;
+    _lastRunState = 1;
+    // fire-and-forget; the service absorbs errors (§10.3 graceful degradation)
+    if (conn is FbpDocasaConnection) {
+      svc.syncNow(conn);
+    }
+  }
+}
+
+final offlineSyncTriggerProvider = Provider((ref) => _OfflineSyncTrigger());
+
+/// Merged filter-health view (counters + budgets + recent rate estimate),
+/// per the selected basis and sensitivity (D-027).
 final filterHealthProvider = FutureProvider<FilterHealth?>((ref) async {
   final counters = ref.watch(filterCountersProvider).value;
   if (counters == null) return null;
   final settings = ref.watch(settingsProvider);
   final rate = await estimateLoadRatePerDay(ref.watch(dbProvider));
+  final dirtyRate = await estimateDirtyRatePerDay(ref.watch(dbProvider));
   return computeFilterHealth(
     counters: counters,
     budgets: settings.budgets,
     now: DateTime.now(),
+    basis: settings.basis,
+    sensitivity: settings.sensitivity,
     loadRatePerDay: rate,
+    dirtyRatePerDaySec: dirtyRate,
   );
 });

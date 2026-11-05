@@ -201,3 +201,49 @@ whether new drivers are needed. Evidence collected on THIS host (purifier plugge
    device on this host (esptool completed a full handshake on COM15). The one quirk: the CLI
    *monitor* subcommand mis-resolves the user-home in some shells (C:\Windows temp error) —
    harmless for flashing; serial observation at the bench can use any terminal at 115200.
+
+## Task 6 (2026-11-05): app side of the D-027/D-028 batch — analyzer/71-test green, verified over the air
+
+Code (analyzer 0 issues, **71/71 tests**, +17 new):
+
+- **Protocol**: `FilterCounters.stageSeconds` (§4.4 "st", empty on pre-v1.1/X7-X8);
+  `OfflineWindowSample`; `DocasaCodec.decodeOfflineRecord` (16 B LE, §10.1 domain validity →
+  torn writes throw → drain stops there); encode includes st when present; contract constants
+  (`offlineUuid`, record bytes, window length).
+- **Offline sync**: transport `lib/ble/fbp/fbp_offline_sync.dart` (arm → status JSON →
+  drain-until-empty-or-bound; termination on `first`+`count`/empty/first-invalid) + service
+  `lib/data/offline_sync.dart` (per-connect trigger off the connection state; water-mark KV
+  `sync.<bootId>` = `slot|anchorMs`; anchor = phoneNow − endSlot·600 s, re-anchored every
+  connect; ingest into `device_windows` idempotently; graceful degradation to the pre-v1.1
+  view on any error; D-020-style debugPrint trail).
+- **Schema v2**: `device_windows` (PK `(bootId,slot)`, phone-clock `windowStartMs`) + migration
+  (`onUpgrade` v1→v2 creates it); compactor prunes it at the 90-day hour tier.
+- **History merge**: `HistoryRepository.load` unions offline windows into PM2.5 bucket gaps —
+  app-recorded minutes always win; window PM mean + proportional stage split spread by overlap
+  seconds into day/week/month buckets and the donut; device-unmeasured metrics (temp/hum/voc/
+  fan/batt) stay honest gaps.
+- **Filter health**: `FilterBasis.dirtyAir` (installed default; `st[2..4]` vs the 1000 h
+  placeholder budget) with `FilterSensitivity` (Relaxed 1.5×/Normal 1.0×/Sensitive 0.5×)
+  applied to both bases; D-018 budget text fields REMOVED from the Filter page (numbers stay
+  code-side) — the page now toggles basis + sensitivity (persisted `filter.basis` /
+  `filter.sensitivity`); dirty-rate projection via `estimateDirtyRatePerDay`; the counters
+  card shows the dirty-hours row + the stage share row straight from the device.
+- Tests: offline decode (F8/F5/X7/X8 + §10.1 torn-write rejection), dual-mode health +
+  multiplier math + X7 fallback, merge/ingest/watermark round-trips + compactor prune,
+  widget-level basis toggle.
+
+Over-the-air verification (A34, rebuilt + reinstalled BLE-test artifact):
+- v4.2.0 + new artifact: picker → CONNECTED (live PM2.5), `handshake … fw=4.2.0`;
+  Filter page shows the dirty-air rows from live counters (`1369s · 1034s …`, dirty 0.0 h,
+  projected replacement via the dirty rate); History Day view shows the ring-imputed span
+  bridging 16:00→connect with only the open window as the trailing gap; FBP trail:
+  `FBP: offline sync — boot=5 +1 windows (watermark 1)` — exactly the device's single closed
+  window, water-mark persisted.
+
+## Task 7 (2026-11-05, same session): advertised-name fix (D-029) — Contract §1 conformance
+
+User report: no name in ADV (picker row title blank; nRF Connect shows N/A). Root: NimBLE 2.x
+advertises NO name by default (a v4.1.0-era regression vs §1's "Flags + complete local name" —
+it predates the reflash). Fix: additive `adv->setName(DOCASA_BLE_NAME)` before `adv->start()`.
+Gates: compile 736,943 B (56%) / 44,828 B RAM (13%) / 0 warnings; diff gate PASS. Reflashed
+live (NVS + ring persisted through the cycle); the picker now renders `DOCASA-AirPurifier`.

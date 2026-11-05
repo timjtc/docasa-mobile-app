@@ -87,6 +87,7 @@ class FilterCounters {
     required this.fanSeconds,
     required this.pmWeightedFanSeconds,
     required this.powerOnHours,
+    this.stageSeconds = const [],
   });
 
   /// RPM·s — Σ commanded-RPM × dt (uint64 on device).
@@ -98,9 +99,44 @@ class FilterCounters {
   /// Whole hours powered — device lifecycle, never reset by `resetFilter`.
   final int powerOnHours;
 
+  /// v1.1 (§4.4 `"st"`) — per-stage seconds since the last `resetFilter`
+  /// (index 0 = stage 1 GOOD … index 4 = stage 5 HAZARD). Empty on
+  /// pre-4.2.0 firmware (D-027 fallback rule) or when the key is absent.
+  final List<int> stageSeconds;
+
+  /// Dirty-air exposure of the desired basis: Σ `st[2..4]` seconds
+  /// (POOR/BAD/HAZARD — D-027). 0 when the key is unavailable.
+  int get dirtyAirSeconds {
+    if (stageSeconds.length < 5) return 0;
+    return stageSeconds[2] + stageSeconds[3] + stageSeconds[4];
+  }
+
   @override
   String toString() =>
-      'FilterCounters(fs:$fanSeconds pwfs:$pmWeightedFanSeconds on:$powerOnHours h)';
+      'FilterCounters(fs:$fanSeconds pwfs:$pmWeightedFanSeconds on:$powerOnHours h st:$stageSeconds)';
+}
+
+/// Contract v1.1 §10.1 — one decoded offline envelope window (10 minutes).
+class OfflineWindowSample {
+  const OfflineWindowSample({
+    required this.pmMin,
+    required this.pmMean,
+    required this.pmMax,
+    required this.stageSeconds,
+  });
+
+  /// µg/m³, sensor-domain (≤999 — torn/power-cut writes read 65535 and are
+  /// rejected by the codec, §10.1).
+  final int pmMin;
+  final int pmMean;
+  final int pmMax;
+
+  /// Seconds per contract stage inside the 10-min window (index 0 = GOOD …).
+  final List<int> stageSeconds;
+
+  @override
+  String toString() =>
+      'OfflineWindow(pm $pmMin/$pmMean/$pmMax st:$stageSeconds)';
 }
 
 /// Device Information Service values (Contract §3).

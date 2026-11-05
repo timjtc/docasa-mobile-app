@@ -36,6 +36,11 @@ class HistoryCompactor {
     await db.customUpdate(
         'DELETE FROM hour_aggregates WHERE hour_start_ms < ?',
         variables: [Variable.withInt(now - hourRetentionMs)]);
+    // 4) v1.1 (D-028): device offline windows live at the hour tier's
+    //    retention (90 d — same "at least two months" requirement).
+    await db.customUpdate(
+        'DELETE FROM device_windows WHERE window_start_ms < ?',
+        variables: [Variable.withInt(now - hourRetentionMs)]);
   }
 
   static const String _avgCols =

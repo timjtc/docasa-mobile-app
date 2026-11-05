@@ -4,10 +4,11 @@ import 'package:intl/intl.dart';
 
 import '../../core/format.dart';
 import '../../data/filter_health.dart';
+import '../../data/settings_repository.dart';
 import '../../providers.dart';
 
-/// Filter health — % of life left, projection, raw counters, budget config.
-/// Reset flow is UI-gated until Phase 5 (security ruling D-010).
+/// Filter health — % of life left, projection, raw counters, sensitivity.
+/// Basis toggle = dirty-air hours (default) vs load integral (D-027).
 class FilterPage extends ConsumerStatefulWidget {
   const FilterPage({super.key});
 
@@ -16,30 +17,12 @@ class FilterPage extends ConsumerStatefulWidget {
 }
 
 class _FilterPageState extends ConsumerState<FilterPage> {
-  late final TextEditingController _hourCtrl;
-  late final TextEditingController _loadCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-    final b = ref.read(settingsProvider).budgets;
-    _hourCtrl = TextEditingController(text: b.hourBudgetRpmS.toString());
-    _loadCtrl = TextEditingController(
-        text: b.loadBudgetRpmUgS.toString());
-  }
-
-  @override
-  void dispose() {
-    _hourCtrl.dispose();
-    _loadCtrl.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final counters =
         ref.watch(filterCountersProvider).value;
     final health = ref.watch(filterHealthProvider).value;
+    final settings = ref.watch(settingsProvider);
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -60,7 +43,7 @@ class _FilterPageState extends ConsumerState<FilterPage> {
             _countersCard(counters),
           ],
           const SizedBox(height: 12),
-          _budgetCard(cs),
+          _sensitivityCard(cs, settings),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -94,12 +77,17 @@ class _FilterPageState extends ConsumerState<FilterPage> {
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
-                'How this is estimated: the purifier accumulates fan usage '
-                'weighted by particulate load (PM2.5). This is the same '
-                'load-model used by commercial purifiers — an estimate, not a '
-                'direct measurement. A dusty environment genuinely consumes '
-                'filter life faster. VOC is a qualitative proxy and does not '
-                'affect the estimate.',
+                settings.basis == FilterBasis.dirtyAir
+                    ? 'How this is estimated: hours of time spent in dirty air '
+                        '(POOR/BAD/HAZARD) since the last filter replacement '
+                        'cross the exposure budget — a simple, explainable '
+                        'replacement rule. Adjust it with the sensitivity '
+                        'scale above.'
+                    : 'How this is estimated: the purifier accumulates fan '
+                        'usage weighted by particulate load (PM2.5) — the '
+                        'same load model used by commercial purifiers. An '
+                        'estimate, not a direct measurement. VOC is a '
+                        'qualitative proxy and does not affect it.',
                 style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
               ),
             ),
@@ -139,9 +127,11 @@ class _FilterPageState extends ConsumerState<FilterPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                h.loadBinding
-                    ? 'Consumption driven by air load (PM-weighted)'
-                    : 'Consumption driven by run hours',
+                h.basis == FilterBasis.dirtyAir
+                    ? 'Consumption driven by dirty-air exposure time'
+                    : h.loadBinding
+                        ? 'Consumption driven by air load (PM-weighted)'
+                        : 'Consumption driven by run hours',
                 style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
               ),
             ],
@@ -160,6 +150,9 @@ class _FilterPageState extends ConsumerState<FilterPage> {
 
   Widget _countersCard(dynamic counters) {
     final cs = Theme.of(context).colorScheme;
+    final st = counters.stageSeconds as List<int>? ?? const <int>[];
+    final dirtyH =
+        counters.dirtyAirSeconds / 3600.0;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -173,6 +166,14 @@ class _FilterPageState extends ConsumerState<FilterPage> {
                 'equivalent full-speed hours @ 4000 RPM'),
             _row('PM-weighted load', Fmt.bigInt(counters.pmWeightedFanSeconds),
                 'RPM·µg·s integral'),
+            if (st.length >= 5) ...[
+              _row('Dirty-air time',
+                  '${dirtyH.toStringAsFixed(1)} h',
+                  'POOR/BAD/HAZARD since replacement (basis for health)'),
+              _row('Time share per stage',
+                  st.indexed.map((e) => '${e.$2}s').join(' · '),
+                  'device stages GOOD…HAZARD (§4.4 "st")'),
+            ],
             _row('Powered on', Fmt.powerOnHours(counters.powerOnHours),
                 'device lifecycle — never reset'),
             const Divider(),
@@ -206,46 +207,51 @@ class _FilterPageState extends ConsumerState<FilterPage> {
         ),
       );
 
-  Widget _budgetCard(ColorScheme cs) {
+  Widget _sensitivityCard(ColorScheme cs, FilterSettings settings) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Filter model budgets',
+            Text('Replacement basis',
                 style: TextStyle(
                     fontWeight: FontWeight.w600, color: cs.onSurface)),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
+            SegmentedButton<FilterBasis>(
+              segments: const [
+                ButtonSegment(
+                    value: FilterBasis.dirtyAir,
+                    label: Text('Dirty-air hours')),
+                ButtonSegment(
+                    value: FilterBasis.load, label: Text('Load (µg·h)')),
+              ],
+              selected: {settings.basis},
+              onSelectionChanged: (s) => _updateSetting(
+                  (x) => x.copyWith(basis: s.first)),
+            ),
+            const SizedBox(height: 12),
+            Text('Filter sensitivity',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600, color: cs.onSurface)),
+            const SizedBox(height: 8),
+            SegmentedButton<FilterSensitivity>(
+              segments: [
+                for (final s in FilterSensitivity.values)
+                  ButtonSegment(value: s, label: Text(s.label.split(' (')[0])),
+              ],
+              selected: {settings.sensitivity},
+              onSelectionChanged: (s) =>
+                  _updateSetting((x) => x.copyWith(sensitivity: s.first)),
+            ),
+            const SizedBox(height: 8),
             Text(
-              'Defaults are placeholders (D-011) — ~3000 h @ 2000 RPM with a '
-              '25 µg/m³ average load. Replace with the real filter model\'s '
-              'ratings when known.',
+              'Applies to both bases — a more sensitive setting spends the '
+              'budget faster (scales the budget ×'
+              '${settings.sensitivity.multiplier}); the replacement date '
+              'moves sooner/later accordingly. Placeholder budget numbers '
+              '(D-011) stay code-side.',
               style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _hourCtrl,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                  labelText: 'Hour budget (RPM·s)',
-                  border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _loadCtrl,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                  labelText: 'Load budget (RPM·µg·s)',
-                  border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.tonal(
-                onPressed: _saveBudgets,
-                child: const Text('Save budgets'),
-              ),
             ),
           ],
         ),
@@ -253,26 +259,13 @@ class _FilterPageState extends ConsumerState<FilterPage> {
     );
   }
 
-  Future<void> _saveBudgets() async {
-    final hour = int.tryParse(_hourCtrl.text.trim());
-    final load = int.tryParse(_loadCtrl.text.trim());
-    if (hour == null || load == null || hour <= 0 || load <= 0) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Budgets must be positive integers')),
-        );
-      }
-      return;
-    }
+  Future<void> _updateSetting(
+      FilterSettings Function(FilterSettings) f) async {
     final s = ref.read(settingsProvider);
     await ref
         .read(settingsProvider.notifier)
-        .update(s.copyWith(budgets: FilterBudgets(hourBudgetRpmS: hour, loadBudgetRpmUgS: load)));
+        .update(f(s));
     ref.invalidate(filterHealthProvider);
-    if (mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Budgets saved')));
-    }
   }
 
   static Color _healthColor(double? pct) {

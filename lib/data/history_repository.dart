@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../protocol/contract.dart';
 import 'db/database.dart';
 
 enum HistoryRange {
@@ -87,14 +88,68 @@ class HistoryRepository {
 
     final byBucket = <int, double>{};
     var totalSamples = 0;
+    final coveredBuckets = <int>{};
     final stageCounts = List<int>.filled(5, 0);
 
     for (final r in rows) {
       final bucket = r.read<int>('bucket');
       byBucket[bucket] = r.read<double>('value');
       totalSamples += r.read<int>('sample_count');
+      coveredBuckets.add(bucket);
       for (var s = 1; s <= 5; s++) {
         stageCounts[s - 1] += r.read<int>('stage${s}_count');
+      }
+    }
+
+    // v1.1 (D-028): device-side offline windows merge INTO bucket gaps — a
+    // bucket the app recorded itself keeps its row; absent buckets receive
+    // the window's PM2.5 mean and its proportional stage split, so the day/
+    // week/month lines and the stage donut back-fill (record carries PM2.5
+    // + stage seconds only — device-unmeasured metrics stay gaps).
+    if (metric == HistoryMetric.pm25) {
+      final winds = await db.customSelect(
+        'SELECT window_start_ms, pm_mean, stage1_sec, stage2_sec, stage3_sec,'
+        ' stage4_sec, stage5_sec FROM device_windows'
+        ' WHERE window_start_ms < ? AND window_start_ms + 600000 > ?'
+        ' ORDER BY window_start_ms',
+        variables: [
+          Variable.withInt(windowStart + bucketCount * range.bucketMs),
+          Variable.withInt(windowStart),
+        ],
+      ).get();
+      for (final w in winds) {
+        final wStart = w.read<int>('window_start_ms');
+        final st = [
+          for (var i = 0; i < 5; i++) w.read<int>('stage${i + 1}_sec'),
+        ];
+        final windowTotal = st.fold<int>(0, (a, b) => a + b); // ≈600 s
+        if (windowTotal <= 0) continue;
+        final pmMean = w.read<double>('pm_mean');
+        final lastMs = windowStart + bucketCount * range.bucketMs;
+        var bStart = _floor(
+          wStart > windowStart ? wStart : windowStart,
+          range.bucketMs,
+        );
+        final wEndMs = wStart + DocasaContract.offlineWindowMs;
+        while (bStart < lastMs && bStart < wEndMs) {
+          if (!coveredBuckets.contains(bStart)) {
+            var c0s = (bStart - wStart) ~/ 1000;
+            if (c0s < 0) c0s = 0;
+            var c1s = (bStart + range.bucketMs - wStart + 999) ~/ 1000;
+            if (c1s > windowTotal) c1s = windowTotal;
+            if (c1s > c0s) {
+              byBucket[bStart] = pmMean;
+              coveredBuckets.add(bStart);
+              totalSamples += c1s - c0s;
+              for (var s = 0; s < 5; s++) {
+                stageCounts[s] +=
+                    (st[s] * c1s / windowTotal - st[s] * c0s / windowTotal)
+                        .round();
+              }
+            }
+          }
+          bStart += range.bucketMs;
+        }
       }
     }
 

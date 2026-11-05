@@ -11,7 +11,7 @@ void main() {
 
   test('fresh filter → 100%', () {
     final h = computeFilterHealth(
-        counters: counters(), budgets: budgets, now: now);
+        counters: counters(), budgets: budgets, now: now, basis: FilterBasis.load,);
     expect(h.pct, 100);
     expect(h.loadBinding, isTrue); // both fracs 0 → 0 >= 0 → load binds
   });
@@ -22,6 +22,7 @@ void main() {
         computeFilterHealth(
                 counters: counters(pwfs: pwfs.toInt()),
                 budgets: budgets,
+             basis: FilterBasis.load,
                 now: now)
             .pct
     ];
@@ -36,6 +37,7 @@ void main() {
     final h = computeFilterHealth(
         counters: counters(fs: budgets.hourBudgetRpmS ~/ 2),
         budgets: budgets,
+             basis: FilterBasis.load,
         now: now);
     expect(h.pct, closeTo(50, 0.001));
     expect(h.loadBinding, isFalse);
@@ -46,6 +48,7 @@ void main() {
     final h = computeFilterHealth(
         counters: counters(fs: 1000, pwfs: (budgets.loadBudgetRpmUgS * 0.8).toInt()),
         budgets: budgets,
+             basis: FilterBasis.load,
         now: now);
     expect(h.pct, closeTo(20, 0.001));
     expect(h.loadBinding, isTrue);
@@ -55,17 +58,21 @@ void main() {
     final spent = computeFilterHealth(
         counters: counters(fs: budgets.hourBudgetRpmS, pwfs: budgets.loadBudgetRpmUgS),
         budgets: budgets,
+             basis: FilterBasis.load,
         now: now);
     expect(spent.pct, 0);
     final afterReset = computeFilterHealth(
-        counters: counters(), budgets: budgets, now: now);
+        counters: counters(), budgets: budgets, now: now, basis: FilterBasis.load,);
     expect(afterReset.pct, 100);
   });
 
   test('clamped uint64 extremes do not crash and floor at 0%', () {
     const huge = 9223372036854775807; // codec clamp ceiling (X-test)
     final h = computeFilterHealth(
-        counters: counters(fs: huge, pwfs: huge), budgets: budgets, now: now);
+        counters: counters(fs: huge, pwfs: huge),
+        budgets: budgets,
+        now: now,
+        basis: FilterBasis.load);
     expect(h.pct, 0);
   });
 
@@ -73,6 +80,7 @@ void main() {
     final noRate = computeFilterHealth(
         counters: counters(pwfs: 1e11.toInt()),
         budgets: budgets,
+             basis: FilterBasis.load,
         now: now,
         loadRatePerDay: null);
     expect(noRate.remainingDays, isNull);
@@ -82,6 +90,7 @@ void main() {
     final withRate = computeFilterHealth(
         counters: counters(pwfs: 1e11.toInt()),
         budgets: budgets,
+             basis: FilterBasis.load,
         now: now,
         loadRatePerDay: 1e10);
     expect(withRate.remainingDays, 44);
@@ -92,6 +101,7 @@ void main() {
     final h = computeFilterHealth(
         counters: counters(pwfs: budgets.loadBudgetRpmUgS + 1),
         budgets: budgets,
+             basis: FilterBasis.load,
         now: now,
         loadRatePerDay: 1e10);
     expect(h.pct, 0);

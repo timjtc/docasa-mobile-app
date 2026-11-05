@@ -15,6 +15,7 @@ part 'database.g.dart';
   HourAggregates,
   AppSettings,
   FilterEvents,
+  DeviceWindows, // v1.1 (D-028) — schema v2
 ])
 class AppDatabase extends _$AppDatabase {
   /// Production: file-backed, background isolate.
@@ -24,7 +25,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.test(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          // v2 (D-028): device offline-history windows.
+          if (from < 2) await m.createTable(deviceWindows);
+        },
+      );
 }
 
 LazyDatabase _open() => LazyDatabase(() async {

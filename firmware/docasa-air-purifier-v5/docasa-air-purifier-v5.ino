@@ -1150,6 +1150,7 @@ void docasaBleBegin() {
   docasaTelemetrySvc->start();
 
   NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
+  adv->setName(DOCASA_BLE_NAME);   // v1.1 (D-029): Contract §1 requires the name in ADV
   adv->addServiceUUID(NimBLEUUID(DOCASA_UUID_SERVICE));  // name in ADV, UUID in scan response (Contract §1)
   adv->start();
 }

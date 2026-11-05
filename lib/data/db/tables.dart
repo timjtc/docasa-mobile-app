@@ -90,3 +90,27 @@ class FilterEvents extends Table {
   TextColumn get kind => text()();
   TextColumn get note => text().withDefault(const Constant(''))();
 }
+
+/// Contract v1.1 §10 — device-side offline envelope windows (10-minute
+/// records, 16 B over the air). Keys: (bootId, slot). `windowStartMs` is the
+/// **phone-clock** timestamp of the slot start, anchored per §10.3 (the
+/// phone is the time authority — Plan §7.13). Fills app-recorded gaps at
+/// ingest: PM2.5 envelope + per-stage seconds; device-unmeasured metrics
+/// (temp/humidity/voc/fan/battery) are intentionally absent — the history
+/// pages show gaps there (honest data, D-028).
+class DeviceWindows extends Table {
+  IntColumn get bootId => integer()();
+  IntColumn get slot => integer()();
+  IntColumn get windowStartMs => integer()();
+  IntColumn get pmMin => integer()();
+  IntColumn get pmMean => integer()();
+  IntColumn get pmMax => integer()();
+  IntColumn get stage1Sec => integer()();
+  IntColumn get stage2Sec => integer()();
+  IntColumn get stage3Sec => integer()();
+  IntColumn get stage4Sec => integer()();
+  IntColumn get stage5Sec => integer()();
+
+  @override
+  Set<Column> get primaryKey => {bootId, slot};
+}
