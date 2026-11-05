@@ -92,3 +92,32 @@ Runtime verification on the phone (BLE-test artifact rebuilt + reinstalled; Day/
 - Capture trick (this phone): fast `input tap` never shows the tooltip (it clears on
   touch-up); use `input swipe X Y X Y <long-dur>` as a press-hold and screencap mid-hold.
 - Gates: analyze 0 issues, 54/54 tests.
+
+---
+
+## Task 3 (2026-11-05, same session): filter-math simplification + gapless offline history — plans ratified (D-027/D-028)
+
+Panel-demo requirements from the user → decisions recorded in D-027 (filter-replacement basis)
+and D-028 (offline-history batch + contract v1.1). Contract bumped **v1.0 → v1.1** in this session
+(docs only; code follows the §11 build plan):
+
+- Filter basis: **dirty-air hours** (POOR/BAD/HAZARD seconds since replacement — v1.1 `"st"`
+  array on Filter Counters, `st[2..4]`), toggleable vs load-based (`pwfs`); basis switch is a
+  UI toggle, no data surgery. Sensitivity = **budget multiplier** (Relaxed 1.5× / Normal 1.0× /
+  Sensitive 0.5×) shared by BOTH methods; replaces the editable budget text fields; exposure
+  basis is the installed default; pre-4.2.0 firmware falls back to load-based (no `"st"`).
+- Offline (gapless) history: device-side **10-min envelope window records** (16 B: PM
+  min/mean/max u16 + per-stage seconds 5×u16, ~138 KB per 60 days) in a dedicated 256 KB
+  `docasa_ring` partition (resolves risk 7.19), pulled by the app at connect only via the new
+  Offline History characteristic + `{"cmd":"offlineLog","after":N}` cursor command (§10);
+  phone stays the time authority — `(bootId, slot) → wall-clock` anchoring, re-anchored every
+  connect. No polling, no notifies; synced-up connect costs one status read.
+- Firmware lands in a **NEW sketch** `firmware/docasa-air-purifier-v5/` (byte-identical seed
+  from the frozen `v4/` — user decision recorded in D-028e; v4 stays 4.1.1 forever), with
+  `partitions.csv` in the same dir; the one maintainer reflash session ships BOTH features,
+  and is the moment to run the long-deferred G1/G2 formalities.
+- Batched into one reflash deliberately: the partition change needs a flash anyway; separating
+  the features would cost a second bench session for zero benefit.
+
+Deferred by decision: security/pairing (D-010) → contract §9 (v1.2); real-cartridge budget
+numbers (D-011 placeholders remain; the multiplier makes demo tuning a one-tap affair).

@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "docs/BLE-Protocol-Contract.md": {
-    "mtime": 1793557261.6718144,
-    "seen": 1793860284.5793068,
-    "ast_hash": "c42098c4d675cf8e820be1ed70a3efda",
+    "mtime": 1793866942.2211714,
+    "seen": 1793867136.5750666,
+    "ast_hash": "ed39b033d32b83c9e6efec9dfd31dcf1",
     "semantic_hash": ""
   },
   "docs/Bench-Runbook.md": {
@@ -462,15 +462,15 @@
     "semantic_hash": ""
   },
   "docs/Decision-Log.md": {
-    "mtime": 1793861269.9674704,
-    "seen": 1793861283.1405494,
-    "ast_hash": "935ff3ae2a28fc46963ed1bf9a17fb07",
+    "mtime": 1793867068.2437887,
+    "seen": 1793867136.5750732,
+    "ast_hash": "33ce7ad19dbc2c4cfc933863e1f15094",
     "semantic_hash": ""
   },
   "docs/Development-Process.md": {
-    "mtime": 1793860257.486526,
-    "seen": 1793860284.5793176,
-    "ast_hash": "024e72a99f4a83a93027eca2196ccd39",
+    "mtime": 1793867101.7513487,
+    "seen": 1793867136.5750763,
+    "ast_hash": "f71439b685dc02b8a772f5b36f88a1db",
     "semantic_hash": ""
   },
   "docs/IoT-Integration-Plan.md": {
@@ -846,15 +846,15 @@
     "semantic_hash": "8e0ae58e362a6636bdfccbc04da2c58c"
   },
   "docs/sessions/2026-11-05-ble-connect-triage.md": {
-    "mtime": 1793861183.0201936,
-    "seen": 1793861283.1406012,
-    "ast_hash": "bdfb1f3dd81c6e3999a00d262d8b0bb0",
+    "mtime": 1793867119.574395,
+    "seen": 1793867136.5750997,
+    "ast_hash": "08e1dfe7e0c43ed1983c0ccbffc26cbe",
     "semantic_hash": ""
   },
   "docs/20261105-Prompt-Scratchpad.md": {
-    "mtime": 1793861232.7860546,
-    "seen": 1793861283.140526,
-    "ast_hash": "7dcb901e3429cf60ce69f4f328c7cafc",
+    "mtime": 1793866608.3971746,
+    "seen": 1793867136.5750551,
+    "ast_hash": "be8a7cef3125875266584a1122716dca",
     "semantic_hash": ""
   }
 }

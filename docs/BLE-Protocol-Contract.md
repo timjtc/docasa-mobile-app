@@ -1,8 +1,11 @@
-# DOCASA BLE Protocol Contract — v1.0
+# DOCASA BLE Protocol Contract — v1.1
 
-Status: **FROZEN** (2026-10-30) — single source of truth for the device↔app interface.
-Implemented by firmware Phase 2 (`docasa-air-purifier-v4.ino`) and app Phase 3 (`lib/protocol/`).
-Any change requires a `docs/Decision-Log.md` entry and a version bump.
+Status: **FROZEN** (v1.0: 2026-10-30; v1.1 ratified 2026-11-05 — D-027/D-028). Single source of
+truth for the device↔app interface. Implemented by firmware Phase 2 (`docasa-air-purifier-v4.ino`)
+and app Phase 3 (`lib/protocol/`); v1.1 additions (per-stage seconds, offline-history ring &
+sync) target firmware `4.2.0` + app Phase-5-early build (D-028) — implementation tracked in
+`docs/Development-Process.md` §11. Any change requires a `docs/Decision-Log.md` entry and a
+version bump.
 Source planning: `IoT-Integration-Plan.md` §3 (this contract resolves its placeholder UUIDs and
 open ambiguities — see Decision-Log D-002…D-006).
 
@@ -32,6 +35,7 @@ pre-approved by Plan §7.6) and auto-resumes after any disconnect.
 | — System Status characteristic | `d0ca5a8f-1160-4c49-a9ee-138998d9c402` |
 | — Filter Counters characteristic | `d0ca5a7a-fd2b-4dbf-932a-855cb6d3ddf0` |
 | — Command characteristic | `d0ca5abd-8a7e-4412-9e96-a01d4656f3f7` |
+| — Offline History characteristic (v1.1 — D-028) | `d0ca5a79-bb2b-478b-abed-9ac1441cd635` |
 | Standard services | Device Information `0x180A`, Battery `0x180F` (use built-in UUIDs) |
 | Reserved (unused, do not reassign) | `d0ca5ac6-5e5e-4c2b-98e9-0751bb2f6ce5`, `d0ca5a13-cb67-4cf3-978d-a1962e06e88e` |
 
@@ -48,6 +52,7 @@ pre-approved by Plan §7.6) and auto-resumes after any disconnect.
 | | Environment (JSON, §4.2) | read, notify | 1 Hz tick |
 | | System Status (JSON, §4.3) | read, notify | 1 Hz tick + **on-change** (chg, full) |
 | | Filter Counters (JSON, §4.4) | read | on-read only (app polls; no notify) |
+| | Offline History (ring read, §10; v1.1) | read | on-app-request only (drain-on-connect) |
 | | Command (JSON, §5) | write (with response) | on write |
 
 Rules: **notify, never indicate**; notifies are CCCD-gated (never sent unless subscribed); BLE
@@ -86,17 +91,21 @@ Key order is not guaranteed; the examples below are the canonical golden fixture
 | `full` | 0/1 | — | `isTrulyFull` | |
 | `vb` | float | V | `smoothedVoltage` | 2 decimals |
 
-### 4.4 Filter Counters — `{"v":1,"fs":10800000,"pwfs":74250000,"on":3210}`
+### 4.4 Filter Counters — `{"v":1,"fs":10800000,"pwfs":74250000,"on":3210}` · v1.1 adds `"st"`
 
 | Key | Type | Unit | NVS key (namespace `docasa`) | Meaning |
 |---|---|---|---|---|
 | `fs` | uint64 | RPM·s | `fanSec` | Σ commanded-RPM × dt |
 | `pwfs` | uint64 | RPM·µg·s | `pwfs` | Σ commanded-RPM × PM2.5 × dt (load integral) |
 | `on` | uint32 | h | `onSec` (seconds; hours derived) | Powered time (device lifecycle — **not** reset by `resetFilter`) |
+| `st` | uint32[5] | s | `st1`…`st5` | Σ seconds spent in each air stage (0-based array: index 0 = stage 1 GOOD … index 4 = stage 5 HAZARD), **since last `resetFilter`** (v1.1 — D-027) |
 
 Notes: both integrals are uint64 end-to-end (D-004 — the Plan's u32 `fanSeconds` overflows in
 ~12 days at max speed). Consumers must use 64-bit ints (Dart native: OK; JS/web: not a target —
-7.20). The redundant `rt` key from Plan §3.4 is dropped (D-004).
+7.20). The redundant `rt` key from Plan §3.4 is dropped (D-004). `"st"` is additive (v1.1,
+D-027); older firmware omits it and parsers MUST tolerate its absence — the app then falls
+back to the load-based health computation until firmware ≥ 4.2.0 is flashed. Dirty-air
+exposure (health basis, D-027) = `st[2] + st[3] + st[4]` (POOR/BAD/HAZARD seconds).
 
 ### 4.5 Startup values
 
@@ -107,18 +116,24 @@ The app may render these as-is; there is no explicit "booting" flag in v1.
 
 | Command | Effect | Ack model |
 |---|---|---|
-| `{"cmd":"resetFilter"}` | Zeroes `fanSec` + `pwfs` only (`onSec` preserved). After physical filter replacement. | GATT write ACK; app MUST re-read Filter Counters and confirm zeros |
+| `{"cmd":"resetFilter"}` | Zeroes `fanSec` + `pwfs` + `st` (v1.1) (`onSec` preserved) and **persists immediately** (a cut right after replacement cannot resurrect counters from the 5-min throttle window). After physical filter replacement. | GATT write ACK; app MUST re-read Filter Counters and confirm zeros |
 | `{"cmd":"time","epoch":1769472000}` | Stores volatile epoch (uint32, unix seconds). Re-sent on **every** connect (Plan §5). Device epoch is untrusted across reboots (7.13). | GATT write ACK |
+| `{"cmd":"offlineLog","after":4100}` (v1.1) | Arms the Offline History read cursor (§10): `after` = the last window slot the app consumed **for this bootId**; device drains slots > `after` up to head. Absent `after` → drain from oldest. App-initiated; only on connect. | GATT write ACK |
 
-Error semantics (v1): unknown commands, unknown keys, malformed JSON, missing fields
-(e.g. `time` without `epoch`) → **ignored silently, connection stays up**, logged to Serial.
-No error characteristic in v1. `{"cmd":"fan",...}` does not exist (Plan §1.4 restricted list).
+Error semantics (v1/v1.1): unknown commands, unknown keys, malformed JSON, missing fields
+(e.g. `time` without `epoch`, `offlineLog` with non-integer slot) → **ignored silently,
+connection stays up**, logged to Serial. No error characteristic. `{"cmd":"fan",...}` does not
+exist (Plan §1.4 restricted list).
 
 ## 6. Behavioral semantics
 
 1. **Handshake on connect (app-side, recommended order):** request MTU 247 → read DIS
    (log Firmware Revision) → read Battery + Air Quality + Environment + System Status +
-   Filter Counters (snapshot) → write `time` → subscribe to all notify characteristics.
+   Filter Counters (snapshot) → write `time` → subscribe to all notify characteristics →
+   **offline-history catch-up** (v1.1, §10): `offlineLog` with the app's stored water-mark for
+   the reported `bootId` → drain the Offline History characteristic until exhausted.
+   The drain is app-paced GATT reads; it is the ONLY moment history is pulled — no polling,
+   no periodic notify.
 2. **Cadence:** one 1 Hz scheduler tick inside `loop()` drives accumulation + notifies
    (never timers in BLE callbacks — Plan §3.3).
 3. **On-change extras:** stage transition → immediate Air Quality notify; `chg`/`full`
@@ -148,8 +163,10 @@ Valid — must decode exactly:
 | F3 | System Status | `{"v":1,"fan":3000,"bat":84,"chg":0,"full":0,"vb":15.31}` |
 | F4 | System Status (fan off, stage 1) | `{"v":1,"fan":0,"bat":7,"chg":1,"full":0,"vb":13.62}` |
 | F5 | Filter Counters | `{"v":1,"fs":10800000,"pwfs":74250000,"on":3210}` |
+| F8 | Filter Counters (v1.1) | `{"v":1,"fs":10800000,"pwfs":74250000,"on":3210,"st":[20100,60100,30120,9120,15]}` |
 | F6 | Command | `{"cmd":"resetFilter"}` |
 | F7 | Command | `{"cmd":"time","epoch":1769472000}` |
+| F9 | Command (v1.1) | `{"cmd":"offlineLog","after":4100}` |
 
 Invalid — must be tolerated without error:
 
@@ -161,8 +178,61 @@ Invalid — must be tolerated without error:
 | X4 | app | `{"v":2,"pm1":5,...}` | protocol-mismatch state surfaced to UI |
 | X5 | app | `{"v":1,"pm1":5,"unknown":9}` | decode fine, ignore unknown key |
 | X6 | app | `{"v":1,"pm1":-1,"pm25":8,"pm10":21,"st":0}` | decode; UI clamps/flags invalid domain |
+| X7 | app | F5 without `"st"` (pre-4.2.0 firmware) | decode fine; exposure-based health unavailable → app falls back to load-based (D-027) |
+| X8 | app | F8 with a short/overlong `st` array, or non-integer entries | decode "st" missing-on-error semantics: ignore key, health falls back per X7 |
+| X9 | device | `{"cmd":"offlineLog"}` with `"after"`: non-integer | ignore (malformed) |
 
-## 9. Reserved for v1.1 (Phase 5 — do not implement before then)
+Offline-history window record (binary, not JSON — layout is normative, see §10):
+unknown/trailing bytes in a record chunk MUST be ignored/rejected at record granularity, not
+crash the parser.
 
-- Offline-history bulk sync (on-device sparse ring buffer, ~1 sample/10 min, custom partition).
+## 9. Reserved for v1.2
+
 - Security pairing effects on the Command characteristic (D-010 ruling pending).
+- Anything beyond §4/§5/§10 of v1.1 content (e.g. measured-RPM, OTA, cloud) stays out of v1.1.
+
+## 10. Offline history — envelope ring & bulk sync (v1.1 — D-028)
+
+The device records history **independently of any connection**, so app-recorded gaps
+(disconnects, power-off *without* phone reaching it — power-off still ends the current window)
+no longer blank the charts. The phone pulls the ring at connect ONLY (no polling, no notify).
+
+### 10.1 Record shape — one 16 B struct per 10-min window
+
+| Offset | Field | Type | Meaning |
+|---|---|---|---|
+| 0 | `pmMin` | u16 LE | min PM2.5 in the window (µg/m³) |
+| 2 | `pmMean` | u16 LE | mean PM2.5 (µg/m³) |
+| 4 | `pmMax` | u16 LE | max PM2.5 (µg/m³) |
+| 6 | `stSec[0..4]` | 5 × u16 LE | seconds in contract stages 1–5 (GOOD…HAZARD) |
+
+Little-endian, no header field per record (length is fixed), 16 B. Slot = 10-min window index
+since boot (slot *i* ends at *(i+1)×600 s* uptime). In-flight (not-yet-complete) windows are
+never exposed — a power cut loses at most the current window.
+
+### 10.2 Storage — dedicated flash ring (resolves risk 7.19)
+
+Custom partition CSV (`firmware/docasa-air-purifier-v4/partitions.csv`, `docasa_ring`,
+256 KB `data/0x40`): ≈ 8,640 records × 16 B ≈ **138 KB per 60 days**, ~2× runway for
+wear-levelling slack → **runway ≈ 4.6 months** before the oldest slot is overwritten; wrap is
+detectable via a slot discontinuity vs the reported `first`. Requires a maintainer reflash
+(firmware/README procedure).
+
+### 10.3 Sync protocol (app-initiated, connect-time only)
+
+1. After the §6.1 handshake, the app writes `{"cmd":"offlineLog","after":<slot>}` — its stored
+   water-mark for the device's current `bootId` (u32 NVS boot counter); `"after"` omitted →
+   drain everything available.
+2. First read of the Offline History characteristic returns ring status JSON:
+   `{"v":1,"boot":12345,"first":4100,"count":8639}` (`count` = slots available after the
+   cursor). App updates/refreshes its `(bootId → slot → phone wall-clock)` anchor at this point
+   — phone stays the only time authority (Plan §7.13); each connect re-anchors drift from the
+   live 1 Hz stream.
+3. Subsequent reads return packed records in slot order, up to ⌊(MTU−1)/16⌋ per read
+   (15 records at MTU 247); cursor advances; an empty read (0 B) = drained. Read errors/no
+   cursor armed → empty reads; the cursor lives per connection and is never persisted.
+4. Cost model: 60 days unsynced ≈ 577 reads at MTU 247 (seconds, once); fully-synced connect =
+   exactly the status read. No further interaction until the next connect.
+
+Golden X-rule (§8): record chunks are consumed at record granularity; unknown bytes in a
+chunk are rejected per-record, never parse-crash the phone app.

@@ -278,7 +278,7 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   (connect → MTU 247 GATT_SUCCESS → `discoverServices` **5 services GATT_SUCCESS**) then
   `FBP: link failed: Bad state: No element` at `readDeviceInfo.read` — `c.uuid.str128 == uuid`
   compared the full 128-bit runtime UUID against the Contract's short-form `'2A29'…` constants
-  DIS constants (never equal); the custom telemetry constants are full-form, which is why the
+  (never equal); the custom telemetry constants are full-form, which is why the
   picker worked. Never reached before because earlier practice rounds saw zero DOCASA ads (no
   hardware in range). Firmware exonerated (DIS values verified over the air post-fix).
   Decision: one-line fix — `readDeviceInfo` characteristic lookup compares via
@@ -293,7 +293,7 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
 - **D-026 — History chart theming made theme-derived (light-mode tooltip + axis invisible)** ·
   resolved · 2026-11-05 · app
   Context: light mode left the History line chart dark-styled — axis labels (`Colors.white54`
-  h-coded) invisible and the touch tooltip unreadable. Root cause in fl_chart 1.3.0 defaults:
+  hard-coded) invisible and the touch tooltip unreadable. Root cause in fl_chart 1.3.0 defaults:
   the chart never configured `LineTouchData`, and the default tooltip assigns the text the
   LINE color (`cs.primary` — pale in the light scheme) on a hard-coded `blueGrey.darken(15)`
   bubble.
@@ -304,6 +304,61 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   touch-up so it never shows). Analyzer 0 issues, 54/54 tests; artifact rebuilt + reinstalled.
   Notes: dark-mode bubble hue changes from neutral blueGrey to the dark-teal primaryContainer
   (house accent family) — accepted as part of the theming task.
+
+- **D-027 — Filter-replacement basis: dirty-air hours, toggleable with a budget-multiplier scale** ·
+  resolved · 2026-11-05 · app (+ firmware follow-up)
+  Context: panel demo needs a simpler, explainable filter-health story than the raw µg·h load
+  integral; user also wants the same human scale on the load-based method instead of free-form
+  budget text fields (D-018).
+  Decision:
+  (a) New basis **"Dirty-air hours"** (default after install): health =
+  `100 × (1 − dirtyH / (dirtyBudget × mult))`, `dirtyH = (st[2]+st[3]+st[4])/3600` s from the
+  v1.1 `"st"` payload (POOR/BAD/HAZARD seconds since replacement). `dirtyBudget` placeholder
+  **1000 h** (D-011-class placeholder pending real cartridge; consistent with the 3000 h
+  nominal-load placeholder at typical 1/3-dirty duty).
+  (b) Load-based method unchanged (`pwfs` vs `FilterBudgets`), at the same multiplier.
+  (c) **Sensitivity = budget multiplier** with named steps: Relaxed 1.5× (later) · Normal 1.0×
+  (default) · Sensitive 0.5× (sooner) — replaces the editable budget text-fields UI; raw budget
+  constants stay code-side only. Persisted KV (`filter.basis`, `filter.mult`).
+  (d) Basis toggle in the Filter tab; both methods always computable — switching is O(1) from
+  retained values. Pre-4.2.0 firmware (no `"st"`) automatically falls back to load-based (X7).
+  (e) `resetFilter` (Firmware v4.2.0) also zeroes + persists `st` (D-028 covers GATT additions).
+  Notes: exact budget numbers still pending the real cartridge (D-011); the multiplier makes
+  demo-day tuning trivial (one tap moves the ETA).
+
+- **D-028 — Gapless offline history: envelope ring + bulk sync pulled forward to v4.2.0 (resolves risk 7.19)** ·
+  resolved · 2026-11-05 · firmware + app (+ contract v1.1)
+  Context: user wants 2-month gapless history incl. app-disconnect periods; Plan §5/§9 reserved
+  ring-and-sync for Phase 5 with the NVS-partition blocker (7.19). A 16-B/10-min **envelope
+  record** (PM min/mean/max u16 + per-stage seconds 5×u16) sizes the whole 60-day series at
+  ≈138 KB — viable without any compression once a small data partition exists.
+  Decision: batch into ONE firmware bump + ONE maintainer reflash:
+  (a) Contract **v1.1** (ratified same day): per-stage counter key `"st"` (§4.4), `resetFilter`
+  zeroing, `offlineLog` command (§5), Offline History characteristic
+  `d0ca5a79-bb2b-478b-abed-9ac1441cd635` (§2/§3), record layout + drain protocol + time
+  mapping (§10). UUID generated in-house pattern (d0ca5a…, v4, variant a).
+  (b) Firmware **4.2.0**: custom partition CSV (`docasa_ring`, 256 KB data/0x40 — runway
+  ≈ 4.6 months before overwrite; wrap detectable via `first`), NVS boot counter `boot` (1
+  write/boot) + `st1..st5` (u32 s, reset with filters), window accumulators in the existing
+  1 Hz tick (in-flight windows never exposed), Filter Counters payload gains `"st"`,
+  `offlineLog` cursor + status/records reads, `FIRMWARE_VERSION 4.2.0`. Additive-only per
+  §1.4 diff gate; §7.13 time authority unchanged (phone anchors `(bootId,slot)→wall-clock`,
+  re-anchored every connect from the live stream).
+  (c) App: codec golden fixtures F8/F9 + X7–X9, offline-sync drain engine at connect (§6.1
+  step 8; 60 d ≈ 577 reads at MTU 247; fully-synced connect = status read only), ingestion
+  into the existing 24 h/7 d/90 d ladder (Day view = 10-min envelopes; Week/Month merged up),
+  exposure-share health + toggle + multiplier UI, analyzer/tests.
+  (d) Filter-replacement basis decisions live in D-027 (dirty-air default, multiplier steps).
+  Risks/limits recorded: wrap after ~4.6 months (re-sync gap → oldest slots rewritten; app
+  treats as lost windows per §10.2), power-cut loses ≤ the in-flight window, partition change
+  requires a maintainer reflash bench session (rationale: one session — both features shipped).
+  (e) **Sketch lineage (user decision, recorded live):** v4 `.ino` is FROZEN at `4.1.1` and
+  never overwritten again — firmware v4.2.0 goes to a **new sketch dir**
+  `firmware/docasa-air-purifier-v5/docasa-air-purifier-v5.ino`, seeded byte-identical from v4,
+  with `partitions.csv` beside it in the same dir. `tools/firmware-diff-check.sh` gets an
+  active-sketch parameter (default: v5) so the §10.2 gate keeps proving additive-only vs the
+  v3 baseline.
+  Notes: contract §9 keeps only security-pairing (D-010) + later reserves.
 
 ### Backlog (unscheduled, non-blocking)
 

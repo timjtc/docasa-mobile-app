@@ -1,17 +1,17 @@
 # Graph Report - docasa-mobile-app  (2026-11-05)
 
 ## Corpus Check
-- 97 files · ~54,074 words
+- 98 files · ~54,743 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 54 file(s) not represented in the graph (top: .xcconfig 8, (none) 7, .xml 7)
 
 ## Summary
-- 1336 nodes · 1791 edges · 113 communities (70 shown, 43 thin omitted)
+- 1338 nodes · 1792 edges · 114 communities (70 shown, 44 thin omitted)
 - Extraction: 94% EXTRACTED · 5% INFERRED · 1% AMBIGUOUS · INFERRED: 93 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `766c9869`
+- Built from commit: `418f5ecc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -164,7 +164,7 @@
 - **Persistent XFS disk provisioning workflow (partition, format, UUID fstab mount)** — assets_itso_quickie_notes___centos_lab_a3_persistent_data_mount, assets_itso_quickie_notes___centos_fdisk, assets_itso_quickie_notes___centos_partprobe, assets_itso_quickie_notes___centos_mkfs_xfs, assets_itso_quickie_notes___centos_blkid, assets_itso_quickie_notes___centos_fstab, assets_itso_quickie_notes___centos_findmnt, assets_itso_quickie_notes___centos_xfs [INFERRED]
 - **Unix file permission model (mode bits, special bits, ACLs)** — assets_itso_quickie_notes___centos_file_permissions, assets_itso_quickie_notes___centos_suid, assets_itso_quickie_notes___centos_sgid, assets_itso_quickie_notes___centos_sticky_bit, assets_itso_quickie_notes___centos_acl [INFERRED]
 
-## Communities (113 total, 43 thin omitted)
+## Communities (114 total, 44 thin omitted)
 
 ### Community 0 - "ADB Test Workloop"
 Cohesion: 0.05
@@ -367,8 +367,8 @@ Cohesion: 0.33
 Nodes (5): analyzer, exclude, include, linter, rules
 
 ### Community 53 - "Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff)"
-Cohesion: 0.33
-Nodes (5): Findings, Fix (D-025), Follow-ups, Procedure (methodically executed), Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff)
+Cohesion: 0.29
+Nodes (6): Findings, Fix (D-025), Follow-ups, Procedure (methodically executed), Session log — 2026-11-05: BLE "Connecting" hang triage (Windows host, post-handoff), Task 2 (2026-11-05, same session): History light-mode chart theming — D-026
 
 ### Community 55 - "Required Feature List"
 Cohesion: 0.60
@@ -487,21 +487,21 @@ Nodes (12): connect, disconnect, dispose, DocasaConnection, readDeviceInfo, read
   web/icons/Icon-maskable-192.png · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **590 isolated node(s):** `states`, `telemetry`, `readDeviceInfo`, `readFilterCounters`, `syncTime` (+585 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 783 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **590 isolated node(s):** `_range`, `_metric`, `_axisStyle`, `createState`, `_chart` (+585 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 785 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **44 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `AppDatabase` connect `AppDatabase` to `database.dart`, `Fake BLE Connection State`, `Core Data Layer Imports`, `Drift Database Root`, `Filter Budgets Core`, `Recording Service`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **What connects `states`, `telemetry`, `readDeviceInfo` to the rest of the system?**
+  _High betweenness centrality (0.048) - this node is a cross-community bridge._
+- **What connects `_range`, `_metric`, `_axisStyle` to the rest of the system?**
   _590 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ADB Test Workloop` be split into smaller, more focused modules?**
   _Cohesion score 0.05067920585161965 - nodes in this community are weakly interconnected._
 - **Why does `Win32Window` connect `Win32 Window Handler` to `win32_window.cpp`, `Win32 Callback Types`, `Windows Flutter Shell`, `Size`, `Win32 Runner Resources`, `Windows Flutter Shell C++`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **Should `database.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.04223469660518578 - nodes in this community are weakly interconnected._
 
