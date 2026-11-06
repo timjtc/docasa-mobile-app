@@ -393,33 +393,24 @@ per D-017.
   real FBLP transport with device picker, handshake device verification, reconnect
   backoff, permission gate — verified up to "scans run, no DOCASA advertisement yet"
   (device was unpowered; firmware advertisement remains THE unverified runtime surface).
-- **Next (in order):** (1) ~~close the app↔device connection failure~~ **CLOSED 2026-11-05,
-  D-025** — the `logcat -s flutter` layer of the 3-layer probe pinpointed an app-side bug
-  (short-form DIS UUIDs vs 128-bit runtime form in `readDeviceInfo`); fixed with Guid
-  equality, verified live on the A34 (pick → connected ≤2 s, handshake read fw `4.1.1`
-  over the air, telemetry streaming). Session record:
-  `docs/sessions/2026-11-05-ble-connect-triage.md`. (2) **Phase-5-early batch (D-027/D-028) —
-  the approved build plan, firmware-first:**
-  - Firmware v4.2.0 in the **new sketch dir** `firmware/docasa-air-purifier-v5/`
-    (byte-identical seed from frozen `v4/`, per D-028e — v4 never overwritten): partition CSV
-    (`docasa_ring`, 256 KB data/0x40), NVS additions (`boot` u32 counter + `st1..st5` u32 s),
-    1 Hz window-envelope accumulation (PM min/mean/max + stage-sec; in-flight windows never
-    exposed), `resetFilter` zeroes+persists `st`, Filter Counters payload gains `"st"`,
-    Offline History char (`d0ca5a79-…`, cursor via `{"cmd":"offlineLog","after":N}`),
-    `FIRMWARE_VERSION 4.2.0`. Gates: compile with the partition property + §10.2 diff gate
-    (tool gains an active-sketch param, default v5) — compile-command shape to be confirmed at
-    implementation.
-  - App: contract constants (new UUID) + `st` decode + 16 B record codec (fixtures F8/F9,
-    X7–X9), connect-time offline drain (§10.3) + ingestion into the 24 h/7 d/90 d ladder,
-    dirty-air-hours health + load-based coexistence, Filter-tab basis toggle + Relaxed/Normal/
-    Sensitive multiplier (replaces budget text fields, D-027), settings KV persistence,
-    analyzer + tests.
-  - Bench (single session): maintainer reflash of v5 with the new partition table → G1/G2
-    formalities (Serial + nRF checklist, now with a flashed 4.1.1 lineage device in hand)
-    + spot-check v4.2.0: `st` present, resetFilter zeroes it, offline drain on connect.
-  (3) G4 checklist remainder on the phone (walk-away backoff reconnect, history across
-  restarts — now with back-filled offline data, threshold push) → `gate-reports/G4.md`;
-  after G4 restore `withServices` scan filtering and review the debugPrints.
+- **Next (in order):** (0) **HANDOFF STATE 2026-11-07** — everything through the History-tab
+  revision (Last month + month compare, D-032, `5cd38e3`) is on `main`; Firmware v4.2.1 is
+  flashed on the purifier (partition table + ring + stage counters + dev `setUsage` channel);
+  the phone holds fresh `docasa-demo-20261107` + `docasa-ble-test-20261107` artifacts (note:
+  artifacts are local-only, `releases/` is gitignored). Session log:
+  `docs/sessions/2026-11-05-ble-connect-triage.md` (Tasks 1-12; Task 12 = the NEXT task's
+  handoff plan: user-centric UI sweep — device picker signal bars, System-tab label
+  humanization, Real-transport banner removal, Air-tab recommendations, label sweep — with
+  call sites + test touches recorded). (1) Run Task 12 (UI sweep) — planned, unimplemented.
+  (2) G1/G2 formalities on the bench (Serial + nRF checklist) — the over-the-air evidence
+  accumulated is not a formal gate. (3) G4 checklist remainder on the phone (walk-away
+  backoff reconnect, history across restarts — now with back-filled offline data, threshold
+  push) → `gate-reports/G4.md`; after G4 restore `withServices` scan filtering and review
+  the debugPrints. (0-continuation) real-cartridge budget numbers (D-011 placeholders)
+  whenever the cartridge model is chosen.
 - **Needs user input:** nothing blocking; filter-cartridge numbers for exact budgets when
   chosen (D-018 placeholders active).
-- **Firmware untouched since `75394c9`;** codec/golden contract is frozen (Contract v1.0).
+- **Firmware:** v4.2.1 IS the flashed lineage (sketch `docasa-air-purifier-v5/`, partition
+  table `docasa_ring` 256 KB, offline-ring + st counters + setUsage dev channel); the §1.4
+  additive gate (`tools/firmware-diff-check.sh`, active-sketch default v5) stays mandatory
+  per firmware change; behavior-gate bench check owed at G1/G2.
