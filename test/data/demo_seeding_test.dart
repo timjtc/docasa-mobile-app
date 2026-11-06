@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:docasa_app/ble/fake/fake_docasa_connection.dart';
 import 'package:docasa_app/data/db/database.dart';
 import 'package:docasa_app/data/filter_health.dart';
+import 'package:docasa_app/data/history_repository.dart';
 import 'package:docasa_app/data/history_seeder.dart';
 import 'package:docasa_app/features/device/device_page.dart';
 import 'package:docasa_app/protocol/models.dart';
@@ -99,6 +100,33 @@ void main() {
       expect(c.dirtyAirSeconds, 500000 + 60000 + 20000);
       expect(c.powerOnHours, 2);
       await conn.disconnect();
+    });
+
+    test('monthCompare splits the two calendar months (D-032)', () async {
+      await const TwoMonthSeeder().seed(db, nowMs: now);
+      final cmp = await const HistoryRepository().monthCompare(db, nowMs: now);
+      expect(cmp, isNotNull);
+      // Date math on `now` (2026-11-05): previous = October (seeded from the
+      // 8th), current = November 1–5 (all seeded days within the window).
+      expect(cmp!.previous, isNotNull);
+      expect(cmp.current, isNotNull);
+      expect(cmp.current!.avgPm25, greaterThan(40),
+          reason: 'the dirty story dominates the seeded PM levels');
+      expect(cmp.previous!.dirtySeconds, greaterThan(3600 * 24),
+          reason: 'previous month holds weeks of dirty exposure');
+      expect(cmp.current!.dirtySeconds, greaterThan(3600 * 6),
+          reason: 'the running month holds days of dirty exposure');
+    });
+
+    test('lastMonth loads the previous calendar month bucket-by-bucket (D-032)',
+        () async {
+      await const TwoMonthSeeder().seed(db, nowMs: now);
+      final s = await const HistoryRepository()
+          .load(db, HistoryRange.lastMonth, HistoryMetric.pm25, nowMs: now);
+      final seededHours = s.points.whereType<double>().length;
+      expect(seededHours, greaterThan(20 * 24),
+          reason: '≥20 days of hours from the previous month');
+      expect(s.coverage, greaterThan(0.3));
     });
   });
 }

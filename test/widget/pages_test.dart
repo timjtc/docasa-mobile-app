@@ -129,6 +129,35 @@ void main() {
     expect(find.textContaining('Day'), findsWidgets);
   });
 
+  testWidgets('history last month shows the month compare card', (tester) async {
+    final db = AppDatabase.test(NativeDatabase.memory());
+    addTearDown(db.close);
+    await const TwoMonthSeeder().seed(db);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [dbProvider.overrideWithValue(db)],
+        child: const MaterialApp(home: HistoryPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Last month'));
+    await tester.pumpAndSettle();
+
+    // The compare card sits below the chart + donut.
+    await tester.scrollUntilVisible(
+      find.text('Month compare'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Average PM2.5'), findsOneWidget);
+    expect(find.text('Dirty air'), findsOneWidget);
+    expect(find.text('Clean air'), findsOneWidget);
+    // Summary: cleaner/worse against the previous month.
+    expect(find.textContaining('last month'), findsOneWidget);
+  });
+
   testWidgets('device page shows emulator banner and connect controls',
       (tester) async {
     final db = AppDatabase.test(NativeDatabase.memory());

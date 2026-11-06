@@ -220,6 +220,16 @@ final historyProvider = FutureProvider.autoDispose
       .load(ref.watch(dbProvider), arg.$1, arg.$2);
 });
 
+/// Month-over-month comparative analytics (D-032) — this calendar month vs
+/// the previous complete month, recomputed on history changes.
+final monthCompareProvider =
+    FutureProvider<MonthCompare?>((ref) async {
+  ref.watch(historyEpochProvider);
+  return ref
+      .watch(historyRepoProvider)
+      .monthCompare(ref.watch(dbProvider));
+});
+
 final offlineSyncProvider = Provider<OfflineSyncService>((ref) {
   final svc = OfflineSyncService(
     ref.watch(dbProvider),

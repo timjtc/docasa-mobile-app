@@ -46,6 +46,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               ButtonSegment(value: HistoryRange.day, label: Text('Day')),
               ButtonSegment(value: HistoryRange.week, label: Text('Week')),
               ButtonSegment(value: HistoryRange.month, label: Text('Month')),
+              ButtonSegment(
+                  value: HistoryRange.lastMonth, label: Text('Last month')),
             ],
             selected: {_range},
             onSelectionChanged: (s) => setState(() => _range = s.first),
@@ -79,8 +81,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                     child: series == null || series.isEmpty
                         ? Center(
                             child: Text(
-                              'No recorded data in this window yet.\n'
-                              'Data is recorded while the app is connected.',
+                              _range.isCalendar
+                                  ? 'No recorded data last month.\n'
+                                      'Data is recorded while the app is connected.'
+                                  : 'No recorded data in this window yet.\n'
+                                      'Data is recorded while the app is connected.',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: cs.onSurfaceVariant),
                             ),
@@ -103,6 +108,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           ),
           const SizedBox(height: 12),
           if (series != null && !series.isEmpty) _donutCard(series),
+          if (_range == HistoryRange.lastMonth) ...[
+            const SizedBox(height: 12),
+            _monthCompareCard(cs),
+          ],
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -226,8 +235,107 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     return switch (_range) {
       HistoryRange.day => DateFormat.Hm().format(d),
       HistoryRange.week => DateFormat.E().format(d),
-      HistoryRange.month => DateFormat.Md().format(d),
+      HistoryRange.month ||
+      HistoryRange.lastMonth =>
+        DateFormat.Md().format(d),
     };
+  }
+
+  /// Month-over-month comparative analytics (D-032): this running calendar
+  /// month vs the previous complete month — weighted PM2.5, dirty exposure
+  /// hours (POOR+), clean hours, and the recorded hour coverage per period.
+  Widget _monthCompareCard(ColorScheme cs) {
+    final cmp = ref.watch(monthCompareProvider).value;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Month compare',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            if (cmp == null) ...[
+              Text('Not enough recorded history for a month comparison.',
+                  style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+            ] else ...[
+              _compareHeader(),
+              _compareRow('Average PM2.5',
+                  _fmtPm(cmp.current?.avgPm25), _fmtPm(cmp.previous?.avgPm25)),
+              _compareRow('Dirty air',
+                  _fmtHours(cmp.current?.dirtySeconds),
+                  _fmtHours(cmp.previous?.dirtySeconds)),
+              _compareRow('Clean air',
+                  _fmtHours(cmp.current?.cleanSeconds),
+                  _fmtHours(cmp.previous?.cleanSeconds)),
+              _compareRow('Recorded',
+                  _fmtHoursH(cmp.current?.recordedHours),
+                  _fmtHoursH(cmp.previous?.recordedHours)),
+              _compareSummary(cmp, cs),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _fmtPm(double? v) => v == null ? '—' : v.toStringAsFixed(1);
+
+  static String _fmtHours(int? sec) =>
+      sec == null ? '—' : '${(sec / 3600).toStringAsFixed(1)} h';
+
+  static String _fmtHoursH(int? n) => n == null ? '—' : '$n h';
+
+  /// Two header labels: this month (left = current column) and the previous
+  /// month (right column), month-named, not dropped from the provider.
+  Widget _compareHeader() {
+    final cmp = ref.watch(monthCompareProvider).value;
+    final df = DateFormat.MMM();
+    final now = DateTime.now();
+    String name(MonthStats? s, int monthOffset) => s != null
+        ? df.format(DateTime.fromMillisecondsSinceEpoch(
+            s.startMs + 24 * 3600000))
+        : df.format(DateTime(now.year, now.month + monthOffset, 1));
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(children: [
+        const Spacer(flex: 3),
+        Expanded(flex: 2, child: Text(name(cmp?.current, 0))),
+        Expanded(flex: 2, child: Text(name(cmp?.previous, -1))),
+      ]),
+    );
+  }
+
+  Widget _compareRow(String label, String current, String previous) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Expanded(
+                flex: 3,
+                child: Text(label,
+                    style: const TextStyle(fontWeight: FontWeight.w600))),
+            Expanded(flex: 2, child: Text(current)),
+            Expanded(flex: 2, child: Text(previous)),
+          ],
+        ),
+      );
+
+  Widget _compareSummary(MonthCompare cmp, ColorScheme cs) {
+    final prev = cmp.previous?.avgPm25;
+    final cur = cmp.current?.avgPm25;
+    if (prev == null || cur == null || prev == 0) {
+      return Text(
+        'Comparison needs both months recorded.',
+        style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+      );
+    }
+    final pct = (cur - prev) / prev * 100;
+    return Text(
+      pct <= 0
+          ? 'Cleaner than last month by ${pct.abs().toStringAsFixed(1)}% (avg PM2.5)'
+          : 'Worse than last month by ${pct.abs().toStringAsFixed(1)}% (avg PM2.5)',
+      style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+    );
   }
 
   Widget _donutCard(HistorySeries s) {

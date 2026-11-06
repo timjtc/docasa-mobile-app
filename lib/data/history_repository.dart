@@ -3,10 +3,15 @@ import 'package:drift/drift.dart';
 import '../protocol/contract.dart';
 import 'db/database.dart';
 
+/// History range window kinds. `lastMonth` is calendar-bounded: the previous
+/// complete month (the 1st of the last month → the 1st of this month) instead
+/// of a sliding window (D-032).
 enum HistoryRange {
   day(24 * 3600 * 1000, 60 * 1000, 'minute_aggregates', 'minute_start_ms'),
   week(7 * 24 * 3600 * 1000, 3600 * 1000, 'hour_aggregates', 'hour_start_ms'),
-  month(30 * 24 * 3600 * 1000, 3600 * 1000, 'hour_aggregates', 'hour_start_ms');
+  month(30 * 24 * 3600 * 1000, 3600 * 1000, 'hour_aggregates', 'hour_start_ms'),
+  lastMonth(31 * 24 * 3600 * 1000, 3600 * 1000, 'hour_aggregates',
+      'hour_start_ms');
 
   const HistoryRange(this.windowMs, this.bucketMs, this.table, this.startCol);
 
@@ -14,6 +19,9 @@ enum HistoryRange {
   final int bucketMs;
   final String table;
   final String startCol;
+
+  /// Calendar-bounded (previous complete month) rather than sliding.
+  bool get isCalendar => this == HistoryRange.lastMonth;
 }
 
 enum HistoryMetric {
@@ -22,9 +30,9 @@ enum HistoryMetric {
   pm1('pm1', 'PM1.0', ' µg/m³'),
   temp('temp', 'Temperature', ' °C'),
   humidity('humidity', 'Humidity', ' %'),
-  voc('voc', 'VOC', ' kΩ'),
-  fanRpm('fan_rpm', 'Fan', ' RPM'),
-  batteryPct('battery_pct', 'Battery', ' %');
+  voc('voc', 'VOC', ' kΩ');
+  // Fan and Battery graphs are retired from the History tab (D-032). The
+  // seeded/recorder columns stay in the DB — it is a display filter only.
 
   const HistoryMetric(this.column, this.label, this.unit);
 
@@ -75,8 +83,22 @@ class HistoryRepository {
     int? nowMs,
   }) async {
     final now = nowMs ?? DateTime.now().millisecondsSinceEpoch;
-    final windowStart = _floor(now - range.windowMs, range.bucketMs);
-    final bucketCount = (now - windowStart) ~/ range.bucketMs;
+    int windowStart;
+    int bucketCount;
+
+    // D-032: `lastMonth` is the previous complete calendar month, hour-aligned.
+    if (range.isCalendar) {
+      final today = DateTime.fromMillisecondsSinceEpoch(now);
+      final prevFirst = DateTime(today.year, today.month - 1, 1);
+      final monthEnd = DateTime(today.year, today.month, 1);
+      windowStart = _floor(
+          prevFirst.millisecondsSinceEpoch, range.bucketMs);
+      bucketCount =
+          (monthEnd.millisecondsSinceEpoch - windowStart) ~/ range.bucketMs;
+    } else {
+      windowStart = _floor(now - range.windowMs, range.bucketMs);
+      bucketCount = (now - windowStart) ~/ range.bucketMs;
+    }
 
     final rows = await db.customSelect(
       'SELECT ${range.startCol} AS bucket, ${metric.column} AS value, '
@@ -174,5 +196,98 @@ class HistoryRepository {
     );
   }
 
+  /// Month-over-month comparative analytics (D-032). Reads the hour tier for
+  /// the previous and the current calendar month: weighted-average PM2.5 and
+  /// the per-stage time split (the same source the charts use, so the numbers
+  /// reconcile with what's drawn). Null when a period has no data at all.
+  Future<MonthCompare?> monthCompare(
+    AppDatabase db, {
+    int? nowMs,
+  }) async {
+    final now = nowMs ?? DateTime.now().millisecondsSinceEpoch;
+    final today = DateTime.fromMillisecondsSinceEpoch(now);
+    final prevFirst =
+        DateTime(today.year, today.month - 1, 1).millisecondsSinceEpoch;
+    final monthFirst = DateTime(today.year, today.month, 1).millisecondsSinceEpoch;
+    final prev = await _queryPeriod(db, prevFirst, monthFirst);
+    final current = await _queryPeriod(db, monthFirst, now + 1);
+    if (prev == null && current == null) return null;
+    return MonthCompare(previous: prev, current: current);
+  }
+
+  static Future<MonthStats?> _queryPeriod(
+    AppDatabase db,
+    int startMs,
+    int endMs,
+  ) async {
+    final rows = await db.customSelect(
+      'SELECT SUM(pm25 * sample_count) AS pm, SUM(sample_count) AS samples, '
+      'SUM(stage1_count) AS s1, SUM(stage2_count) AS s2, '
+      'SUM(stage3_count) AS s3, SUM(stage4_count) AS s4, '
+      'SUM(stage5_count) AS s5, COUNT(*) AS buckets '
+      'FROM hour_aggregates WHERE hour_start_ms >= ? AND hour_start_ms < ?',
+      variables: [Variable.withInt(startMs), Variable.withInt(endMs)],
+    ).get();
+    if (rows.isEmpty) return null;
+    final r = rows.first;
+    final samples = r.read<int>('samples');
+    if (samples <= 0) return null;
+    final pm = r.read<double>('pm');
+    final st = [
+      r.read<int>('s1'),
+      r.read<int>('s2'),
+      r.read<int>('s3'),
+      r.read<int>('s4'),
+      r.read<int>('s5'),
+    ];
+    return MonthStats(
+      startMs: startMs,
+      endMs: endMs,
+      avgPm25: pm / samples,
+      stageSeconds: st,
+      recordedHours: r.read<int>('buckets'),
+    );
+  }
+
   static int _floor(int ms, int bucket) => ms - ms % bucket;
+}
+
+/// One calendar-period's aggregate stats for the month compare card (D-032).
+class MonthStats {
+  const MonthStats({
+    required this.startMs,
+    required this.endMs,
+    required this.avgPm25,
+    required this.stageSeconds,
+    required this.recordedHours,
+  });
+
+  final int startMs;
+  final int endMs;
+
+  /// Weighted-average PM2.5 over the period (µg/m³).
+  final double avgPm25;
+
+  /// Seconds per contract stage (index 0 = GOOD … 4 = HAZARD).
+  final List<int> stageSeconds;
+
+  final int recordedHours;
+
+  int get dirtySeconds => stageSeconds.length >= 5
+      ? stageSeconds[2] + stageSeconds[3] + stageSeconds[4]
+      : 0;
+
+  int get cleanSeconds => stageSeconds.length >= 2
+      ? stageSeconds[0] + stageSeconds[1]
+      : 0;
+}
+
+class MonthCompare {
+  const MonthCompare({required this.previous, required this.current});
+
+  /// The previous complete calendar month; null when unrecorded.
+  final MonthStats? previous;
+
+  /// The running calendar month (up to now); null when unrecorded.
+  final MonthStats? current;
 }

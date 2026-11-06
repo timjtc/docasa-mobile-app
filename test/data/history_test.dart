@@ -88,6 +88,14 @@ void main() {
   setUp(() => db = newDb());
   tearDown(() async => db.close());
 
+  test('history metrics no longer expose Fan/Battery graphs (D-032)', () {
+    expect(
+      HistoryMetric.values.map((m) => m.name),
+      isNot(
+          containsAll(<Matcher>[equals('fan_rpm'), equals('battery_pct')])),
+    );
+  });
+
   test('minute aggregation: averages, stage counts, max, sample count',
       () async {
     final m0 = floorMin(1700000000000);

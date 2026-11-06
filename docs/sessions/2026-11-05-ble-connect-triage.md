@@ -313,3 +313,61 @@ echoes `setUsage` (D-030).
   (Normal) + basis toggle + the seeded story; History exposes the 2-month timeline.
 - Demo nuance for the panel: the fake transport's Device information reports the emulator
   fw string ('4.1.0') — cosmetic, tagged in the banner card as the built-in emulator.
+
+## Task 11 (2026-11-07, committed pre-handoff): History-tab revision — Last month (calendar) + month compare
+
+Implemented and test-locked (analyzer 0 issues, **78/78 tests**, +4 new):
+
+- **HistoryRange.lastMonth** — a calendar-bounded range (the previous complete month,
+  hour-aligned) instead of a 30-day slide; `HistoryRange.isCalendar` flag; `load()` special-
+  cases the bounds; the History segment list now shows Day / Week / Month / **Last month**.
+- **Month compare analytics** (,this running month vs the previous complete month):
+  `HistoryRepository.monthCompare()` reads the hour tier (weighted avg PM2.5 + per-stage
+  seconds + recorded-hour buckets) and returns `MonthStats? previous/current`; the
+  `MonthCompare` card on the Last-month view shows Average PM2.5 / Dirty air / Clean air /
+  Recorded hours per column + a CLEANER/WORSE summary line. Provider `monthCompareProvider`
+  (recomputed with the history epoch). Verified by tests with the deterministic 2-month seed
+  (both calendar months populated: prev Oct 8-31, current Nov 1-5).
+- **History metrics: Fan + Battery graphs retired** (D-032 display filter): the dropdown now
+  carries PM2.5 / PM10 / PM1.0 / Temperature / Humidity / VOC. DB columns and seeding remain —
+  a display change only (locked by a test).
+
+Test pins: last-month bucket load (≥ 20 seeded day-hours), monthCompare split assertions
+(prev/current non-null, dirty totals, avg PM > 40 — the dirty story), the compare card
+widget (segment tap → 'Month compare' + rows + 'last month' summary), and the metric-set
+retirement. COVERAGE note: hour tier coverage uses sample_count × bucketMs — unchanged.
+
+## Task 12 (started, NOT implemented — next agent's list): user-centric UI sweep
+
+Requirement set (user, 2026-11-07): make the app human-friendly; sweep non-technical labels;
+add Health Recommendations to the Air tab; simplify the device picker; remove dev-ish labels.
+
+Read the code, planned edits (call sites + affected tests recorded):
+
+1. **Device picker** (`lib/features/device/device_picker.dart` L151-155): replace the row
+   subtitle `'service §D-002 · ${r.rssi} dBm'` with just the advertised name + a signal
+   indicator: `Icons.signal_cellular_alt_[1|2|3]_bar — 20-px trailing icon`, thresholds
+   ≥ −60 → 3-bar, ≥ −75 → 2-bar, else 1-bar (rssi null → 1-bar). No subtitle at all.
+2. **System tab** (`lib/features/dashboard/dashboard_page.dart` L136-172):
+   VOC row — label `'VOC (GAS kΩ)'` → `'Air chemicals (VOC)'`; subtitle technical texts →
+   user text ('Chemical vapors elevated — air level counts worse' / 'Chemical vapor gauge').
+   FAN row — delete the `'commanded target (v3)'` subtitle. BATTERY row — remove
+   `Fmt.volts(...)` from the subtitle list (keep 'Charging' only when charging).
+3. **Device tab** (`lib/features/device/device_page.dart`): DELETE the 'Real transport
+   (flutter_blue_plus)…' banner card; info card rows — 'Protocol' + 'Time sync' rows removed
+   (dev-speak); filter-counters card sublabels humanized ('RPM·µg·s integral' →
+   'weighted particle-and-fan index', '§4.4 "st"' refs → 'per device air level', '(NVS)' from
+   the persistence line, '@ 4000 RPM' from the fan-hours sub).
+4. **Air tab** (`dashboard_page.dart` _body): ADD a Recommendations card under the PM tiles —
+   stage-driven plain-language advice (stage 1 keep routine; 2 keep it running; 3 full fan +
+   close windows; 4 max fan + seals/avoid cooking smog; 5 limit exposure/leave), hidden when
+   the stage is unavailable; replace the X6 invalid-stage dev text with a user line.
+5. **History page**: coverage caption suffix = 'gaps = no data' phrasing.
+6. **Tests to touch when applying:** pages_test system assertions (drop
+   `Fmt.volts`, the emulator-banner find — repoint to 'Connected to DOCASA-AirPurifier'),
+   history 'Coverage:' assertions still substring-match, X-dev texts unaffected. grep
+   `commanded\|dBm\|emulator\|RPM·µg·s` post-edit for leftovers.
+
+PENDING final verification with the user (phone screen asleep): the Last-month view +
+compare card on-device (Demo artifact, freshly installed at
+`releases/docasa-demo-20261107.apk` — the seeded 2-month story remains in its DB).
