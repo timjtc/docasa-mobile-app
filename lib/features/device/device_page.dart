@@ -11,6 +11,7 @@ import '../../protocol/models.dart';
 import '../shared/widgets.dart';
 import '../filter/filter_alert_modal.dart';
 import 'device_picker.dart';
+import '../../core/stage.dart';
 
 /// Connection manager + device info + developer options (demo/dev tools,
 /// D-030: hidden by default; enabled by tapping the Device information card
@@ -230,10 +231,14 @@ class _DevicePageState extends ConsumerState<DevicePage> {
                       _kv('Dirty-air time',
                           '${(counters.dirtyAirSeconds / 3600.0).toStringAsFixed(1)} h',
                           'hours in POOR/BAD/HAZARD air since the filter swap'),
-                      _kv('Time share per stage',
-                          counters.stageSeconds.indexed
-                              .map((e) => '${e.$2}s')
-                              .join(' · '),
+                      // One line per air level (GOOD first). A single joined
+                      // line grows wider than the card and squeezes the key
+                      // label into one-character lines (user-reported bug).
+                      _kvLines('Time share per stage',
+                          [
+                            for (final (i, s) in counters.stageSeconds.indexed)
+                              '${AirStage.values[i].label} ${s}s',
+                          ],
                           'seconds per air level the purifier measured'),
                     ],
                     _kv('Powered on', Fmt.powerOnHours(counters.powerOnHours),
@@ -331,6 +336,30 @@ class _DevicePageState extends ConsumerState<DevicePage> {
       ),
     );
   }
+
+  /// _kv variant: the value is split over right-aligned bold lines (for
+  /// reads that would be wider than half the card as one line). The right
+  /// column is Flexible so long notes wrap instead of stealing label width.
+  Widget _kvLines(String k, List<String> lines, String note) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          children: [
+            Expanded(child: Text(k)),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final l in lines)
+                    Text(l, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(note,
+                      style: TextStyle(
+                          fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
 
   Widget _kv(String k, String v, [String? note]) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),

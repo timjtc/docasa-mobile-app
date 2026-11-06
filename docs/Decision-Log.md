@@ -445,6 +445,10 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   (after PM2.5 hero, PM1.0, PM10 — normal users see status first, advice after).
   Verified live on the A34 (gated-off and dev-unlocked states) and by tests (80/80: absence
   before unlock, moved rows + 0.3 h dirty read after; Filter-tab raw counters asserted gone).
+  Follow-up (2026-11-08, same D): the Time-share-per-stage VALUE printed one line per air
+  level (GOOD→HAZARD prefixes, `_kvLines` with a Flexible right column) — a single joined
+  line grew unbounded and squeezed the key label into one-character lines. Live-verified
+  with the seeded story (BAD 1955100s renders, label intact).
 
 ### Backlog (unscheduled, non-blocking)
 

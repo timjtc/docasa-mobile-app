@@ -89,6 +89,16 @@ void main() {
     );
     expect(find.textContaining('0.3 h'), findsOneWidget,
         reason: 'raw dirty seconds expose the "st" read');
+    // Time share prints one line per air level, stage-named, so the long
+    // read can no longer squeeze the key label (user-reported bug).
+    await tester.scrollUntilVisible(
+      find.text('Time share per stage'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('GOOD 3600000s'), findsOneWidget,
+        reason: 'first line = GOOD, then FAIR/POOR/BAD/HAZARD');
+    expect(find.text('HAZARD 0s'), findsOneWidget);
   });
 
   testWidgets('switching the basis to Load recomputes from the same '

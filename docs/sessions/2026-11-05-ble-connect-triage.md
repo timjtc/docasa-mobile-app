@@ -467,3 +467,22 @@ Developer options + the full Device counters card with all moved rows; Filter ta
 counter card; Air tab shows Recommendations at the bottom under the PM tiles.
 Note: counters read 0 at fresh boot (fake emulator runtime starts clean — demo operator
 re-seeds via 'Seed demo data (2 months)' before a panel).
+
+## Task 16 (2026-11-08): layout fix — Time-share-per-stage row in Device counters
+
+User-reported bug: with long values the 'Time share per stage' KEY label printed vertically
+(one character per line) in the Device counters card. Root cause: in the `_kv` Row the
+right value column is a non-flex child measured against UNBOUNDED width — the joined
+single-line value ('3600000s · 28800s · …') is as wide as its longest line, starving the
+Expanded label of width.
+
+Fix (device_page.dart): the value now prints ONE LINE PER AIR LEVEL — 'GOOD 201180s /
+FAIR 139127s / POOR 600900s / BAD 1955100s / HAZARD 991740s' (stage names from
+AirStage, GOOD→HAZARD order) via a small `_kvLines` helper whose right column is
+`Flexible` so long notes wrap instead of stealing label width.
+
+Gates: analyze 0; 80/80 (the Device-tab test now also asserts the per-line format with the
+wide fixture: 'GOOD 3600000s' + 'HAZARD 0s'). Verified live on the A34 after re-seeding
+(985.5 h dirty): label horizontal, five right-aligned stage lines, no wrap; artifact pair
+rebuilt + reinstalled. Note: seeding re-arms the replacement modal (story evaluated at
+0..1.5% — pop expected on each evaluation until acked; D-021 cap was reset by the seed).
