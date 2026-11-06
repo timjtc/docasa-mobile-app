@@ -293,3 +293,23 @@ Gates: analyze 0 issues, 74/74 tests; artifact rebuilt as
 `releases/docasa-ble-test-20261107.apk` (date-stamped; the 20261105 artifact remains for the
 older install case). Phone re-attach needed for the final on-device seeding check.
 
+
+## Task 10 (2026-11-07): Demo artifact refreshed (no-prototype panel path)
+
+User asked for the demo (non-BLE) build carrying all session changes (dev options, seed-2-
+months, slider, dirty-air basis) — the features are transport-agnostic and the fake transport
+echoes `setUsage` (D-030).
+
+- `tools/build-demo-apk.sh` → `releases/docasa-demo-20261107.apk` (date-stamped; kept local
+  per convention).
+- Phone install required `adb uninstall com.example.docasa_app.demo` first: the previously
+  installed Demo came from the pre-handoff host and carried a different signing key
+  (INSTALL_FAILED_UPDATE_INCOMPATIBLE). Note for future host moves: site-loaded variants
+  need a fresh install after a host key change (the parallel-install app ids are the best
+  local scope for this).
+- Verified on the phone: 7-tap → Developer options → Seed demo data (2 months) → immediate
+  "Filter needs replacing — Filter health is at 1 %" modal (Normal basis; the seeded story
+  lands near 0 by D-031 design); dismissed with "later time"; Filter page shows the slider
+  (Normal) + basis toggle + the seeded story; History exposes the 2-month timeline.
+- Demo nuance for the panel: the fake transport's Device information reports the emulator
+  fw string ('4.1.0') — cosmetic, tagged in the banner card as the built-in emulator.
