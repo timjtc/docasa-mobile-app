@@ -417,3 +417,25 @@ on the Demo non-BLE build should show the same device-selection modal with a moc
 - Note: the RecordingService boot-time auto-connect keeps connecting the emulator
   directly at cold start (pre-seed/pre-pick behavior unchanged — the picker engages on
   user-initiated Connect/Reconnect actions).
+
+---
+
+## WRAP-UP (2026-11-07, end of session) — handoff snapshot
+
+- **Ship state:** all requested features live through `759fef3`; sessions Tasks 1–14 are the
+  evidence trail (each: procedure → findings → fix → live verification).
+- **Gates at wrap:** app analyzer 0 issues / 79/79 tests; firmware v4.2.1 compile 738,567 B
+  flash 56% / 44,828 B RAM 13% / 0 warnings, §10.2 diff gate PASS (active sketch v5).
+- **Artifacts (local, releases/):** `docasa-ble-test-20261107.apk` (installed on the A34;
+  connects to the flashed v4.2.1 purifier) and `docasa-demo-20261107.apk` (no-hardware
+  path: emulated device, mock device-picker flow, 2-month dirty seeding + dev options;
+  verified: seed → 1%-health modal; picker flow → connect).
+- **Two parallel-install apps on the phone:** DOCASA BLE Test (com.example.docasa_app.ble)
+  and DOCASA Demo (com.example.docasa_app.demo) — fresh installs required uninstalls after
+  host-signing-key changes (see Tasks 10/14).
+- **Next worker queue (per Development-Process §11 'Next (in order)'):** G1/G2 formalities;
+  G4 remainder; cartridge numbers; inventory.yaml secret rotation.
+- **Known cosmetic debt:** fake transport Device info fw string ('4.1.0'); the demo
+  mock-picker sheet is static (no scan animation); demo history shows seeded story until
+  seeded again after a wipe.
+

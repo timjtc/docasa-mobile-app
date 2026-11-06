@@ -393,21 +393,17 @@ per D-017.
   real FBLP transport with device picker, handshake device verification, reconnect
   backoff, permission gate — verified up to "scans run, no DOCASA advertisement yet"
   (device was unpowered; firmware advertisement remains THE unverified runtime surface).
-- **Next (in order):** (0) **HANDOFF STATE 2026-11-07** — everything through the History-tab
-  revision (Last month + month compare, D-032, `5cd38e3`) is on `main`; Firmware v4.2.1 is
-  flashed on the purifier (partition table + ring + stage counters + dev `setUsage` channel);
-  the phone holds fresh `docasa-demo-20261107` + `docasa-ble-test-20261107` artifacts (note:
-  artifacts are local-only, `releases/` is gitignored). Session log:
-  `docs/sessions/2026-11-05-ble-connect-triage.md` (Tasks 1-12; Task 12 = the NEXT task's
-  handoff plan: user-centric UI sweep — device picker signal bars, System-tab label
-  humanization, Real-transport banner removal, Air-tab recommendations, label sweep — with
-  call sites + test touches recorded). (1) Run Task 12 (UI sweep) — planned, unimplemented.
-  (2) G1/G2 formalities on the bench (Serial + nRF checklist) — the over-the-air evidence
-  accumulated is not a formal gate. (3) G4 checklist remainder on the phone (walk-away
-  backoff reconnect, history across restarts — now with back-filled offline data, threshold
-  push) → `gate-reports/G4.md`; after G4 restore `withServices` scan filtering and review
-  the debugPrints. (0-continuation) real-cartridge budget numbers (D-011 placeholders)
-  whenever the cartridge model is chosen.
+- **Next (in order):** (0) **HANDOFF STATE 2026-11-07 (ref.)** — session Tasks 1–14 shipped
+  through the user-centric sweep + mock picker (D-032 `5cd38e3`, D-033 `4fd88ed`/`20a5d36`,
+  mock-picker `759fef3`); session record:
+  `docs/sessions/2026-11-05-ble-connect-triage.md` (Tasks 1–14 = the full handoff trail with
+  live-verification evidence per task). Current commit tip `759fef3`. (1) **Open formalities:**
+  G1/G2 bench checklists (Serial + nRF — the over-the-air evidence accumulated is not a
+  formal gate) + G4 remainder on the phone (walk-away backoff reconnect, history across
+  restarts, threshold push) → `gate-reports/G4.md`; after G4 restore `withServices` scan
+  filtering and review the debugPrints. (2) Real-cartridge budget numbers (D-011/D-018
+  placeholders) when the cartridge model is chosen. (3) Rotation/revoke of the exposed
+  `inventory.yaml` secret from 4986323 (if the tool it belongs to is still in use).
 - **Needs user input:** nothing blocking; filter-cartridge numbers for exact budgets when
   chosen (D-018 placeholders active).
 - **Firmware:** v4.2.1 IS the flashed lineage (sketch `docasa-air-purifier-v5/`, partition
