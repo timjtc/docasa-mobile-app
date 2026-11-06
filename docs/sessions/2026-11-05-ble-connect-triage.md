@@ -371,3 +371,31 @@ Read the code, planned edits (call sites + affected tests recorded):
 PENDING final verification with the user (phone screen asleep): the Last-month view +
 compare card on-device (Demo artifact, freshly installed at
 `releases/docasa-demo-20261107.apk` — the seeded 2-month story remains in its DB).
+
+## Task 13 (2026-11-07): user-centric UI sweep implemented + verified (D-033)
+
+Implemented per the Task-12 handoff plan, verified live on the Demo build on the phone:
+1. **Device picker row**: title = advertised name only, trailing = a cellular-bar icon
+   (≥ −60 full bars, ≥ −75 two, else one) — dBm +	service §D-002 subtitle removed.
+2. **System tab**: 'Air chemicals (VOC)' + 'Rough gauge of chemical-vapor level'
+   ('Chemical vapors high — air level counts worse' when < 30 kΩ, keeping the v3 bump
+   semantics); FAN SPEED has no sub-label (commanded-target text retired); BATTERY drops the
+   voltage figure (only 'Charging' when charging).
+3. **Device tab**: the 'Real transport/flutter_blue_plus' banner card deleted; info card
+   rows → Maker / Model / Firmware / Hardware (Protocol + Time-sync rows removed); counter
+   card → 'Device counters' with friendly subs (equivalent full-speed hours /
+   weighted particle-and-fan index / lifetime since first power-on).
+4. **History**: coverage caption = 'gaps mean no recorded data'.
+5. **Filter page**: subs ('equivalent full-speed hours', 'weighted particle-and-fan index',
+   'hours in POOR/BAD/HAZARD air since the filter swap', 'seconds per air level the
+   purifier measured', 'lifetime since first power-on'), counters title de-"raw"ded.
+6. **Air tab recommendations** — stage-driven plain-language card per the AQI guidance the
+   user provided (Good..Hazardous condensed to 2 bullets each: what it means + what to do):
+   verified GOOD ('Air is clean — no health concerns…'); invalid-stage card humanized.
+
+Gates: analyze 0 issues; 78/78 tests (system-test now asserts volts/commanded are GONE;
+device test repointed to the connection card). Artifacts rebuilt + installed:
+releases/docasa-demo-20261107.apk + docasa-ble-test-20261107.apk.
+Bench/visuals: picker bar-icon render requires advertising devices (screenshot skipped —
+no purifier powered at capture time); row code verified via the sweep + tests.
+

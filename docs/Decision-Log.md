@@ -417,6 +417,23 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   + counter consistency; all else unchanged.
   Gates: analyzer 0, 74/74 tests; artifact re-stamped `releases/docasa-ble-test-20261107.apk`.
 
+- **D-033 — User-centric UI sweep (labels, picker, recommendations)** · resolved · 2026-11-07 · app
+  Context: user requirement — the app must read for someone without technical knowledge:
+  remove dBm/dev-jargon wording, drop the transport banner, and give stage-appropriate
+  health recommendations on the Air tab.
+  Decision: device-picker rows show only the advertised name + a cellular-bar icon
+  (≥ −60 full, ≥ −75 mid, else weak); System tab — 'Air chemicals (VOC)' with a plain
+  sub-label ('Chemical vapors high — air level counts worse' below the 30 kΩ bump),
+  'commanded target' and the battery voltage figure removed (charging note kept); Device
+  tab — the transport banner removed, info rows Maker/Model/Firmware/Hardware, counter
+  subs humanized; Filter/History sub-labels + captions cleaned ('gaps mean no recorded
+  data'; NVS/§-tags dropped); Air tab gains a Recommendations card driven by the current
+  stage, two plain-language bullets each (what it means + what to do) based on the AQI
+  health wording the user supplied; the invalid-stage dev text is user-readable.
+  Verified on the A34 via the Demo build (picker-bar render needs no purifier — icon-only,
+  code-verified via tests). Analyzer 0 issues; 78/78 tests (volts/commanded asserted gone;
+  device test repointed to the connection card).
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only
