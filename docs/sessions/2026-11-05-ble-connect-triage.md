@@ -399,3 +399,21 @@ releases/docasa-demo-20261107.apk + docasa-ble-test-20261107.apk.
 Bench/visuals: picker bar-icon render requires advertising devices (screenshot skipped —
 no purifier powered at capture time); row code verified via the sweep + tests.
 
+
+## Task 14 (2026-11-07): mock device picker in the non-BLE flow (D-033 companion)
+
+User request: verify the device-picker visuals without the prototype — tapping 'Connect'
+on the Demo non-BLE build should show the same device-selection modal with a mock device.
+
+- `startConnectFlow`: the `!realBle` branch now routes through
+  `showMockDevicePicker()` — the same bottom-sheet visual (title, mock
+  "DOCASA-AirPurifier" row with the cellular-bar icon, Cancel) — and picking the row
+  connects the built-in emulator (previous behavior: silent direct connect, no picker).
+- `showMockDevicePicker` returns false on cancel/outside-tap (null-coalesced).
+- Widget test added (`device_picker_demo_test.dart`): the sheet lists the mock row +
+  signal icon, Cancel button, and returns true on pick.
+- Verified live on the Demo build: Reconnect → sheet → picking the row → CONNECTED
+  (Device page valid). Screenshots in tmp (demo-picker2/demo-picked).
+- Note: the RecordingService boot-time auto-connect keeps connecting the emulator
+  directly at cold start (pre-seed/pre-pick behavior unchanged — the picker engages on
+  user-initiated Connect/Reconnect actions).

@@ -10,17 +10,71 @@ import '../../providers.dart';
 
 /// Connect entry point shared by the Device page and the offline Connect
 /// prompt: real transport → device picker first (user picks by name, only
-/// devices with a DOCASA-valid advertisement); emulator → direct connect.
+/// devices with a DOCASA-valid advertisement); emulator/demo → the SAME
+/// picker with a mock device row, so the selection visuals (name + signal
+/// bars) are verifiable without hardware (D-033); picking it connects the
+/// built-in emulator.
 Future<void> startConnectFlow(BuildContext context, WidgetRef ref) async {
   final conn = ref.read(connectionProvider);
   // Non-const local so the analyzer never prunes the real-transport branch.
   final bool realBle = kRealBle;
-  if (!realBle || conn is! FbpDocasaConnection) {
-    await conn.connect();
+  if (realBle && conn is FbpDocasaConnection) {
+    final dev = await showDevicePicker(context);
+    if (dev != null) await conn.connectTo(dev);
     return;
   }
-  final dev = await showDevicePicker(context);
-  if (dev != null) await conn.connectTo(dev);
+  final picked = await showMockDevicePicker(context);
+  if (picked) await conn.connect();
+}
+
+/// Non-BLE (demo/dev) device selection — the same visual structure as the
+/// live picker with a mock DOCASA row. Returns true when the user picked it
+/// (null = dismissed outside the buttons — treated as a cancel).
+Future<bool> showMockDevicePicker(BuildContext context) async {
+  final picked = await showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => const _MockPickerSheet(),
+  );
+  return picked ?? false;
+}
+
+class _MockPickerSheet extends StatelessWidget {
+  const _MockPickerSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Device selection',
+                style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.air),
+              title: const Text('DOCASA-AirPurifier'),
+              trailing: const Icon(Icons.signal_cellular_alt, size: 22),
+              onTap: () => Navigator.pop(context, true),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Live scan picker (Contract §1 discovery): the primary list shows devices
