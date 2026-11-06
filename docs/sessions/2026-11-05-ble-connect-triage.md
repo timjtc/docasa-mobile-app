@@ -439,3 +439,31 @@ on the Demo non-BLE build should show the same device-selection modal with a moc
   mock-picker sheet is static (no scan animation); demo history shows seeded story until
   seeded again after a wipe.
 
+
+## Task 15 (2026-11-08): device counters → Device tab (dev-gated); Air recommendations → bottom
+
+User request: get the raw counters off the Filter tab (they belong in dev-land), keep them
+reachable under the Device tab only when developer mode is enabled, and move the Air-tab
+Recommendations card to the bottom of the page (after the three PM sections).
+
+1. **Filter tab** (`filter_page.dart`): `_countersCard` + `_row` deleted — the page keeps the
+   connect prompt, health hero, basis toggle + sensitivity, reset placeholder, explainer cards.
+   `core/format.dart` import dropped (no remaining Fmt use).
+2. **Device tab** (`device_page.dart`): the counters card is now `counters != null && devOptions`
+   and absorbed the moved rows: Dirty-air time (0.x h), Time share per stage (both require
+   `stageSeconds.length >= 5`, from the old Filter card), plus the 'Counters live on the
+   purifier…' caption and the existing Refresh button.
+3. **Air tab** (`dashboard_page.dart`): `_recommendations(stage)` moved to the last child of the
+   ListView — after StageHero (PM2.5), PM1.0 and PM10 tiles (and after the invalid-stage notice).
+
+Gates: analyze 0 issues; **80/80 tests** — `filter_basis_test` gained a Device-tab test
+(7-tap dev unlock → moved rows visible with the fixture's 0.3 h dirty read; also asserts
+absence before the unlock), the Filter-tab test asserts the default basis line and that raw
+counters are gone; `pages_test` filter test dropped the two raw-row assertions (moved).
+
+Live on the A34 (demo build, fresh install data → dev options OFF): Device tab shows
+connection + Device information only (gating proof); 7 quick taps on the info card reveal
+Developer options + the full Device counters card with all moved rows; Filter tab shows no
+counter card; Air tab shows Recommendations at the bottom under the PM tiles.
+Note: counters read 0 at fresh boot (fake emulator runtime starts clean — demo operator
+re-seeds via 'Seed demo data (2 months)' before a panel).

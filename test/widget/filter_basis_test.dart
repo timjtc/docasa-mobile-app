@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:docasa_app/data/db/database.dart';
+import 'package:docasa_app/features/device/device_page.dart';
 import 'package:docasa_app/features/filter/filter_page.dart';
 import 'package:docasa_app/protocol/models.dart';
 import 'package:docasa_app/providers.dart';
@@ -38,11 +39,47 @@ void main() {
     return ctx;
   }
 
-  testWidgets('dirty-air basis is the installed default and shows the '
-      'dirty-air hours row', (tester) async {
+  testWidgets('dirty-air basis is the installed default and raw counters '
+      'are not on the Filter tab', (tester) async {
     final db = AppDatabase.test(NativeDatabase.memory());
     addTearDown(db.close);
     await pumpPage(tester, db);
+
+    // Default basis shows on the health card; the raw per-stage counters
+    // moved to the Device tab behind dev options (user request).
+    expect(find.textContaining('Consumption driven by dirty-air exposure'),
+        findsOneWidget);
+    expect(find.text('Dirty-air time'), findsNothing);
+    expect(find.text('Device counters'), findsNothing);
+  });
+
+  testWidgets('device counters moved to the Device tab behind dev options',
+      (tester) async {
+    final db = AppDatabase.test(NativeDatabase.memory());
+    addTearDown(db.close);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        dbProvider.overrideWithValue(db),
+        connectionStateProvider.overrideWith(
+            (ref) => Stream.value(DocasaConnectionState.connected)),
+        filterCountersProvider.overrideWith((ref) async => counters),
+        deviceInfoProvider.overrideWith((ref) async => const DocasaDeviceInfo(
+            manufacturer: 'DOCASA',
+            model: 'DOCASA Air Purifier',
+            firmwareRevision: '4.2.1',
+            hardwareRevision: 'ESP32-WROOM-v3')),
+      ],
+      child: const MaterialApp(home: DevicePage()),
+    ));
+    await tester.pumpAndSettle();
+
+    // Dev-gated: absent until the 7-tap unlock (D-030 pattern).
+    expect(find.text('Device counters'), findsNothing);
+    for (var i = 0; i < 7; i++) {
+      await tester.tap(find.textContaining('Device information'));
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    await tester.pumpAndSettle();
 
     // dirty seconds st[2..4]=1000+60+0 = 1060 s → 0.3 h
     await tester.scrollUntilVisible(

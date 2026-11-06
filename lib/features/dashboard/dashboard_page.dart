@@ -51,8 +51,6 @@ class DashboardPage extends ConsumerWidget {
           updatedAt: t?.at,
         ),
         const SizedBox(height: 12),
-        _recommendations(stage),
-        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -73,7 +71,7 @@ class DashboardPage extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        if (stage == null)
+        if (stage == null) ...[
           const Card(
             child: Padding(
               padding: EdgeInsets.all(12),
@@ -81,6 +79,11 @@ class DashboardPage extends ConsumerWidget {
                   Text('The device sent an unclear air level — retrying.'),
             ),
           ),
+          const SizedBox(height: 12),
+        ],
+        // Recommendations sit at the bottom, after the PM sections
+        // (user request).
+        _recommendations(stage),
       ],
       ),
     );

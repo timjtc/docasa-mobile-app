@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/format.dart';
 import '../../data/filter_health.dart';
 import '../../data/settings_repository.dart';
 import '../../providers.dart';
 
-/// Filter health — % of life left, projection, raw counters, sensitivity.
+/// Filter health — % of life left, projection, sensitivity. Raw device
+/// counters moved to the Device tab behind dev options (user request).
 /// Basis toggle = dirty-air hours (default) vs load integral (D-027).
 class FilterPage extends ConsumerStatefulWidget {
   const FilterPage({super.key});
@@ -37,11 +37,7 @@ class _FilterPageState extends ConsumerState<FilterPage> {
                 child: Text('Connect the device to read filter counters.'),
               ),
             )
-          else ...[
-            _healthCard(health),
-            const SizedBox(height: 12),
-            _countersCard(counters),
-          ],
+          else _healthCard(health),
           const SizedBox(height: 12),
           _sensitivityCard(cs, settings),
           const SizedBox(height: 12),
@@ -147,65 +143,6 @@ class _FilterPageState extends ConsumerState<FilterPage> {
       ),
     );
   }
-
-  Widget _countersCard(dynamic counters) {
-    final cs = Theme.of(context).colorScheme;
-    final st = counters.stageSeconds as List<int>? ?? const <int>[];
-    final dirtyH =
-        counters.dirtyAirSeconds / 3600.0;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Device counters',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            _row('Fan usage', Fmt.fanSecondsAsHours(counters.fanSeconds),
-                'equivalent full-speed hours'),
-            _row('PM-weighted load', Fmt.bigInt(counters.pmWeightedFanSeconds),
-                'weighted particle-and-fan index'),
-            if (st.length >= 5) ...[
-              _row('Dirty-air time',
-                  '${dirtyH.toStringAsFixed(1)} h',
-                  'hours in POOR/BAD/HAZARD air since the filter swap'),
-              _row('Time share per stage',
-                  st.indexed.map((e) => '${e.$2}s').join(' · '),
-                  'seconds per air level the purifier measured'),
-            ],
-            _row('Powered on', Fmt.powerOnHours(counters.powerOnHours),
-                'lifetime since first power-on'),
-            const Divider(),
-            Text(
-              'Counters live on the purifier and survive power cycles. Read '
-              'when the app connects and refreshed while connected.',
-              style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _row(String label, String value, String subtitle) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: Text(label)),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(subtitle,
-                    style:
-                        const TextStyle(fontSize: 10, color: Colors.white54)),
-              ],
-            ),
-          ],
-        ),
-      );
 
   Widget _sensitivityCard(ColorScheme cs, FilterSettings settings) {
     return Card(

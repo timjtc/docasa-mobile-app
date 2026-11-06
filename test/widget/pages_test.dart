@@ -94,8 +94,9 @@ void main() {
     // fs=10.8e6 of 21.6e9 hour budget (~0.05%) and pwfs=74.25e6 of 540e9 —
     // both tiny → ~100% (99.95 rounds to 100).
     expect(find.text('100%'), findsOneWidget);
-    expect(find.textContaining(Fmt.fanSecondsAsHours(10800000)), findsWidgets);
-    expect(find.text(Fmt.powerOnHours(3210)), findsOneWidget);
+    // Raw counter rows moved to the Device tab (dev-gated) — the Filter tab
+    // surfaces only health, basis, sensitivity and the reset control.
+    expect(find.text('Device counters'), findsNothing);
     // The replace/reset card sits below the fold — scroll to it first.
     await tester.scrollUntilVisible(
       find.text('Reset filter counters'),

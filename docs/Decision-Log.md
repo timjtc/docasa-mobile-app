@@ -434,6 +434,18 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   code-verified via tests). Analyzer 0 issues; 78/78 tests (volts/commanded asserted gone;
   device test repointed to the connection card).
 
+- **D-034 — Raw device counters relocated (+ Air recommendations placement)** · resolved · 2026-11-08 · app
+  Context: user request — the raw counter rows are developer material, not consumer UI, and the
+  Recommendations card now reads better at the end of the Air tab.
+  Decision: the raw device-counter card moves from the Filter tab (deleted there) to the Device
+  tab behind the existing developer-mode gate (`counters != null && devOptions`, 7-tap unlock).
+  It absorbs the moved Dirty-air-time and Time-share-per-stage rows plus the persistence caption
+  and Refresh. The Filter tab surfaces only health, basis + sensitivity, the reset placeholder
+  and the explainer cards. The Air-tab Recommendations card is the LAST child of the page
+  (after PM2.5 hero, PM1.0, PM10 — normal users see status first, advice after).
+  Verified live on the A34 (gated-off and dev-unlocked states) and by tests (80/80: absence
+  before unlock, moved rows + 0.3 h dirty read after; Filter-tab raw counters asserted gone).
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

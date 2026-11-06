@@ -209,7 +209,9 @@ class _DevicePageState extends ConsumerState<DevicePage> {
               ),
             ),
           const SizedBox(height: 12),
-          if (counters != null)
+          // Raw device counters moved here from the Filter tab (user
+          // request) and dev-gated — normal users see only health/sensitivity.
+          if (counters != null && devOptions)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -224,8 +226,26 @@ class _DevicePageState extends ConsumerState<DevicePage> {
                     _kv('PM-weighted load',
                         Fmt.bigInt(counters.pmWeightedFanSeconds),
                         'weighted particle-and-fan index'),
+                    if (counters.stageSeconds.length >= 5) ...[
+                      _kv('Dirty-air time',
+                          '${(counters.dirtyAirSeconds / 3600.0).toStringAsFixed(1)} h',
+                          'hours in POOR/BAD/HAZARD air since the filter swap'),
+                      _kv('Time share per stage',
+                          counters.stageSeconds.indexed
+                              .map((e) => '${e.$2}s')
+                              .join(' · '),
+                          'seconds per air level the purifier measured'),
+                    ],
                     _kv('Powered on', Fmt.powerOnHours(counters.powerOnHours),
                         'lifetime since first power-on'),
+                    const Divider(),
+                    Text(
+                      'Counters live on the purifier and survive power '
+                      'cycles. Read when the app connects and refreshed '
+                      'while connected.',
+                      style: TextStyle(
+                          fontSize: 11, color: cs.onSurfaceVariant),
+                    ),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
