@@ -186,28 +186,6 @@ class _DevicePageState extends ConsumerState<DevicePage> {
             ),
           ),
           const SizedBox(height: 12),
-          Card(
-            color: cs.primaryContainer.withValues(alpha: 0.3),
-            child: const Padding(
-              padding: EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Icon(Icons.science_outlined, size: 18),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      kRealBle
-                          ? 'Real transport (flutter_blue_plus) — runtime '
-                              'verification at G4 after the bench session.'
-                          : 'Phase 3: connected to the built-in device emulator '
-                              '— same protocol path as real BLE.',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
           if (info != null)
             Card(
               child: GestureDetector(
@@ -221,12 +199,10 @@ class _DevicePageState extends ConsumerState<DevicePage> {
                       const Text('Device information',
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
-                      _kv('Manufacturer', info.manufacturer),
+                      _kv('Maker', info.manufacturer),
                       _kv('Model', info.model),
                       _kv('Firmware', info.firmwareRevision),
                       _kv('Hardware', info.hardwareRevision),
-                      _kv('Protocol', 'v1 (JSON)'),
-                      _kv('Time sync', 'sent on every connect'),
                     ],
                   ),
                 ),
@@ -240,13 +216,16 @@ class _DevicePageState extends ConsumerState<DevicePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Filter counters',
+                    const Text('Device counters',
                         style: TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
-                    _kv('Fan usage', Fmt.fanSecondsAsHours(counters.fanSeconds)),
+                    _kv('Fan usage', Fmt.fanSecondsAsHours(counters.fanSeconds),
+                        'equivalent full-speed hours'),
                     _kv('PM-weighted load',
-                        Fmt.bigInt(counters.pmWeightedFanSeconds)),
-                    _kv('Powered on', Fmt.powerOnHours(counters.powerOnHours)),
+                        Fmt.bigInt(counters.pmWeightedFanSeconds),
+                        'weighted particle-and-fan index'),
+                    _kv('Powered on', Fmt.powerOnHours(counters.powerOnHours),
+                        'lifetime since first power-on'),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -333,12 +312,21 @@ class _DevicePageState extends ConsumerState<DevicePage> {
     );
   }
 
-  Widget _kv(String k, String v) => Padding(
+  Widget _kv(String k, String v, [String? note]) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
         child: Row(
           children: [
             Expanded(child: Text(k)),
-            Text(v, style: const TextStyle(fontWeight: FontWeight.w600)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(v, style: const TextStyle(fontWeight: FontWeight.w600)),
+                if (note != null)
+                  Text(note,
+                      style: TextStyle(
+                          fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              ],
+            ),
           ],
         ),
       );

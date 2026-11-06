@@ -148,8 +148,16 @@ class _DevicePickerSheetState extends State<_DevicePickerSheet> {
                 title: Text(r.advertisementData.advName.isNotEmpty
                     ? r.advertisementData.advName
                     : r.device.advName),
-                subtitle: Text(
-                    'service §D-002 · ${r.rssi} dBm'), // ad carries our UUID
+                // Signal strength as a simple bar meter, not a dBm figure
+                // (D-033: user-friendly device rows).
+                trailing: Icon(
+                  switch (r.rssi) {
+                    final s when s >= -60 => Icons.signal_cellular_alt,
+                    final s when s >= -75 => Icons.signal_cellular_alt_2_bar,
+                    _ => Icons.signal_cellular_alt_1_bar,
+                  },
+                  size: 22,
+                ),
                 leading: const Icon(Icons.air),
                 onTap: () => Navigator.pop(context, r.device),
               ),

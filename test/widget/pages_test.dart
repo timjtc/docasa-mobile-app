@@ -66,7 +66,10 @@ void main() {
     expect(find.text(Fmt.vocKOhms(38.4)), findsOneWidget);
     expect(find.text(Fmt.rpm(0)), findsOneWidget);
     expect(find.text('84%'), findsOneWidget);
-    expect(find.textContaining(Fmt.volts(15.31)), findsOneWidget);
+    // D-033: the voltage figure and the "commanded target" sub-label are
+    // retired from the System tab (user-facing simplicity).
+    expect(find.textContaining(Fmt.volts(15.31)), findsNothing);
+    expect(find.textContaining('commanded'), findsNothing);
   });
 
   testWidgets('filter page computes health from counters', (tester) async {
@@ -181,7 +184,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('device emulator'), findsOneWidget);
+    // D-033: the demo/real-transport banner is retired; the connection card
+    // is the primary signal.
+    expect(find.text('Connected to DOCASA-AirPurifier'), findsOneWidget);
     expect(find.text('Reconnect'), findsOneWidget); // connected state now
     // D-030: demo tools hide behind dev options — 7 quick taps on the
     // Device information card reveal them.

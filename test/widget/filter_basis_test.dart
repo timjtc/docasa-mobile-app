@@ -46,7 +46,7 @@ void main() {
 
     // dirty seconds st[2..4]=1000+60+0 = 1060 s → 0.3 h
     await tester.scrollUntilVisible(
-      find.textContaining('POOR/BAD/HAZARD since replacement'),
+      find.textContaining('hours in POOR/BAD/HAZARD air since the filter swap'),
       200,
       scrollable: find.byType(Scrollable).first,
     );

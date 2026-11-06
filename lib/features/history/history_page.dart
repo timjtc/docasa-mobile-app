@@ -96,8 +96,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
-                        'Coverage: ${Fmt.coveragePct(series.coverage)} of window · '
-                        'gaps shown as line breaks',
+                        'Coverage: ${Fmt.coveragePct(series.coverage)} of window — '
+                        'gaps mean no recorded data',
                         style: TextStyle(
                             fontSize: 11, color: cs.onSurfaceVariant),
                       ),

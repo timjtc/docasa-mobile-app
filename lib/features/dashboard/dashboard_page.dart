@@ -51,6 +51,8 @@ class DashboardPage extends ConsumerWidget {
           updatedAt: t?.at,
         ),
         const SizedBox(height: 12),
+        _recommendations(stage),
+        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -75,10 +77,78 @@ class DashboardPage extends ConsumerWidget {
           const Card(
             child: Padding(
               padding: EdgeInsets.all(12),
-              child: Text('Received an invalid stage value — flagged per contract X6.'),
+              child:
+                  Text('The device sent an unclear air level — retrying.'),
             ),
           ),
       ],
+      ),
+    );
+  }
+
+  /// Health recommendations for the current air level (user request) —
+  /// plain-language, purifier-actionable. Reference wording from the AQI
+  /// health-category guidance (Good→Hazardous, D-033), condensed so a normal
+  /// user knows: what the air means for them + what to do about it.
+  List<String> _recommendationList(AirStage? stage) => switch (stage) {
+        null => ['Reading the current air level…'],
+        AirStage.good => [
+            'Air is clean — no health concerns. Enjoy your space.',
+            'Run the purifier as usual; ventilation is safe.',
+          ],
+        AirStage.fair => [
+            'Air quality is fair — sensitive people (asthma, allergies) may '
+                'feel mild symptoms; keep outdoor activity light.',
+            'Keep the purifier running to pull the level down.',
+          ],
+        AirStage.poor => [
+            'Air is poor — breathing irritation is likely, especially for '
+                'sensitive people.',
+            'Keep the purifier on and windows closed; avoid outdoor exertion.',
+          ],
+        AirStage.bad => [
+            'Air is bad — heart and lungs come under stress; irritations are '
+                'more likely for everyone.',
+            'Run the purifier at full power, keep windows shut, and avoid '
+                'indoor smoke or fumes.',
+          ],
+        AirStage.hazard => [
+            'Hazardous air — strong irritation is likely for everyone; avoid '
+                'outdoor activity.',
+            'Keep the purifier at maximum and stay in the cleanest room.',
+          ],
+      };
+
+  Widget _recommendations(AirStage? stage) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.health_and_safety, size: 18),
+                SizedBox(width: 8),
+                Text('Recommendations',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            for (final tip in _recommendationList(stage))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('•  ',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                    Expanded(child: Text(tip)),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -133,14 +203,14 @@ class SystemPage extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           ValueTile(
-            label: 'VOC (GAS kΩ)',
+            label: 'Air chemicals (VOC)',
             icon: Icons.blur_on,
             value: env == null ? '—' : Fmt.vocKOhms(env.vocKOhms),
             subtitle: env == null
                 ? null
                 : (env.vocKOhms < 30
-                    ? 'Elevated — device applies a +1 stage bump below 30 kΩ'
-                    : 'Qualitative proxy (uncalibrated BME680)'),
+                    ? 'Chemical vapors high — air level counts worse'
+                    : 'Rough gauge of chemical-vapor level'),
             color: env != null && env.vocKOhms < 30
                 ? Colors.amber
                 : null,
@@ -150,7 +220,6 @@ class SystemPage extends ConsumerWidget {
             label: 'FAN SPEED',
                     icon: Icons.toys,
             value: sys == null ? '—' : Fmt.rpm(DomainClamps.fanRpm(sys.fanRpm)),
-            subtitle: sys == null ? null : 'commanded target (v3)',
           ),
           const SizedBox(height: 12),
           ValueTile(
@@ -161,12 +230,7 @@ class SystemPage extends ConsumerWidget {
                 : sys.batteryFull
                     ? 'FULL'
                     : '${DomainClamps.batteryPct(sys.batteryPct)}%',
-            subtitle: sys == null
-                ? null
-                : [
-                    if (sys.charging) 'charging',
-                    Fmt.volts(sys.batteryVoltage),
-                  ].join(' · '),
+            subtitle: sys == null || !sys.charging ? null : 'Charging',
             color: sys != null && (sys.charging || sys.batteryFull)
                 ? Colors.amber
                 : Colors.green,

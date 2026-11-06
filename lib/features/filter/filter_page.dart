@@ -159,27 +159,27 @@ class _FilterPageState extends ConsumerState<FilterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Device counters (raw)',
+            const Text('Device counters',
                 style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             _row('Fan usage', Fmt.fanSecondsAsHours(counters.fanSeconds),
-                'equivalent full-speed hours @ 4000 RPM'),
+                'equivalent full-speed hours'),
             _row('PM-weighted load', Fmt.bigInt(counters.pmWeightedFanSeconds),
-                'RPM·µg·s integral'),
+                'weighted particle-and-fan index'),
             if (st.length >= 5) ...[
               _row('Dirty-air time',
                   '${dirtyH.toStringAsFixed(1)} h',
-                  'POOR/BAD/HAZARD since replacement (basis for health)'),
+                  'hours in POOR/BAD/HAZARD air since the filter swap'),
               _row('Time share per stage',
                   st.indexed.map((e) => '${e.$2}s').join(' · '),
-                  'device stages GOOD…HAZARD (§4.4 "st")'),
+                  'seconds per air level the purifier measured'),
             ],
             _row('Powered on', Fmt.powerOnHours(counters.powerOnHours),
-                'device lifecycle — never reset'),
+                'lifetime since first power-on'),
             const Divider(),
             Text(
-              'Counters are stored on the device (NVS) and survive power '
-              'cycles. Read on connect and every few minutes while connected.',
+              'Counters live on the purifier and survive power cycles. Read '
+              'when the app connects and refreshed while connected.',
               style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
             ),
           ],
