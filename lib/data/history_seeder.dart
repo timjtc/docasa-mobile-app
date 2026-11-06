@@ -107,13 +107,15 @@ class _HourAcc {
   int stageMax = 1;
 }
 
-/// Developer demo (D-027/D-030): back-fill ~2 months of dirty-skewed history
-/// — mostly POOR/BAD/HAZARD minutes during power-on hours, "off" overnight —
-/// straight into the aggregate tiers at minute cadence (one row = one full
-/// minute bucket, so donut/coverage keep their sample_count semantics; no
-/// raw rows → ~57k rows, cheap). REPLACES the existing timeline. Returns the
-/// usage totals for the Device-page dev action to write into the device
-/// counters (dev channel) so the health basis matches the seeded story.
+/// Developer demo (D-027/D-030, story tuned 2026-11-07): back-fill ~2 months
+/// of REALISTIC dirty-skewed history — cleaner morning/evening stretches and
+/// ~6 h "off" overnight, so GOOD/FAIR get real hours, but the day still ends
+/// majority-POOR+ (≈92 % dirty): the Normal basis lands near 0 % and the
+/// replacement alert fires; Sensitive overflows to 0 %. Minute cadence (one
+/// row = one full-minute bucket; no raw rows → ~65k rows, cheap). REPLACES
+/// the existing timeline; returns the usage totals for the Device-page dev
+/// action to write into the device counters (dev channel) so the health
+/// basis matches the seeded story.
 class TwoMonthSeeder {
   const TwoMonthSeeder();
 
@@ -134,19 +136,34 @@ class TwoMonthSeeder {
     final lastMinute = now - (now % 60000);
     var minuteStart = now - days * 24 * 3600 * 1000;
     while (minuteStart < lastMinute) {
-      final hourOfDay = DateTime.fromMillisecondsSinceEpoch(minuteStart).hour;
-      if (hourOfDay >= 7 && hourOfDay < 23) {
-        // Dirty-skewed distribution: ~85-90% of minutes POOR+.
-        final r = rng.nextDouble();
+      final d = DateTime.fromMillisecondsSinceEpoch(minuteStart);
+      final minsOfDay = d.hour * 60 + d.minute;
+      // Realistic duty: the purifier sleeps only ~6 h (off 00:30–06:30),
+      // so the 2-month story fits ~1080 powered hours — enough headroom for
+      // the clean stretches below to stay under the dirty budget.
+      final deviceOn = !(minsOfDay >= 30 && minsOfDay < 390);
+      if (deviceOn) {
+        // Cleaner mornings/evenings, dirtier afternoons: the hour bias keeps
+        // a realistic rhythm (GOOD/FAIR stretches) while the day still ends
+        // majority-dirty.
+        var r = rng.nextDouble();
+        switch (d.hour) {
+          case 7 || 8 || 9 || 21 || 22:
+            r -= 0.14; // calm hours — GOOD/FAIR more likely
+          case 12 || 13 || 14 || 15 || 16 || 17 || 18:
+            r += 0.12; // afternoon smog peak
+        }
         final double pm;
-        if (r < 0.08) {
-          pm = 36 + rng.nextDouble() * 20; // FAIR dip
-        } else if (r < 0.20) {
-          pm = 58 + rng.nextDouble() * 40; // POOR
-        } else if (r < 0.85) {
-          pm = 100 + rng.nextDouble() * 60; // BAD
+        if (r < 0.02) {
+          pm = 3 + rng.nextDouble() * 9; // GOOD (stage 1)
+        } else if (r < 0.08) {
+          pm = 13 + rng.nextDouble() * 22; // FAIR (stage 2)
+        } else if (r < 0.25) {
+          pm = 36 + rng.nextDouble() * 19; // POOR (stage 3)
+        } else if (r < 0.75) {
+          pm = 58 + rng.nextDouble() * 90; // BAD (stage 4)
         } else {
-          pm = 165 + rng.nextDouble() * 80; // HAZARD spikes
+          pm = 152 + rng.nextDouble() * 88; // HAZARD (stage 5)
         }
         final pm25 = pm.round();
         final pm1 = (pm25 * 0.65).round();

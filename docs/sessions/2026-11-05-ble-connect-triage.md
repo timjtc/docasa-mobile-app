@@ -271,3 +271,25 @@ User requirements implemented and exercised on the phone (all screenshots in tmp
 
 RESIDUAL for the next bench: the seeded numbers leave Normal at 4 % by design (so sliding to
 Sensitive lands CLEAN at 0 %); st totals drift with post-seed live deltas (real wins).
+
+## Task 9 (2026-11-07): demo story tuned — realistic filter-life curve (D-031)
+
+User request: replace the all-dirty 2-month skew with a realistic texture — GOOD and FAIR
+stretches present, majority still dirty, landing NEAR 0 % on the NORMAL basis so the
+replacement prompt fires without touching the sensitivity.
+
+Tuned `TwoMonthSeeder`:
+- Duty: purifier sleeps only ~6 h (off 00:30–06:30 — realistic 18 h/day → ~1080 h over the
+  window) — headroom for the clean stretches while the dirty budget still saturates.
+- Hour bias: hours 07–09 & 21–22 tilt toward calm (GOOD/FAIR more likely); 12–18 tilt into the
+  afternoon smog peak (BAD/HAZARD). Bands: GOOD 2 % / FAIR 6 % / POOR 15 % / BAD 52 % /
+  HAZARD 25 % of minutes.
+- Result (deterministic seed 7): Normal basis ≈ **1.51 %** — inside the 10 % alert threshold,
+  so the replacement prompt fires on the NORMAL default as requested; Sensitive still 0 %.
+- Tests tightened: Normal pct ∈ (0, 10); dirty-dominance + counter consistency + Sensitive
+  overflow assertions stay.
+
+Gates: analyze 0 issues, 74/74 tests; artifact rebuilt as
+`releases/docasa-ble-test-20261107.apk` (date-stamped; the 20261105 artifact remains for the
+older install case). Phone re-attach needed for the final on-device seeding check.
+

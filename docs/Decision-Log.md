@@ -404,6 +404,19 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   Gates: analyzer 0 issues, **74/74 tests** (+3: seeding ranges/projection, fake-transport
   echo, 7-tap tracker); firmware compile 738,567 B (56 %) / 0 warnings; diff gate PASS.
 
+- **D-031 — Demo story tuned: realistic GOOD/FAIR stretches, Normal still lands near 0 %** ·
+  resolved · 2026-11-07 · app
+  Context: user feedback — the all-dirty 2-month skew was too blunt ("more realistic filter
+  life data"); GOOD/FAIR hours exist in the story, but the demonstration must still land near
+  0 % on NORMAL (default basis) and fire the replacement alert.
+  Decision: `TwoMonthSeeder` retune — the purifier sleeps only ~6 h (off 00:30–06:30 → ~1080
+  powered hours over the window), hour-of-day bias (07–09 & 21–22 calmer, 12–18 smoggy), and
+  minute bands GOOD 2 % / FAIR 6 % / POOR 15 % / BAD 52 % / HAZARD 25 %. Deterministic result:
+  Normal ≈ **1.51 %** (well under the 10 % alert threshold → the prompt fires on the DEFAULT
+  configuration); Sensitive still 0 %. Tests assert the Normal band (0,10) + dirty dominance
+  + counter consistency; all else unchanged.
+  Gates: analyzer 0, 74/74 tests; artifact re-stamped `releases/docasa-ble-test-20261107.apk`.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

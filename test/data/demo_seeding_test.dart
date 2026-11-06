@@ -64,8 +64,10 @@ void main() {
         budgets: const FilterBudgets(),
         now: DateTime.fromMillisecondsSinceEpoch(now),
       );
-      expect(normal.pct, greaterThan(2.0));
-      expect(normal.pct, lessThan(60.0));
+      // Normal lands NEAR 0 % (under the 10 % alert threshold → the
+      // replacement prompt fires) while keeping realistic clean stretches.
+      expect(normal.pct, greaterThan(0));
+      expect(normal.pct, lessThan(10));
 
       // Dirty-dominance: POOR+ minutes ≫ FAIR/GOOD minutes.
       final minuteRows = await db.select(db.minuteAggregates).get();
