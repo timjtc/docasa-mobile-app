@@ -668,3 +668,29 @@ row + calibration note) and Decision-Log D-038 updated.
 3. Rebuilt + installed both on the A34; the app drawer shows 'DOCASA' and 'DOCASA Demo'
    with the square DOCASA logo rendered in One UI's mask.
 Gates: analyze 0; 85/85 (no Dart changes). Manual §1 notes the two builds + icon.
+
+---
+
+## WRAP-UP 2 (2026-11-09, development pause) — handoff snapshot
+
+- **Ship state:** all user-requested work shipped through `6aeb62f` (D-039 branding:
+  the BLE build is labeled simply **"DOCASA"**, both builds carry the square DOCASA
+  launcher icon); Tasks 15–23 cover: user-centric copy sweep, mock picker flow, the
+  Device-counters relocation + dev-gate, the Time-share layout fix, reconnect-triggered
+  alerts (D-035), the D-036 Filter-tab batch (basis dev-only + manual replacement),
+  the D-037/D-038 budget recalibration (6–10-month band; fresh reset ≈8 months,
+  live-verified), the copy sweep, and branding.
+- **Gates at pause:** app analyzer 0 issues / 85 tests; firmware v4.2.1 on the purifier
+  (no firmware changes after Task 14's flash; §10.2 gate untouched).
+- **Artifacts (local, releases/):** `docasa-demo-20261107.apk` + `docasa-ble-test-20261107.apk`,
+  both freshly rebuilt + installed on the A34 (BLE app now installed under the name
+  "DOCASA"; the launcher icons render in One UI from `flutter_launcher_icons` mipmaps).
+- **Housekeeping:** the misplaced `assets/ITSO Quickie Notes __ CentOS.pdf` (a committed
+  download stray) was removed from the repo at the user's request — nothing in
+  docs/code/pubspec referenced it; the launcher-icon source
+  `assets/docasa-logo-square-icon.png` is now committed (it was untracked at D-039).
+- **Panel reading:** `docs/User-Manual.md` (export hint at §10) + session log Tasks
+  15–23. Demo prep: re-run `Seed demo data (2 months)` right before presenting; the
+  runtime state note (§5) still applies.
+- **Open queue (unchanged):** G1/G2/G4 formalities; real-cartridge numbers (D-011/D-018);
+  the `inventory.yaml` secret rotation; `withServices` scan filtering after G4.
