@@ -139,14 +139,29 @@ class TwoMonthSeeder {
 
     final minuteRows = <MinuteAggregatesCompanion>[];
     final lastMinute = now - (now % 60000);
+    // D-038: story extends through the END of the current day, so the day
+    // chart still shows a full, plausible day whenever it is viewed later
+    // (morning-after views stay dark otherwise; the live recorder then
+    // overwrites each minute as it truly happens).
+    final todayStart =
+        DateTime.fromMillisecondsSinceEpoch(now); // wall-clock day anchor
+    final currentDayEnd = DateTime(todayStart.year, todayStart.month,
+            todayStart.day + 1).millisecondsSinceEpoch -
+        60000; // last minute-aligned slot of today
+    final genEnd = lastMinute > currentDayEnd ? lastMinute : currentDayEnd;
     var minuteStart = now - days * 24 * 3600 * 1000;
-    while (minuteStart < lastMinute) {
+    while (minuteStart < genEnd) {
       final d = DateTime.fromMillisecondsSinceEpoch(minuteStart);
       final minsOfDay = d.hour * 60 + d.minute;
       // Realistic duty: the purifier sleeps only ~6 h (off 00:30–06:30),
       // so the 2-month story fits ~1080 powered hours — enough headroom for
       // the clean stretches below to stay under the dirty budget.
-      final deviceOn = !(minsOfDay >= 30 && minsOfDay < 390);
+      // Today runs all day (future minutes included) so the DAY chart has
+      // data whenever it is viewed (D-038).
+      final isCurrentDay = d.year == todayStart.year &&
+          d.month == todayStart.month &&
+          d.day == todayStart.day;
+      final deviceOn = isCurrentDay || !(minsOfDay >= 30 && minsOfDay < 390);
       if (deviceOn) {
         // Cleaner mornings/evenings, dirtier afternoons: the hour bias keeps
         // a realistic rhythm (GOOD/FAIR stretches) while the day still ends

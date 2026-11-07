@@ -507,6 +507,26 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   — after seed + "I just replaced the filter": 100 % with "Jul 7, 2027 (242 days at recent
   usage)". D-011/D-018 real-cartridge numbers still supersede on delivery.
 
+- **D-038 — Seeding fills the whole current day; budget re-anchored to 5,300 h** · resolved · 2026-11-09 · app
+  Context: user report — after seeding, the Day view lacked data for the current day
+  (the story ended at the seed moment, and the overnight "off" window left the early
+  hours empty on next-morning views).
+  Decision: TwoMonthSeeder now stories the ENTIRE current calendar day 00:00 → 23:59
+  (always-on minutes — the seeded story_pm is unchanged elsewhere), so whichever hour
+  the Day chart is opened it shows a dense curve with ~100 % coverage. The D-037
+  budget re-anchors from 4,000 h → **5,300 h** to keep the fresh-reset projection at
+  ≈8 months (8.2) under this slightly denser day (≈6.3 h/day clean windows removed but
+  ~24 h/day dirty duty in the story); Sensitive/Relaxed scale with it (≈4.1/≈12.2 mo).
+  The rate estimator caps its window query at `now` so future-dated seeded minutes
+  cannot inflate the current rate. The seeded future minutes are progressively
+  overwritten by real live recording (insertOrReplace compaction) as the day happens.
+  Verified: 85/85 tests — new acceptance test (every minute-slot of the current day
+  seeded); filter_health_dirt fixtures derive from the budget constant (no literals);
+  alert_reconnect/demo_seeding scaled to 0.98 × 5,300 h; the estimator window now
+  excludes minutes ≥ now. Live on the A34: Day view "Coverage: 100 % of window" with
+  the story donut (BAD 942 min / POOR 307 / HAZARD 403), and after the modal-reset the
+  hero reads "About 8 months left · based on recent usage" at Normal.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

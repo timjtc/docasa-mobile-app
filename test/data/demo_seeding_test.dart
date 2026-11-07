@@ -38,9 +38,9 @@ void main() {
         () async {
       final totals = await const TwoMonthSeeder().seed(db, nowMs: now);
 
-      // Story: the sensitive sensitivity (0.5× the D-037 budget = 2,000 h
-      // dirty) must read 0% — that is the demonstration target.
-      expect(totals.dirtySeconds, greaterThan(2000 * 3600),
+      // Story: the sensitive sensitivity (0.5× the D-037/D-038 budget
+      // = 2,650 h dirty) must read 0% — that is the demonstration target.
+      expect(totals.dirtySeconds, greaterThan(2650 * 3600),
           reason: 'seeded dirty exposure must exceed the sensitive budget');
       final health = computeFilterHealth(
         counters: FilterCounters(
@@ -152,5 +152,33 @@ void main() {
           reason: 'a freshly reset filter projects 6–10 months at Normal '
               'against the recorded rate');
     });
+
+    test('the current day is seeded end-to-end so the day chart has data '
+        '(D-038)', () async {
+      final now = DateTime(2026, 11, 9, 14).millisecondsSinceEpoch;
+      await const TwoMonthSeeder().seed(db, nowMs: now);
+      // 5 hours after the seed: every minute of today up to now must exist.
+      final midnight =
+          DateTime(2026, 11, 9).millisecondsSinceEpoch; // wall-clock day
+      final rows = await db
+          .select(db.minuteAggregates)
+          .get()
+          .then((all) => all
+              .where((r) =>
+                  r.minuteStartMs >= midnight &&
+                  r.minuteStartMs <= now + 5 * 3600000)
+              .length);
+      final minuteSlots =
+          ((now + 5 * 3600000 - mathMidnight(now)) / 60000).floor() + 1;
+      expect(rows, minuteSlots,
+          reason: 'every minute of the current day (incl. the overnight '
+              'hours) is back-filled, so the Day chart shows data');
+    });
   });
+}
+
+/// Midnight (00:00 wall clock) of the timestamp's day — for slot math.
+int mathMidnight(int ms) {
+  final d = DateTime.fromMillisecondsSinceEpoch(ms);
+  return DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
 }

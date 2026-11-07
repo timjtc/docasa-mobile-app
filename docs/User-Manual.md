@@ -110,7 +110,7 @@ that reconnects after days away still shows the gapless device-recorded story.
   - *Yes, filter replaced* — sends `resetFilter` to the purifier: the tracking
     restarts fresh (≈100 % health), and the alert story re-arms.
 
-**Calibration (D-037):** the dirty-air budget is 4,000 h of POOR+ exposure — at
+**Calibration (D-037/D-038):** the dirty-air budget is 5,300 h of POOR+ exposure — at
 Normal sensitivity and the recorded normal-use exposure rate a freshly reset filter
 projects **~8 months** (the accepted 6–10-month band; Sensitive ≈4 months, Relaxed
 ≈12). This is a calibrated placeholder — the real cartridge model supersedes it
@@ -165,7 +165,7 @@ Hidden by default (D-030). Reveal: tap the **Device information card 7 times** w
 | Control | Effect |
 |---|---|
 | Toggle switch | Turns the section off again |
-| **Seed demo data (2 months)** | Replaces the phone history timeline with a generated 2-month story (clean stretches + dirty episodes) and pushes matching usage counters into the device (real NVS on a 4.2.1 purifier; the emulator echoes) — the health then reads ≈1–2 % on Normal (D-030/D-031) |
+| **Seed demo data (2 months)** | Replaces the phone history timeline with a generated 2-month story (clean stretches + dirty episodes, the current day filled end-to-end so the Day chart is always populated) and pushes matching usage counters into the device (real NVS on a 4.2.1 purifier; the emulator echoes) — the health then reads ≈1–2 % on Normal (D-030/D-031/D-038) |
 | **Clear history** | Wipes the phone-side history DB |
 | **Preview filter alert** | Raises the replacement modal directly (demo-only, D-021) |
 | **Device counters** card | Fan usage (equivalent full-speed hours), PM-weighted load (weighted particle-and-fan index), Dirty-air time (hours in POOR/BAD/HAZARD since the filter swap), Time share per stage (one line per air level), Powered on (lifetime) |

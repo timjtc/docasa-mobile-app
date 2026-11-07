@@ -628,3 +628,29 @@ developer-only cards.
 Gates: analyze 0; 84/84 tests (no prior test pinned the old strings). The unused
 `intl` import left filter_page with the date removal. Artifacts rebuilt + reinstalled
 (demo + ble). Manual quotes updated (§2.4 hero/dialog bullets). 
+
+## Task 22 (2026-11-09): the seeded story fills the whole current day (D-038)
+
+User report: after seeding, the Day chart showed no usable current-day data (the story
+ended at the seed instant and the overnight 'off' window left gaps on next-morning views).
+
+1. **TwoMonthSeeder** now stories the entire current calendar day: minute rows from
+   00:00 to 23:59 with the device always on for today (future-dated minutes included;
+   the seeded minute rows are progressively overwritten by the live recorder as those
+   minutes actually happen). Earlier days keep their realistic 00:30–06:30 off window.
+2. **Budget re-anchor (D-037 follow-up)**: 4,000 → 5,300 h so the fresh-reset projection
+   stays ≈8 months under the denser all-day exposure (8.2 months live at Normal).
+3. **Estimator guard** — `estimateDirtyRatePerDay` caps its window query at `now`, so
+   future-dated seeded minutes can never inflate the reset baseline's rate.
+
+Gates: analyze 0; **85/85 tests** — new tour: (1) every minute-slot of the current day
+is seeded (1,440 slots; the test samples midnight→seed+5 h); (2) the projection after a
+manual reset lands in the 6–10-month band at the exposure-model rate (79,488 s/day =
+0.92 × 24 h); (3) filter_health_dirt fixtures now derive from `budgets.constant`
+(no 4,000-h literals); alert_reconnect/demo_seeding fixtures rescaled to 0.98 × 5,300 h;
+the estimator window now excludes ≥ now.
+Live on the A34: Day view shows **'Coverage: 100 % of window'** with the story donut
+(BAD 942 min / POOR 307 / HAZARD 403 — dense current day); after the modal reset the
+Filter hero reads 'About 8 months left · based on recent usage' (the recalibration
+visible through the friendly copy). Artifacts rebuilt + reinstalled; manual (§3.4 seed
+row + calibration note) and Decision-Log D-038 updated.

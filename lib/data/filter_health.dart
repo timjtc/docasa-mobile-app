@@ -9,16 +9,16 @@ import 'db/database.dart';
 /// filter-model-agnostic). PLACEHOLDER numbers pending the real filter model
 /// (Decision D-011): ~3000 h @ 2000 RPM, load budget equivalent to 25 µg/m³
 /// average over the same hours. v1.1 (D-027): the dirty-air-hours basis uses
-/// a dirt-budget story — D-037 recalibration targets the 6–10-month filter
-/// life the product band expects: at the current normal-use exposure model
-/// (≈16.4 h/day of POOR+ air, as the demo story runs it) 4,000 h lands
-/// ≈8.1 months at Normal ×1.0 (Sensitive ≈4.1, Relaxed ≈12.2). Fresh reset →
-/// ~100 %; real-cartridge numbers supersede (D-011/D-018).
+/// a dirt-budget story — D-037 set the 6–10-month product band; D-038
+/// re-anchored it to 5,300 h after the seeding story grew a live-today day
+/// (≈22 h/day POOR+ exposure model): fresh reset → ≈8 months at Normal ×1.0
+/// (Sensitive ≈4.1, Relaxed ≈12.2). Real-cartridge numbers supersede
+/// (D-011/D-018).
 class FilterBudgets {
   const FilterBudgets({
     this.hourBudgetRpmS = 3000 * 2000 * 3600, // 21,600,000,000 RPM·s
     this.loadBudgetRpmUgS = 3000 * 2000 * 3600 * 25, // 540,000,000,000 RPM·µg·s
-    this.dirtyAirSecondsBudget = 4000 * 3600, // 14,400,000 s of POOR+ air
+    this.dirtyAirSecondsBudget = 5300 * 3600, // 19,080,000 s of POOR+ air
   });
 
   /// Σ RPM·s before the pure-hours cap binds (secondary cap, Plan §4.2).
@@ -172,8 +172,11 @@ Future<int?> estimateDirtyRatePerDay(
   final rows = await db.customSelect(
     'SELECT COALESCE(SUM(sample_count), 0) AS samples, '
     'COALESCE(SUM(stage3_count + stage4_count + stage5_count), 0) AS dirty '
-    'FROM minute_aggregates WHERE minute_start_ms >= ?',
-    variables: [Variable.withInt(now - window.inMilliseconds)],
+    'FROM minute_aggregates WHERE minute_start_ms >= ? AND minute_start_ms < ?',
+    variables: [
+      Variable.withInt(now - window.inMilliseconds),
+      Variable.withInt(now),
+    ],
   ).get();
   final samples = rows.first.read<int>('samples');
   final dirty = rows.first.read<int>('dirty');
