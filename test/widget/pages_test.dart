@@ -95,22 +95,29 @@ void main() {
     // both tiny → ~100% (99.95 rounds to 100).
     expect(find.text('100%'), findsOneWidget);
     // Raw counter rows moved to the Device tab (dev-gated) — the Filter tab
-    // surfaces only health, basis, sensitivity and the reset control.
+    // surfaces only health, sensitivity and the manual-replacement control.
     expect(find.text('Device counters'), findsNothing);
     // The replace/reset card sits below the fold — scroll to it first.
     await tester.scrollUntilVisible(
-      find.text('Reset filter counters'),
+      find.text('I replaced the filter'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Reset filter counters'), findsOneWidget);
-    expect(
-        tester
-            .widget<OutlinedButton>(find.widgetWithText(
-                OutlinedButton, 'Reset filter counters'))
-            .enabled,
-        isFalse,
-        reason: 'reset is Phase-5 gated (D-010)');
+    // Manual replacement (D-036): confirmation prompt guards the reset.
+    await tester.tap(find.text('I replaced the filter'));
+    await tester.pumpAndSettle();
+    expect(find.text('Did you replace the filter?'), findsOneWidget);
+    await tester.tap(find.text('Not yet'));
+    await tester.pumpAndSettle();
+    expect(find.text('Did you replace the filter?'), findsNothing,
+        reason: 'cancel leaves the counters untouched');
+
+    await tester.tap(find.text('I replaced the filter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Yes, filter replaced'));
+    await tester.pumpAndSettle();
+    expect(find.text('Did you replace the filter?'), findsNothing,
+        reason: 'confirmed → resetFilter ran and the dialog closed');
   });
 
   testWidgets('history page renders seeded week with coverage note',

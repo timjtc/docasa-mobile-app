@@ -6,8 +6,10 @@ import '../../data/filter_health.dart';
 import '../../data/settings_repository.dart';
 import '../../providers.dart';
 
-/// Filter health — % of life left, projection, sensitivity. Raw device
-/// counters moved to the Device tab behind dev options (user request).
+/// Filter health — % of life left, projection, sensitivity, and the manual
+/// "I replaced the filter" reset (D-036). Raw device counters moved to the
+/// Device tab behind dev options; the replacement basis is pinned to
+/// dirty-air hours for consumers — switching lives in Developer options.
 /// Basis toggle = dirty-air hours (default) vs load integral (D-027).
 class FilterPage extends ConsumerStatefulWidget {
   const FilterPage({super.key});
@@ -51,16 +53,17 @@ class _FilterPageState extends ConsumerState<FilterPage> {
                       style: TextStyle(
                           fontWeight: FontWeight.w600, color: cs.onSurface)),
                   const SizedBox(height: 8),
-                  OutlinedButton.icon(
+                  FilledButton.icon(
                     icon: const Icon(Icons.restart_alt),
-                    label: const Text('Reset filter counters'),
-                    onPressed: null, // Phase 5 — security-gated (D-010)
+                    label: const Text('I replaced the filter'),
+                    onPressed: _confirmReplaceFilter,
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Enabled in Phase 5, after the write-security ruling. The '
-                    'device command zeroes the usage integrals only (powered '
-                    'hours are preserved).',
+                    'Manual filter replacement: after you confirm, the '
+                    'purifier’s usage integrals are zeroed (lifetime '
+                    'power-on hours are kept) and filter life restarts at '
+                    'a fresh 100%.',
                     style:
                         TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
                   ),
@@ -151,23 +154,6 @@ class _FilterPageState extends ConsumerState<FilterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Replacement basis',
-                style: TextStyle(
-                    fontWeight: FontWeight.w600, color: cs.onSurface)),
-            const SizedBox(height: 8),
-            SegmentedButton<FilterBasis>(
-              segments: const [
-                ButtonSegment(
-                    value: FilterBasis.dirtyAir,
-                    label: Text('Dirty-air hours')),
-                ButtonSegment(
-                    value: FilterBasis.load, label: Text('Load (µg·h)')),
-              ],
-              selected: {settings.basis},
-              onSelectionChanged: (s) => _updateSetting(
-                  (x) => x.copyWith(basis: s.first)),
-            ),
-            const SizedBox(height: 12),
             Text('Filter sensitivity',
                 style: TextStyle(
                     fontWeight: FontWeight.w600, color: cs.onSurface)),
@@ -208,6 +194,45 @@ class _FilterPageState extends ConsumerState<FilterPage> {
         ),
       ),
     );
+  }
+
+  /// Manual replacement (D-036): a plain confirmation prompt first, then the
+  /// same reset the alert modal's replacement action performs.
+  Future<void> _confirmReplaceFilter() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Did you replace the filter?'),
+        content: const Text(
+          'Confirming zeroes the purifier’s filter-life counters (the '
+          'usage integrals). Lifetime power-on hours are kept.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Not yet'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Yes, filter replaced'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    await ref.read(connectionProvider).resetFilter();
+    ref.invalidate(filterCountersProvider);
+    ref.invalidate(filterHealthProvider);
+    final s = ref.read(settingsProvider);
+    await ref
+        .read(settingsProvider.notifier)
+        .update(s.copyWith(lastAlertMs: 0));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Filter life reset — enjoy the new filter'),
+        duration: Duration(seconds: 2),
+      ));
+    }
   }
 
   Future<void> _updateSetting(

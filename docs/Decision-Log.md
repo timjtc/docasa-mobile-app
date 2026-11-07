@@ -466,6 +466,26 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   `[filter-alert]` trail (evaluation inputs + decision) was added for G4-era diagnosis and
   prints nothing in release builds.
 
+- **D-036 — Basis switching is developer-only; manual "I replaced the filter" reset on the Filter tab** · resolved · 2026-11-08 · app
+  Context: user decision near panel-freeze — the consumer should not choose the replacement
+  basis (pinned to dirty-air hours, the installed default D-027), and a manual replacement
+  reset belongs in the Filter tab with a simple confirmation prompt (distinct from the alert
+  modal's labels).
+  Decision: the Filter tab loses the `Replacement basis` segmented control (sensitivity
+  stays user-facing); the basis knob moves into Developer options on the Device tab as
+  "Replacement basis (developer)" — same two segments, same engine, persisted via
+  `settings.basis` exactly as before (explainer + health caption keep reflecting the active
+  basis). The disabled Phase-5 `Reset filter counters` placeholder (D-010) is replaced by an
+  enabled `I replaced the filter` FilledButton guarded by an AlertDialog ("Did you replace
+  the filter?" / "Not yet" / "Yes, filter replaced") that performs the same reset as the
+  alert modal's replacement action (`resetFilter` + invalidations + `lastAlertMs` re-arm)
+  with a brief confirmation snackbar.
+  Verified: widget tests — the Filter tab exposes no basis knob; the Device-tab dev knob
+  flips `settings.basis` and the Filter-tab explainer switches to the load wording
+  (82/82 incl. the D-035/D-036 suites); live on the A34 — Filter tab shows the new pinned
+  consumer layout and the confirmation dialog with its labels captured; the dev-knob's
+  dirty-air selection state confirmed via node dumps (widget-level proof of the flip).
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

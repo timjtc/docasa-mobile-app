@@ -46,9 +46,12 @@ void main() {
     await pumpPage(tester, db);
 
     // Default basis shows on the health card; the raw per-stage counters
-    // moved to the Device tab behind dev options (user request).
+    // moved to the Device tab behind dev options (user request). Basis
+    // switching itself is dev-only now (D-036) — the consumer sees no knob.
     expect(find.textContaining('Consumption driven by dirty-air exposure'),
         findsOneWidget);
+    expect(find.text('Dirty-air hours'), findsNothing);
+    expect(find.text('Load (µg·h)'), findsNothing);
     expect(find.text('Dirty-air time'), findsNothing);
     expect(find.text('Device counters'), findsNothing);
   });
@@ -101,25 +104,72 @@ void main() {
     expect(find.text('HAZARD 0s'), findsOneWidget);
   });
 
-  testWidgets('switching the basis to Load recomputes from the same '
-      'counters', (tester) async {
+  testWidgets('basis switching moved to Developer options and takes '
+      'effect from there (D-036)', (tester) async {
     final db = AppDatabase.test(NativeDatabase.memory());
     addTearDown(db.close);
-    await pumpPage(tester, db);
+    // One shared override list + keyed scopes: re-pumping is a fresh scope
+    // each time (riverpod updateOverrides asserts on added overrides).
+    final overrides = [
+      dbProvider.overrideWithValue(db),
+      connectionStateProvider.overrideWith(
+          (ref) => Stream.value(DocasaConnectionState.connected)),
+      filterCountersProvider.overrideWith((ref) async => counters),
+      deviceInfoProvider.overrideWith((ref) async => const DocasaDeviceInfo(
+          manufacturer: 'DOCASA',
+          model: 'DOCASA Air Purifier',
+          firmwareRevision: '4.2.1',
+          hardwareRevision: 'ESP32-WROOM-v3')),
+    ];
 
-    await tester.scrollUntilVisible(
-      find.text('Load (µg·h)'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.text('Load (µg·h)'));
+    // Consumer view is pinned: no basis control on the Filter tab.
+    await tester.pumpWidget(ProviderScope(
+      key: const ValueKey('filter1'),
+      overrides: overrides,
+      child: const MaterialApp(home: FilterPage()),
+    ));
     await tester.pumpAndSettle();
-    // pwfs 74.25e6 of 540e9 → ~99.95% — same family; the explainer card swaps
+    expect(find.text('Dirty-air hours'), findsNothing);
+    expect(find.text('Load (µg·h)'), findsNothing);
+
+    // The knob lives in Developer options on the Device tab.
+    await tester.pumpWidget(ProviderScope(
+      key: const ValueKey('device'),
+      overrides: overrides,
+      child: const MaterialApp(home: DevicePage()),
+    ));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 7; i++) {
+      await tester.tap(find.textContaining('Device information'));
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.textContaining('load model used by commercial purifiers'),
+      find.text('Replacement basis (developer)'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.textContaining('load model'), findsOneWidget);
+    final loadSeg = find.text('Load (µg·h)');
+    await tester.ensureVisible(loadSeg);
+    await tester.pumpAndSettle();
+    await tester.tap(loadSeg);
+    await tester.pumpAndSettle();
+
+    // Back on the Filter tab the choice took effect: the explainer card
+    // switches to the load-model wording (settings persist via the DB).
+    await tester.pumpWidget(ProviderScope(
+      key: const ValueKey('filter2'),
+      overrides: overrides,
+      child: const MaterialApp(home: FilterPage()),
+    ));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.textContaining('weighted by particulate load'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('weighted by particulate load'),
+        findsOneWidget,
+        reason: 'settings.basis=load persisted through the dev knob');
   });
 }

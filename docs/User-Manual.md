@@ -88,18 +88,23 @@ that reconnects after days away still shows the gapless device-recorded story.
 - **FILTER LIFE** hero: the remaining filter health in %, color-coded (green > 50 %,
   amber > 20 %, red at/below), a progress bar, and the **projected replacement date**
   (“… (N days at recent usage)”) once there is enough recent usage to project.
-- **Replacement basis** segmented control: `Dirty-air hours` (installed default,
-  D-027) vs `Load (µg·h)`. *Both bases share one sensitivity scale (below).* An
-  explainer card under the controls states in plain language how the chosen basis
-  estimates consumption. Budget numbers are placeholders until the real cartridge
-  model is chosen (D-011/D-018) — presenters should say “a placeholder budget, to be
-  replaced with the real cartridge numbers”, not a measured truth.
 - **Filter sensitivity** slider: `Relaxed (latest)` (×1.5) · `Normal (default)` (×1.0)
-  · `Sensitive (sooner)` (×0.5). It scales the budget for BOTH bases and moves the
-  projected replacement date accordingly.
-- **Replace filter** card: the *Reset filter counters* control is disabled in this
-  build (Phase-5 write-security decision, D-010). The app-side replacement reset exists
-  via the alert modal (§4).
+  · `Sensitive (sooner)` (×0.5). It scales the budget and moves the projected
+  replacement date accordingly.
+- **Replacement basis** — the consumer is pinned to `Dirty-air hours`; there is no
+  basis selector on this tab (D-036). The explanation card below states in plain
+  language how the basis estimates consumption; budget numbers are placeholders until
+  the real cartridge model is chosen (D-011/D-018) — presenters should say “a
+  placeholder budget, to be replaced with the real cartridge numbers”, not a measured
+  truth. Developers flip the basis in Developer options (§3.4).
+- **Replace filter → “I replaced the filter”** — the manual replacement action. Tapping
+  it opens a confirmation prompt:
+  - Title: *“Did you replace the filter?”*
+  - Body: “Confirming zeroes the purifier’s filter-life counters (the usage
+    integrals). Lifetime power-on hours are kept.”
+  - *Not yet* — safe dismissal, nothing changes.
+  - *Yes, filter replaced* — sends `resetFilter` to the purifier: fresh 100 % health,
+    the replacement date re-projects, and the alert story re-arms.
 
 ### 2.5 Device tab (DEVICE)
 
@@ -154,6 +159,7 @@ Hidden by default (D-030). Reveal: tap the **Device information card 7 times** w
 | **Clear history** | Wipes the phone-side history DB |
 | **Preview filter alert** | Raises the replacement modal directly (demo-only, D-021) |
 | **Device counters** card | Fan usage (equivalent full-speed hours), PM-weighted load (weighted particle-and-fan index), Dirty-air time (hours in POOR/BAD/HAZARD since the filter swap), Time share per stage (one line per air level), Powered on (lifetime) |
+| **Replacement basis (developer)** | Switches the health engine between `Dirty-air hours` and `Load (µg·h)`. Consumers are pinned to dirty-air hours on the Filter tab; this knob is the only way to change it (D-036) |
 
 Counters “live on the purifier and survive power cycles” — on real hardware they are
 NVS-resident; *never* run erase/erase-flash on the purifier, it would wipe those
@@ -216,7 +222,8 @@ by script):
    stage → PM2.5 → PM1.0/PM10 → Recommendations.
 2. **Tell the filter story** — Filter tab: 100 % healthy → dev options (info-card
    ×7) → `Seed demo data (2 months)` → the replacement modal arrives (health ≈ 1–2 %).
-   Explain the modal and its two actions; choose *later time*.
+   Explain the modal and its two actions; choose *later time*. Mention the manual
+   “I replaced the filter” action now lives on the Filter tab itself (§2.4).
 3. **Show the evidence trail** — History tab: switch Day/Week, then `Last month` and
    the month-compare card; point out the coverage line and the offline-ring else.
 4. **Close on the Device tab** — connection card (mention reconnect now re-prompting
@@ -280,16 +287,16 @@ Panel-pitfalls to avoid:
 
 ---
 
-## 11. Planned changes (deferred to the next revision)
+## 11. Recent refinements (shipped in this build)
 
-Agreed with the product owner; NOT part of the current build — presenters should
-answer from this list if asked:
+The two Filter-tab revisions agreed near panel-freeze are now IN this build (D-036):
 
-1. **Basis selection moves out of the user’s hands** — `Dirty-air hours` becomes the
-   only consumer basis; the `Replacement basis` segmented control leaves the Filter tab
-   and moves into Developer options (the end user no longer chooses the replacement
-   basis; D-027 stays the engine, the UI simplifies).
-2. **Manual filter replacement in the Filter tab** — a user-facing “I replaced the
-   filter” action with a simple confirmation prompt (plain wording, e.g. a question and
-   confirm/cancel), so a user can reset the filter-health counters at any time without
-   waiting for the alert modal.
+1. **Basis selection is developer-only** — the Filter tab no longer offers a basis
+   selector; consumers are pinned to `Dirty-air hours`. The switching control lives in
+   Developer options as **Replacement basis (developer)** (§3.4).
+2. **Manual filter replacement on the Filter tab** — the enabled **“I replaced the
+   filter”** action with its confirmation prompt (“Did you replace the filter?” →
+   *Not yet* / *Yes, filter replaced*) replaces the old disabled placeholder.
+
+If the panel asks about the old two-choice basis UI: it was a dev-only choice from day
+one of the story — the consumer UX now reflects that.

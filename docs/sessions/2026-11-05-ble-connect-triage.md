@@ -544,3 +544,29 @@ confirmation prompt).
 
 No app code changed; gates not re-run (doc-only). Development-Process §11 refreshed:
 next task = the Filter-tab refinement batch, then the standing formalities queue.
+
+## Task 19 (2026-11-08): Filter-tab refinement batch (D-036)
+
+Both pending fixes implemented:
+1. **Basis switching dev-only** — the Filter tab lost the `Replacement basis` segmented
+   control (sensitivity stays user-facing). The knob moved into Developer options on the
+   Device tab as 'Replacement basis (developer)' — same segments, same `settings.basis`
+   persistence; the health caption + explainer keep reflecting the active basis.
+   Consumers are pinned to dirty-air hours (the installed default, D-027 engine intact).
+2. **Manual filter replacement on the Filter tab** — the disabled Phase-5
+   `Reset filter counters` placeholder (D-010) replaced by an enabled
+   `I replaced the filter` button guarded by an AlertDialog:
+   'Did you replace the filter?' / 'Not yet' / 'Yes, filter replaced' — confirm ⇒
+   `resetFilter()` on the connection, counter+health invalidations, `lastAlertMs` re-arm,
+   and a 'Filter life reset — enjoy the new filter' snackbar. The wording is distinct
+   from the alert modal's replacement labels by design.
+
+Gates: analyze 0; **82/82 tests**. `filter_basis_test`: the Filter-tab test asserts the
+basis knob is absent; a new test proves the dev knob flips `settings.basis` and the
+Filter-tab explainer switches to the load wording (keyed ProviderScope pumps with a
+shared override list — riverpod updateOverrides asserts otherwise). `pages_test`: the
+filter test now walks the dialog (cancel leaves untouched; confirm closes + resets).
+Live on the A34: Filter tab shows the pinned consumer layout + the dialog with its
+labels (screenshot); the dev basis control rendered with Dirty-air hours selected
+(node-dump verified); artifacts rebuilt + reinstalled (demo ble both). Manual updated
+(User-Manual §2.4/§3.4/§7 + §11 'shipped'), Decision-Log D-036, DevProcess §11 queue.

@@ -10,6 +10,7 @@ import '../../providers.dart';
 import '../../protocol/models.dart';
 import '../shared/widgets.dart';
 import '../filter/filter_alert_modal.dart';
+import '../../data/filter_health.dart';
 import 'device_picker.dart';
 import '../../core/stage.dart';
 
@@ -119,6 +120,7 @@ class _DevicePageState extends ConsumerState<DevicePage> {
     final info = ref.watch(deviceInfoProvider).value;
     final counters = ref.watch(filterCountersProvider).value;
     final devOptions = ref.watch(devOptionsProvider);
+    final settings = ref.watch(settingsProvider);
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -311,6 +313,26 @@ class _DevicePageState extends ConsumerState<DevicePage> {
                           onPressed: _seedTwoMonths,
                         ),
                       ],
+                    ),
+                    // Replacement basis is a developer knob (D-036):
+                    // consumers are pinned to dirty-air hours; the health
+                    // engine and the sensitivity scale are unchanged.
+                    const SizedBox(height: 12),
+                    const Text('Replacement basis (developer)',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 6),
+                    SegmentedButton<FilterBasis>(
+                      segments: const [
+                        ButtonSegment(
+                            value: FilterBasis.dirtyAir,
+                            label: Text('Dirty-air hours')),
+                        ButtonSegment(
+                            value: FilterBasis.load, label: Text('Load (µg·h)')),
+                      ],
+                      selected: {settings.basis},
+                      onSelectionChanged: (s) => ref
+                          .read(settingsProvider.notifier)
+                          .update(settings.copyWith(basis: s.first)),
                     ),
                     // Demo-only alert preview (D-021): raises the replacement
                     // modal without waiting for the seeded story.
