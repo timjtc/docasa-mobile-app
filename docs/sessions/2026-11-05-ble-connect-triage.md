@@ -694,3 +694,21 @@ Gates: analyze 0; 85/85 (no Dart changes). Manual §1 notes the two builds + ico
   runtime state note (§5) still applies.
 - **Open queue (unchanged):** G1/G2/G4 formalities; real-cartridge numbers (D-011/D-018);
   the `inventory.yaml` secret rotation; `withServices` scan filtering after G4.
+
+## Task 24 (2026-11-09): User Manual v2 — both-audience rewrite + expanded glossary
+
+`docs/User-Manual.md` rewritten for both everyday users and presenters:
+- version bumped to the 2026-11-09 build (tip 0dc9b3c); the outdated 'two refinements
+  pending' intro removed; §11 re-listed as the shipped-refinement roll (D-033…D-039)
+- §2.x refreshed to the current strings (the month-based filter hero, the new
+  sensitivity/history captions, the manual-replacement prompt, the History notes card,
+  the renamed builds + shared launcher icon in §1)
+- §3.4 dev table carries D-038 (current-day seeding) and D-036 (basis knob) verbatim;
+  §7 playbook updated for the new flow lines; troubleshooting stays
+- **Glossary rebuilt into a proper 'Definition of terms' section (§9)** — ~25 entries
+  with full-sentence explanations (BLE, Contract, firmware/ESP32, PM sizes, µg/m³, VOC,
+  stage, basis/budget/sensitivity, calibrated placeholder, integrals/counters, NVS in
+  detail incl. the never-erase caution, ring, handshake, emulator, buckets, recent
+  usage/rate, threshold, daily cap, adaptive icon, seed/seeding) so technical words
+  used anywhere in the manual resolve in one place
+- reference-doc list updated (D-001…D-039, session Tasks 1–23)
