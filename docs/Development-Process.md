@@ -393,17 +393,24 @@ per D-017.
   real FBLP transport with device picker, handshake device verification, reconnect
   backoff, permission gate — verified up to "scans run, no DOCASA advertisement yet"
   (device was unpowered; firmware advertisement remains THE unverified runtime surface).
-- **Next (in order):** (0) **HANDOFF STATE 2026-11-07 (ref.)** — session Tasks 1–14 shipped
-  through the user-centric sweep + mock picker (D-032 `5cd38e3`, D-033 `4fd88ed`/`20a5d36`,
-  mock-picker `759fef3`); session record:
-  `docs/sessions/2026-11-05-ble-connect-triage.md` (Tasks 1–14 = the full handoff trail with
-  live-verification evidence per task). Current commit tip `759fef3`. (1) **Open formalities:**
-  G1/G2 bench checklists (Serial + nRF — the over-the-air evidence accumulated is not a
-  formal gate) + G4 remainder on the phone (walk-away backoff reconnect, history across
-  restarts, threshold push) → `gate-reports/G4.md`; after G4 restore `withServices` scan
-  filtering and review the debugPrints. (2) Real-cartridge budget numbers (D-011/D-018
-  placeholders) when the cartridge model is chosen. (3) Rotation/revoke of the exposed
-  `inventory.yaml` secret from 4986323 (if the tool it belongs to is still in use).
+- **Next (in order):** (0) **HANDOFF STATE 2026-11-08 (ref.)** — session Tasks 1–17 shipped
+  through the counters relocation (D-034) and the reconnect alert bypass (D-035 `855e813`);
+  plus the presenter-oriented **User Manual** `docs/User-Manual.md` (PDF-exportable,
+  §11 lists the two agreed UI refinements as deferred). Session record:
+  `docs/sessions/2026-11-05-ble-connect-triage.md` (Tasks 1–17 = the full trail).
+  Current commit tip `855e813`. (1) **Filter-tab refinement batch (next task, agreed):**
+  make `Dirty-air hours` the sole consumer basis (remove the basis segmented control from
+  the Filter tab, move basis switching into Developer options — D-027 engine unchanged)
+  + add a user-facing manual “I replaced the filter” reset in the Filter tab behind a
+  simple confirmation prompt (labels TBD; parallels the alert-modal replacement action).
+  (2) **Open formalities:** G1/G2 bench checklists (Serial + nRF — over-the-air evidence
+  is not a formal gate) + G4 remainder on the phone (walk-away backoff reconnect — note
+  D-035 changed the re-present semantics, history across restarts, threshold push) →
+  `gate-reports/G4.md`; after G4 restore `withServices` scan filtering and review the
+  debugPrints (the D-035 `[filter-alert]` trail is already kDebugMode-gated). (3)
+  Real-cartridge budget numbers (D-011/D-018 placeholders) when the cartridge model is
+  chosen. (4) Rotation/revoke of the exposed `inventory.yaml` secret from 4986323 (if
+  the tool it belongs to is still in use).
 - **Needs user input:** nothing blocking; filter-cartridge numbers for exact budgets when
   chosen (D-018 placeholders active).
 - **Firmware:** v4.2.1 IS the flashed lineage (sketch `docasa-air-purifier-v5/`, partition

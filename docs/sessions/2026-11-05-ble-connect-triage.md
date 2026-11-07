@@ -520,3 +520,27 @@ chain (connect event → evaluation → bypass → modal) is machine-verified in
 release build carries the same shared logic as the BLE app and the purifier.
 Bench note: buttons at (760,1382)-ish move between screenshot and touch — when re-driving
 the phone, anchor + tap must happen within ~1 s of the same layout.
+
+## Task 18 (2026-11-08): presenter-oriented User Manual shipped
+
+Deliverable: `docs/User-Manual.md` — a comprehensive, PDF-exportable manual that doubles
+as the panel presentation guide. Every UI string, threshold and behavior in it was
+cross-checked against the code/decision state at tip `855e813` (labels 'Air chemicals
+(VOC)', 'equivalent full-speed hours' etc.; 7-tap reveal; seed button names; alert
+threshold 10 %; sensitivity multipliers ×1.5/×1.0/×0.5; history ranges Day/Week/Month/
+Last month with the month-compare card; PM/Temperature/Humidity/VOC metric list with
+Fan/Battery retired per D-032).
+
+Contents: what the product is; the five tabs (per-element meaning + presenter tips);
+connection states + auto-connect/reconnect/picker; time sync; developer tools (incl.
+the never-erase-NVS rule); the filter-replacement alert incl. the D-035 reconnect
+behavior; persistence map (device NVS vs phone DB vs emulator runtime); theme; the
+3-minute demo playbook with pitfalls (app restart resets the fake counters — re-seed;
+don't press 'I just replaced the filter' mid-demo); troubleshooting quick list;
+glossary; reference docs + a pandoc PDF-export command (no pandoc on this host — the
+doc's export line is the instruction); §11 'Planned changes' records the two agreed,
+deferred Filter-tab revisions verbatim (basis → dev-only default; manual reset with a
+confirmation prompt).
+
+No app code changed; gates not re-run (doc-only). Development-Process §11 refreshed:
+next task = the Filter-tab refinement batch, then the standing formalities queue.
