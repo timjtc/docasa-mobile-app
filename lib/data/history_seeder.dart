@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 
 import '../../ble/fake/fake_generator.dart';
 import 'db/database.dart';
+import 'filter_health.dart';
 import 'history_compactor.dart';
 
 /// Demo tool (Phase 3): generates `days` of plausible history straight into
@@ -107,15 +108,19 @@ class _HourAcc {
   int stageMax = 1;
 }
 
-/// Developer demo (D-027/D-030, story tuned 2026-11-07): back-fill ~2 months
-/// of REALISTIC dirty-skewed history — cleaner morning/evening stretches and
-/// ~6 h "off" overnight, so GOOD/FAIR get real hours, but the day still ends
-/// majority-POOR+ (≈92 % dirty): the Normal basis lands near 0 % and the
-/// replacement alert fires; Sensitive overflows to 0 %. Minute cadence (one
-/// row = one full-minute bucket; no raw rows → ~65k rows, cheap). REPLACES
-/// the existing timeline; returns the usage totals for the Device-page dev
-/// action to write into the device counters (dev channel) so the health
-/// basis matches the seeded story.
+/// Developer demo (D-027/D-030, story tuned 2026-11-07; recalibrated for the
+/// D-037 budget): back-fill ~2 months of REALISTIC dirty-skewed history —
+/// cleaner morning/evening stretches and ~6 h "off" overnight, so GOOD/FAIR
+/// get real hours, but the day still ends majority-POOR+ (≈92 % dirty). Minute
+/// cadence (one row = one full-minute bucket; no raw rows → ~65k rows,
+/// cheap). REPLACES the existing timeline.
+///
+/// The RETURNED usage totals tell an **8-month filter-service story** (D-037):
+/// the seeded 2-month look-back is only the filter's recent slice — a prior
+/// service block is added so the pushed counters land ≈98 % of the dirty-air
+/// budget at Normal. The replacement alert therefore still fires right after
+/// seeding (D-030/D-035 semantics unchanged), while a freshly reset filter
+/// projects ~8 months of life.
 class TwoMonthSeeder {
   const TwoMonthSeeder();
 
@@ -242,6 +247,28 @@ class TwoMonthSeeder {
       ));
     }
     await _writeHours(db, hourRows);
+
+    // D-037: prior filter service — the pushed counters represent the whole
+    // life since the last reset, while the minute timeline only carries the
+    // most recent 2 months. Top the story up to ≈98 % of the dirty-air
+    // budget at Normal so the alert fires on seeding; the prior life shares
+    // the in-window dirty-duty character (POOR-dominant).
+    final budget = const FilterBudgets().dirtyAirSecondsBudget;
+    final inWindowDirty = on[2] + on[3] + on[4];
+    final priorDirty =
+        ((budget * 0.98) - inWindowDirty).clamp(0, budget).round();
+    if (priorDirty > 0) {
+      final priorOn = (priorDirty / 0.92).round();
+      final scale = onSec > 0 ? priorOn / onSec : 0.0;
+      fs += (fs * scale).round();
+      pwfs += (pwfs * scale).round();
+      onSec += priorOn;
+      final p2 = (priorDirty * 0.25).round();
+      final p3 = (priorDirty * 0.55).round();
+      on[2] += p2;
+      on[3] += p3;
+      on[4] += priorDirty - p2 - p3;
+    }
 
     return UsageTotals(
       fanSeconds: fs,

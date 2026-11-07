@@ -486,6 +486,27 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   consumer layout and the confirmation dialog with its labels captured; the dev-knob's
   dirty-air selection state confirmed via node dumps (widget-level proof of the flip).
 
+- **D-037 — Dirty-air budget recalibrated to the 6–10-month product band** · resolved · 2026-11-08 · app
+  Context: user direction — a freshly reset filter at Normal sensitivity must project a
+  replacement within the average 6–10-month filter-life band instead of the old
+  1,000 h placeholder (which a normal reset story burned in ~2 months).
+  Decision: `dirtyAirSecondsBudget` 1,000 h → **4,000 h** (14,400,000 s). At the recorded
+  dirty-exposure rate of the current story (≈16.4 h/day POOR+ — 59.6k s/day) the
+  freshly-reset projection lands ≈242 days ≈ 8.0 months at Normal ×1.0 (Sensitive ≈4.1 mo,
+  Relaxed ≈12.2 mo). Two supporting changes: (1) the projection estimator reads
+  `minute_aggregates` (the store every timeline writer lands in — live compaction, offline
+  back-fill, seeded demo history) with per-calendar-day semantics, replacing the
+  raw-samples-only probe that read "Not enough history" right after a reset and inflated
+  connected-only rows to 24 h; (2) the 2-month seeder now pushes counters telling an
+  **8-month filter-service story** (the seeded look-back is the recent slice; a prior
+  service block tops the counters to ≈98 % of the budget) so the panel alert still fires
+  on seeding (D-030/D-035 behavior preserved: Normal ≈2 % → modal, Sensitive overflows to 0 %).
+  Verified: 84/84 tests incl. the estimator acceptance test (seeded story → rate in band →
+  projection inside 6–10 months) and the retuned fixtures (filter_health_dirt_test ×4
+  denominators; alert_reconnect / demo_seeding fixtures at the new budget); live on the A34
+  — after seed + "I just replaced the filter": 100 % with "Jul 7, 2027 (242 days at recent
+  usage)". D-011/D-018 real-cartridge numbers still supersede on delivery.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

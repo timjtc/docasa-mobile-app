@@ -38,9 +38,9 @@ void main() {
         () async {
       final totals = await const TwoMonthSeeder().seed(db, nowMs: now);
 
-      // Story: the sensitive sensitivity (0.5× budget of 500 h dirty) must
-      // read 0% — that is the demonstration target.
-      expect(totals.dirtySeconds, greaterThan(500 * 3600),
+      // Story: the sensitive sensitivity (0.5× the D-037 budget = 2,000 h
+      // dirty) must read 0% — that is the demonstration target.
+      expect(totals.dirtySeconds, greaterThan(2000 * 3600),
           reason: 'seeded dirty exposure must exceed the sensitive budget');
       final health = computeFilterHealth(
         counters: FilterCounters(
@@ -81,10 +81,13 @@ void main() {
       }
       expect(dirtyMin, greaterThan(cleanMin * 4));
 
-      // Counter consistency: fs = Σ rpm·60 stays aligned with minutes.
+      // Counter consistency: the seeded minute rows carry the story's fan
+      // work; the pushed totals add the D-037 prior-service block on top
+      // (the counters tell an 8-month service, the timeline a 2-month
+      // look-back), so fanSeconds ≥ Σ minute fan·60.
       final expectedFsMin = minuteRows.fold<int>(
           0, (a, r) => a + r.fanRpm.toInt() * 60);
-      expect(totals.fanSeconds, expectedFsMin);
+      expect(totals.fanSeconds, greaterThanOrEqualTo(expectedFsMin));
     });
 
     test('fake transport adopts seeded usage counters (D-030 echo)', () async {
@@ -127,6 +130,27 @@ void main() {
       expect(seededHours, greaterThan(20 * 24),
           reason: '≥20 days of hours from the previous month');
       expect(s.coverage, greaterThan(0.3));
+    });
+
+    test('projection after a manual reset lands inside the 6–10-month band '
+        '(D-037)', () async {
+      await const TwoMonthSeeder().seed(db, nowMs: now);
+      final rate = await estimateDirtyRatePerDay(db,
+          nowMs: now + 3600000); // one hour past the story's end
+      expect(rate, isNotNull);
+      expect(rate!, inExclusiveRange(36_000, 90_000),
+          reason: 'the seeded story exposes a realistic daily dirty dose');
+      final health = computeFilterHealth(
+        counters: const FilterCounters(
+            fanSeconds: 0, pmWeightedFanSeconds: 0, powerOnHours: 0),
+        budgets: const FilterBudgets(),
+        now: DateTime.fromMillisecondsSinceEpoch(now + 3600000),
+        dirtyRatePerDaySec: rate,
+      );
+      expect(health.pct, 100);
+      expect(health.remainingDays, inExclusiveRange(180, 299),
+          reason: 'a freshly reset filter projects 6–10 months at Normal '
+              'against the recorded rate');
     });
   });
 }

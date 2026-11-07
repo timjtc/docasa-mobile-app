@@ -93,10 +93,11 @@ that reconnects after days away still shows the gapless device-recorded story.
   replacement date accordingly.
 - **Replacement basis** — the consumer is pinned to `Dirty-air hours`; there is no
   basis selector on this tab (D-036). The explanation card below states in plain
-  language how the basis estimates consumption; budget numbers are placeholders until
-  the real cartridge model is chosen (D-011/D-018) — presenters should say “a
-  placeholder budget, to be replaced with the real cartridge numbers”, not a measured
-  truth. Developers flip the basis in Developer options (§3.4).
+  language how the basis estimates consumption. The budget is a calibrated placeholder
+  (D-037: 4,000 h of dirty-air exposure ≈ 8 months at Normal; real cartridge numbers
+  pending, D-011/D-018) — presenters should say “a calibrated placeholder budget, to be
+  finalized with the real cartridge numbers”, not a measured truth. Developers flip the
+  basis in Developer options (§3.4).
 - **Replace filter → “I replaced the filter”** — the manual replacement action. Tapping
   it opens a confirmation prompt:
   - Title: *“Did you replace the filter?”*
@@ -105,6 +106,12 @@ that reconnects after days away still shows the gapless device-recorded story.
   - *Not yet* — safe dismissal, nothing changes.
   - *Yes, filter replaced* — sends `resetFilter` to the purifier: fresh 100 % health,
     the replacement date re-projects, and the alert story re-arms.
+
+**Calibration (D-037):** the dirty-air budget is 4,000 h of POOR+ exposure — at
+Normal sensitivity and the recorded normal-use exposure rate a freshly reset filter
+projects **~8 months** (the accepted 6–10-month band; Sensitive ≈4 months, Relaxed
+≈12). This is a calibrated placeholder — the real cartridge model supersedes it
+(D-011/D-018) when its numbers land.
 
 ### 2.5 Device tab (DEVICE)
 

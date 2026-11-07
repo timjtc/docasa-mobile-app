@@ -13,12 +13,12 @@ import 'package:flutter_test/flutter_test.dart';
 /// the alert presents on every fresh (re)connect even inside the 24 h
 /// re-alert window, while routine evaluations stay capped.
 
-/// Degraded story: ST 2..4 sum ≈ 98% of the default budget → ~2% health.
+/// Degraded story: ST 2..4 sum ≈98% of the D-037 budget (4,000 h) → ~2% health.
 const _degraded = FilterCounters(
   fanSeconds: 25_200,
   pmWeightedFanSeconds: 37_000,
   powerOnHours: 2,
-  stageSeconds: [50_000, 22_000, 3_328_000, 150_000, 50_000],
+  stageSeconds: [50_000, 22_000, 11_100_000, 2_900_000, 112_000],
 );
 
 class CapturingAlerts implements FilterAlertPort {

@@ -570,3 +570,35 @@ Live on the A34: Filter tab shows the pinned consumer layout + the dialog with i
 labels (screenshot); the dev basis control rendered with Dirty-air hours selected
 (node-dump verified); artifacts rebuilt + reinstalled (demo ble both). Manual updated
 (User-Manual §2.4/§3.4/§7 + §11 'shipped'), Decision-Log D-036, DevProcess §11 queue.
+
+## Task 20 (2026-11-08): dirty-air budget recalibrated to the 6–10-month band (D-037)
+
+User direction: a freshly reset filter at Normal must project a replacement inside the
+average 6–10 months of filter life (baseline = newly reset counters).
+
+1. **Budget** — `dirtyAirSecondsBudget` 1,000 h → **4,000 h** (14,400,000 s). With the
+   story's recorded dirty exposure (≈16.4 h/day POOR+ → 59.6k s/day) a reset projects
+   ≈242 days ≈ 8.0 months at Normal ×1.0 (Sensitive ≈4.1, Relaxed ≈12.2).
+2. **Projection estimator** — `estimateDirtyRatePerDay` moved off `raw_samples`-only
+   (which read 'Not enough history' right after a reset, because seeded + back-filled
+   data live in `minute_aggregates`) onto `minute_aggregates` with per-calendar-day
+   semantics (Σ dirty seconds ÷ calendar day of the window), replacing the old
+   connected-share → 24 h scale-up that inflated sparse windows.
+3. **Seeding story** — TwoMonthSeeder pushes an **8-month filter-service** story: the
+   2-month minute timeline stays the realistic look-back; the returned UsageTotals gain
+   a prior-service block so the counters land ≈98 % of the new budget at Normal — the
+   replacement alert still fires immediately on seeding (Normal ≈2 % → modal;
+   Sensitive overflow → 0 %, D-030/D-031/D-035 behavior preserved).
+
+Gates: analyze 0; **84/84 tests** — new acceptance tests: (1) the estimator reads the
+seeded story and lands its rate in the realistic band; (2) a fresh reset at that rate
+projects inside 180–299 days (the 6–10 band); (3) filter_health_dirt_test refit to the
+4,000-h denominators (50 %/over-budget/projection 390 days/sensitivity ×4); (4)
+demo_seeding totals assertions updated (fs consistency now ≥ minute-sum since the
+totals carry prior service). alert_reconnect + demo-seeding fixtures rescaled to reach
+~2 % at the new budget.
+Live on the A34 (the acceptance run): seed → modal 'Filter health is at 2 %' →
+'I just replaced the filter' → **Filter tab: 100 %, 'Projected replacement: Jul 7, 2027
+(242 days at recent usage)'** — the 6–10-month claim visible on the panel phone.
+Artifacts rebuilt + reinstalled (demo/ble). Manual §2.4 calibration note added;
+Decision-Log D-037; DevProcess §11 queue refresh (formalities next).

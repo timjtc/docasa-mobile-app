@@ -6,15 +6,19 @@ import '../protocol/models.dart';
 import 'db/database.dart';
 
 /// Filter budgets — app-side configuration (Plan §4.2; the device stays
-/// filter-model-agnostic). Placeholder defaults pending the real filter model
+/// filter-model-agnostic). PLACEHOLDER numbers pending the real filter model
 /// (Decision D-011): ~3000 h @ 2000 RPM, load budget equivalent to 25 µg/m³
 /// average over the same hours. v1.1 (D-027): the dirty-air-hours basis uses
-/// a 1000 h placeholder (≈ the 3000 h nominal at ~1/3 dirty-duty).
+/// a dirt-budget story — D-037 recalibration targets the 6–10-month filter
+/// life the product band expects: at the current normal-use exposure model
+/// (≈16.4 h/day of POOR+ air, as the demo story runs it) 4,000 h lands
+/// ≈8.1 months at Normal ×1.0 (Sensitive ≈4.1, Relaxed ≈12.2). Fresh reset →
+/// ~100 %; real-cartridge numbers supersede (D-011/D-018).
 class FilterBudgets {
   const FilterBudgets({
     this.hourBudgetRpmS = 3000 * 2000 * 3600, // 21,600,000,000 RPM·s
     this.loadBudgetRpmUgS = 3000 * 2000 * 3600 * 25, // 540,000,000,000 RPM·µg·s
-    this.dirtyAirSecondsBudget = 1000 * 3600, // 3,600,000 s of POOR+ air
+    this.dirtyAirSecondsBudget = 4000 * 3600, // 14,400,000 s of POOR+ air
   });
 
   /// Σ RPM·s before the pure-hours cap binds (secondary cap, Plan §4.2).
@@ -152,10 +156,13 @@ Future<double?> estimateLoadRatePerDay(
   return rate * 86400;
 }
 
-/// Average daily dirty-air seconds (POOR/BAD/HAZARD share of connected rows,
-/// scaled to a 24 h day) from recent raw history — the dirty-air basis's
-/// projection source (D-027). Null under 15 min of data (recording only runs
-/// while connected; Phase-5 back-fill lowers this bar).
+/// Average daily dirty-air seconds from recent history — the dirty-air
+/// basis's projection source (D-027). Reads `minute_aggregates`, the store
+/// every timeline writer lands in (live recorder via the compactor, offline
+/// ring back-fill, seeded demo history) — so a projection right after a
+/// manual reset still reflects the recorded story. Rate = dirty seconds
+/// accumulated per calendar day over the window. Null under ~15 min of
+/// samples (recording only runs while connected).
 Future<int?> estimateDirtyRatePerDay(
   AppDatabase db, {
   Duration window = const Duration(hours: 24),
@@ -163,14 +170,15 @@ Future<int?> estimateDirtyRatePerDay(
 }) async {
   final now = nowMs ?? DateTime.now().millisecondsSinceEpoch;
   final rows = await db.customSelect(
-    'SELECT COUNT(*) AS n, '
-    'SUM(CASE WHEN stage >= 3 THEN 1 ELSE 0 END) AS dirty '
-    'FROM raw_samples WHERE time_ms >= ?',
+    'SELECT COALESCE(SUM(sample_count), 0) AS samples, '
+    'COALESCE(SUM(stage3_count + stage4_count + stage5_count), 0) AS dirty '
+    'FROM minute_aggregates WHERE minute_start_ms >= ?',
     variables: [Variable.withInt(now - window.inMilliseconds)],
   ).get();
-  if (rows.isEmpty) return null;
-  final n = rows.first.read<int>('n');
-  final dirty = rows.first.readNullable<int>('dirty') ?? 0;
-  if (n < 900) return null;
-  return (dirty / n * 86400).round();
+  final samples = rows.first.read<int>('samples');
+  final dirty = rows.first.read<int>('dirty');
+  if (samples < 900) return null;
+  // Scale the window's dirty seconds to a full calendar day.
+  final scale = 86400000 / window.inMilliseconds;
+  return (dirty * scale).round();
 }
