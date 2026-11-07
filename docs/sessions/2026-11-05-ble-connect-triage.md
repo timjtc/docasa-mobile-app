@@ -739,3 +739,23 @@ Gates: analyze 0; 85/85 (no Dart changes). Manual §1 notes the two builds + ico
   same plain vocabulary.
 - Regenerated the PDF (text-layer verified: no CSS leak stays true; renamed
   wording present).
+
+## Task 27 (2026-11-07): User Manual as the product's own manual (no D-refs, no demo)
+
+- Stripped every `D-###` decision-log citation (audience would not know them)
+  and all demo/emulator content per user direction: the manual now reads as
+  the actual product manual for the real purifier + app.
+- Removed: two-builds intro (§1), Device-tab developer options/counters and
+  the whole §3.4 subsection, the demo playbook (old §7, replaced by
+  "Getting started and daily use" app-only guidance), demo troubleshooting
+  rows (adb/serial/seeding), glossary rows (Contract, Emulator, Buckets,
+  integrals/counters, calibrated-placeholder numbers, seeding, adaptive icon)
+  and internal phrasings (placeholder budget talk, dBm digits → plain
+  "full bars when close", names whitelist → device list entry).
+- §4 alert section de-cited; demo flow paragraph replaced by a plain
+  reminder-cadence note; §5 persistence table now real-device rows only;
+  §10 repurposed as "Where to get more help"; §11 as plain "What's new".
+- Reworked sections renumber-free (7/10/11 repurposed; refs updated).
+- Verified: text-layer scan of the regenerated 9-page PDF — zero occurrences
+  of D-0/demo/emulator/mock/seed/presenter/panel/Contract; MANUAL.md grep
+  same. Glossary (17 plain rows) and naming table kept.
