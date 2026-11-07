@@ -338,9 +338,10 @@ Read this once — it is everything a presenter needs when a technical word come
 - `docs/App-ADB-Test.md` — scripted on-device driving notes
 - `docs/Bench-Runbook.md` — formal bench checklists (G1/G2)
 
-**PDF export** (A4 default):  
-`pandoc docs/User-Manual.md -o DOCASA-User-Manual.pdf --toc -V geometry:margin=2cm`  
-(Any Markdown-to-PDF tool works; the file contains no HTML or exotic syntax.)
+**PDF export** (A4, styled tables, TOC):  
+`bash tools/export-user-manual-pdf.sh` → `releases/DOCASA-User-Manual-<date>.pdf`  
+(pandoc → styled HTML → headless-Chromium print; needs only pandoc and Google
+Chrome — no LaTeX. The print stylesheet lives in `docs/pdf-header.html`.)
 
 ---
 

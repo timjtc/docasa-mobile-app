@@ -712,3 +712,17 @@ Gates: analyze 0; 85/85 (no Dart changes). Manual §1 notes the two builds + ico
   usage/rate, threshold, daily cap, adaptive icon, seed/seeding) so technical words
   used anywhere in the manual resolve in one place
 - reference-doc list updated (D-001…D-039, session Tasks 1–23)
+
+## Task 25 (2026-11-07): User Manual PDF export — fixed CSS leak; one-command export
+
+- The garbled text above page 1 was the print CSS itself: pandoc
+  `--include-in-header` expects an HTML partial, raw CSS was inlined verbatim
+  and rendered as body text. Replaced with `docs/pdf-header.html` (same styles
+  inside `<style>` tags); the stray `docs/pdf-style.css` removed.
+- New `tools/export-user-manual-pdf.sh`: pandoc → styled HTML → headless-Chrome
+  print (honors @page A4); one command, output local-only in `releases/`.
+  No LaTeX engine; `uv` was used for the verification step (pypdf text-layer
+  check) since no Python is otherwise needed in the pipeline.
+- Regenerated: `releases/DOCASA-User-Manual-20261107.pdf` (11 pages). Verified
+  via text extraction: page 1 = title + TOC, no CSS fragments anywhere,
+  glossary/NVS definition present. Manual §10 now points at the script.
