@@ -654,3 +654,17 @@ Live on the A34: Day view shows **'Coverage: 100 % of window'** with the story d
 Filter hero reads 'About 8 months left · based on recent usage' (the recalibration
 visible through the friendly copy). Artifacts rebuilt + reinstalled; manual (§3.4 seed
 row + calibration note) and Decision-Log D-038 updated.
+
+## Task 23 (2026-11-09): branding — BLE app renamed "DOCASA"; shared launcher icon (D-039)
+
+1. **BLE app label** — the gradle `appName` placeholder for the realBle flavor changed
+   from 'DOCASA BLE Test' to **'DOCASA'** (demo keeps 'DOCASA Demo'); verified by
+   `aapt2 dump badging` on both fresh artifacts.
+2. **Launcher icon for BOTH versions** — `assets/docasa-logo-square-icon.png` wired via
+   `flutter_launcher_icons` (dev dep + `flutter_launcher_icons.yaml`): the generator
+   wrote legacy mipmaps `@mipmap/launcher`, repointed the manifest `android:icon`,
+   produced adaptive icons (white background, foreground inset 16%) + `values/colors.xml`
+   + drawable thumbnails — all committed.
+3. Rebuilt + installed both on the A34; the app drawer shows 'DOCASA' and 'DOCASA Demo'
+   with the square DOCASA logo rendered in One UI's mask.
+Gates: analyze 0; 85/85 (no Dart changes). Manual §1 notes the two builds + icon.

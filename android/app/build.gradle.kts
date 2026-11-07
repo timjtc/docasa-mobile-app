@@ -31,7 +31,9 @@ android {
             else -> "com.example.docasa_app"
         }
         manifestPlaceholders["appName"] = when {
-            realBle -> "DOCASA BLE Test"
+            // D-039: the BLE build ships as simply "DOCASA" (user request);
+            // the demo keeps its distinct label for parallel installs.
+            realBle -> "DOCASA"
             demoBuild -> "DOCASA Demo"
             else -> "docasa_app"
         }

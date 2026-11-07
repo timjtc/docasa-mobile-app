@@ -1,0 +1,7 @@
+# Launcher icon generator (D-039): shared by both app versions (DOCASA BLE
+# + DOCASA Demo). Run: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/docasa-logo-square-icon.png"
+  android: "launcher"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/docasa-logo-square-icon.png"

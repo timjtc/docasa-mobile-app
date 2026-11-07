@@ -527,6 +527,21 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   the story donut (BAD 942 min / POOR 307 / HAZARD 403), and after the modal-reset the
   hero reads "About 8 months left · based on recent usage" at Normal.
 
+- **D-039 — BLE build labeled "DOCASA"; shared square-logo launcher icon** · resolved · 2026-11-09 · android
+  Context: user direction on branding — the BLE app should be named "DOCASA" only (the
+  demo keeps its distinct label) and both app versions should use the DOCASA square-logo
+  artwork as the launcher icon.
+  Decision: the gradle `appName` placeholder maps `realBle` → "DOCASA" (BLE flavor's
+  aapt label verified); the demo label stays "DOCASA Demo" (parallel installs still
+  distinguishable). The launcher icon comes from `assets/docasa-logo-square-icon.png`
+  via `flutter_launcher_icons` (dev dep + `flutter_launcher_icons.yaml`): legacy
+  mipmaps (`@mipmap/launcher`, manifest repointed) plus adaptive icons
+  (background #FFFFFF, foreground inset 16%) for API 26+ launchers — One UI renders
+  both app icons as the DOCASA logo in the drawer. The generator's added
+  `drawable-*dpi` foregrounds and `values/colors.xml` are committed.
+  Verification: `aapt2 dump badging` (labels as above) and the Samsung app drawer
+  screenshot (both icons + names); gates 85/85 + analyze 0 (no Dart changes).
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

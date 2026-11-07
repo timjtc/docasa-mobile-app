@@ -20,6 +20,10 @@ current air quality, system status, history, filter life, and the device itself 
 carries the health story between sessions by asking the device for its counters, its
 online history ring, and its saved settings.
 
+Two launcher builds share this UI, both carrying the DOCASA square-logo launcher icon
+(D-039): **DOCASA** — connected to the real purifier over BLE — and **DOCASA Demo** —
+self-contained emulator mode for hardware-free demos.
+
 Connecting is automatic on app start; everything else is one tap.
 
 ---
