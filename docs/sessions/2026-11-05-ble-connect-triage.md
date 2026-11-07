@@ -602,3 +602,29 @@ Live on the A34 (the acceptance run): seed → modal 'Filter health is at 2 %' �
 (242 days at recent usage)'** — the 6–10-month claim visible on the panel phone.
 Artifacts rebuilt + reinstalled (demo/ble). Manual §2.4 calibration note added;
 Decision-Log D-037; DevProcess §11 queue refresh (formalities next).
+
+## Task 21 (2026-11-09): user-facing copy sweep — no dates, no internals
+
+User bullets, all implemented + live-verified on the A34 demo build:
+1. **Filter tab hero**: the calendar date is gone — the line now reads
+   'About N months left · based on recent usage' (days under ~6 weeks), via a small
+   `_friendlyLeft(days)` helper (30.4-day averaging month). No date is ever shown.
+2. **Sensitivity explainer**: the D-011/budget/bases math sentence replaced by
+   'Sliding toward Sensitive means the filter will need to be replaced sooner; sliding
+   toward Relaxed means it will last longer. Normal keeps the estimate balanced.'
+3. **History caption**: '…Offline periods (device off or out of range) appear as gaps.
+   When the purifier is back in range, the recorded history is recovered.' — no Phase-5.
+4. **Manual replacement prompt body** = the user's exact wording: 'Confirming will reset
+   what the purifier has recorded about the filter's usage, and it will start tracking
+   the filter's usage again from this point on.'
+
+Bonus de-jargon: the Replace-filter card caption (same surface as bullet 4) now says
+'Once you have physically swapped in the new filter cartridge…' (no integrals/zeroes),
+and the picker's empty-non-DOCASA label dropped its D-019/tech diagnosis sentence
+('Didn't find the purifier? Make sure it is powered on and within range — other nearby
+devices:'). The remaining D-ref/NVS strings live only in code comments or the
+developer-only cards.
+
+Gates: analyze 0; 84/84 tests (no prior test pinned the old strings). The unused
+`intl` import left filter_page with the date removal. Artifacts rebuilt + reinstalled
+(demo + ble). Manual quotes updated (§2.4 hero/dialog bullets). 

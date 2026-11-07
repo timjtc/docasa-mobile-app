@@ -117,9 +117,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
-                'History is recorded by the app while connected to the purifier. '
-                'Offline periods (device off or out of range) appear as gaps — '
-                'they are captured on-device from Phase 5.',
+                'History is recorded by the app while connected to the '
+                'purifier. Offline periods (device off or out of range) '
+                'appear as gaps. When the purifier is back in range, the '
+                'recorded history is recovered.',
                 style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
               ),
             ),

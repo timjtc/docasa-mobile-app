@@ -86,11 +86,13 @@ that reconnects after days away still shows the gapless device-recorded story.
 ### 2.4 Filter tab (FILTER)
 
 - **FILTER LIFE** hero: the remaining filter health in %, color-coded (green > 50 %,
-  amber > 20 %, red at/below), a progress bar, and the **projected replacement date**
-  (“… (N days at recent usage)”) once there is enough recent usage to project.
+  amber > 20 %, red at/below), a progress bar, and the **estimated life remaining** —
+  “About N months left” (or days when close to replacement) “· based on recent usage”
+  — before enough usage is recorded it says it cannot estimate yet. No calendar dates.
 - **Filter sensitivity** slider: `Relaxed (latest)` (×1.5) · `Normal (default)` (×1.0)
-  · `Sensitive (sooner)` (×0.5). It scales the budget and moves the projected
-  replacement date accordingly.
+  · `Sensitive (sooner)` (×0.5). The plain-language line beneath it: “Sliding toward
+  Sensitive means the filter will need to be replaced sooner; sliding toward Relaxed
+  means it will last longer. Normal keeps the estimate balanced.”
 - **Replacement basis** — the consumer is pinned to `Dirty-air hours`; there is no
   basis selector on this tab (D-036). The explanation card below states in plain
   language how the basis estimates consumption. The budget is a calibrated placeholder
@@ -101,11 +103,12 @@ that reconnects after days away still shows the gapless device-recorded story.
 - **Replace filter → “I replaced the filter”** — the manual replacement action. Tapping
   it opens a confirmation prompt:
   - Title: *“Did you replace the filter?”*
-  - Body: “Confirming zeroes the purifier’s filter-life counters (the usage
-    integrals). Lifetime power-on hours are kept.”
+  - Body: “Confirming will reset what the purifier has recorded about the
+    filter’s usage, and it will start tracking the filter’s usage again
+    from this point on.”
   - *Not yet* — safe dismissal, nothing changes.
-  - *Yes, filter replaced* — sends `resetFilter` to the purifier: fresh 100 % health,
-    the replacement date re-projects, and the alert story re-arms.
+  - *Yes, filter replaced* — sends `resetFilter` to the purifier: the tracking
+    restarts fresh (≈100 % health), and the alert story re-arms.
 
 **Calibration (D-037):** the dirty-air budget is 4,000 h of POOR+ exposure — at
 Normal sensitivity and the recorded normal-use exposure rate a freshly reset filter

@@ -169,9 +169,9 @@ class _DevicePickerSheetState extends State<_DevicePickerSheet> {
               Text(
                 _other.isEmpty
                     ? 'No Bluetooth devices with advertisements were seen. '
-                        'Is the purifier powered?'
-                    : 'No DOCASA advertisement found. Nearby devices for '
-                        'diagnosis (firmware advertising is unverified — D-019):',
+                        'Is the purifier powered and in range?'
+                    : 'Didn’t find the purifier? Make sure it is powered on '
+                        'and within range — other nearby devices:',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             if (validList.isEmpty)

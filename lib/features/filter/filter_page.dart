@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../data/filter_health.dart';
 import '../../data/settings_repository.dart';
@@ -60,10 +59,9 @@ class _FilterPageState extends ConsumerState<FilterPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Manual filter replacement: after you confirm, the '
-                    'purifier’s usage integrals are zeroed (lifetime '
-                    'power-on hours are kept) and filter life restarts at '
-                    'a fresh 100%.',
+                    'Once you have physically swapped in the new filter '
+                    'cartridge, tap the button above — the filter-life '
+                    'estimate starts over from a fresh 100%.',
                     style:
                         TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
                   ),
@@ -118,9 +116,10 @@ class _FilterPageState extends ConsumerState<FilterPage> {
             if (h != null) ...[
               Text(
                 h.remainingDays == null
-                    ? 'Not enough history yet to project a replacement date'
-                    : 'Projected replacement: ${DateFormat.yMMMd().format(h.projectedReplacement!)} '
-                        '(${h.remainingDays} days at recent usage)',
+                    ? 'Not enough recorded usage yet to estimate the '
+                        'remaining filter life'
+                    : '${_friendlyLeft(h.remainingDays!)} · based on recent '
+                        'usage',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: cs.onSurface),
               ),
@@ -183,11 +182,9 @@ class _FilterPageState extends ConsumerState<FilterPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Applies to both bases — sliding toward Sensitive spends the '
-              'budget faster (scales the budget ×'
-              '${settings.sensitivity.multiplier}); the replacement date '
-              'moves sooner/later accordingly. Placeholder budget numbers '
-              '(D-011) stay code-side.',
+              'Sliding toward Sensitive means the filter will need to be '
+              'replaced sooner; sliding toward Relaxed means it will last '
+              'longer. Normal keeps the estimate balanced.',
               style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
             ),
           ],
@@ -204,8 +201,9 @@ class _FilterPageState extends ConsumerState<FilterPage> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Did you replace the filter?'),
         content: const Text(
-          'Confirming zeroes the purifier’s filter-life counters (the '
-          'usage integrals). Lifetime power-on hours are kept.',
+          'Confirming will reset what the purifier has recorded about the '
+          'filter’s usage, and it will start tracking the filter’s usage '
+          'again from this point on.',
         ),
         actions: [
           TextButton(
@@ -250,6 +248,14 @@ class _FilterPageState extends ConsumerState<FilterPage> {
     if (after != before) {
       await ref.read(recordingServiceProvider).evaluateNow();
     }
+  }
+
+  /// Human-facing remaining-life text (user request 2026-11-09): approximate
+  /// months above ~6 weeks, days below that — no calendar dates.
+  String _friendlyLeft(int days) {
+    if (days < 46) return 'About $days days left';
+    final months = (days / 30.4).round();
+    return 'About $months month${months == 1 ? '' : 's'} left';
   }
 
   static Color _healthColor(double? pct) {
