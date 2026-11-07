@@ -726,3 +726,16 @@ Gates: analyze 0; 85/85 (no Dart changes). Manual §1 notes the two builds + ico
 - Regenerated: `releases/DOCASA-User-Manual-20261107.pdf` (11 pages). Verified
   via text extraction: page 1 = title + TOC, no CSS fragments anywhere,
   glossary/NVS definition present. Manual §10 now points at the script.
+
+## Task 26 (2026-11-07): User Manual — plain UI language pass
+
+- Removed designer/dev-speak from the manual: "hero" → card/headline, "tile(s)"
+  → card(s), "pill" → label, "notch" → bar, "modal" → pop-up (11 spots),
+  "knob" → developer setting, "Range switcher" → Range selector,
+  "device-selection sheet" → device-chooser pop-up, "device picker" → device
+  list, "background/5-min ticks" → background checks / every-5-minutes.
+- §2 gained a small "How this manual names screen parts" table (tab, card,
+  slider, switch, progress bar, pop-up, label) so both audiences share the
+  same plain vocabulary.
+- Regenerated the PDF (text-layer verified: no CSS leak stays true; renamed
+  wording present).

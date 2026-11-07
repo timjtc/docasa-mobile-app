@@ -37,8 +37,20 @@ Connecting is automatic on app start; everything else is one tap.
 
 ## 2. The five tabs
 
-The notch at the bottom always shows five tabs. A pill in the top-right shows the
-connection state at a glance (§3.1).
+The bar at the bottom of the screen always shows five tabs. The label at the
+top-right shows the connection state at a glance (§3.1).
+
+How this manual names screen parts (plain words only — no design jargon):
+
+| Word | What it means |
+|---|---|
+| **Tab** | One of the five sections at the bottom of the screen (Air, System, History, Filter, Device) |
+| **Card** | A rounded box of related information on a page (e.g. the FILTER LIFE card) |
+| **Slider** | A control you drag sidewise to pick a value (e.g. the filter-sensitivity slider) |
+| **Switch** | An on/off control that flips (e.g. the dark/light moon switch at the top-right) |
+| **Progress bar** | The horizontal bar that shows a % by filling or draining |
+| **Pop-up** | A message box that appears over the screen until you act on it (e.g. the filter-replacement alert) |
+| **Label** | Small standing text, such as the connection state at the top-right |
 
 | Tab | What it answers |
 |---|---|
@@ -50,11 +62,11 @@ connection state at a glance (§3.1).
 
 ### 2.1 Air tab (AIR MONITOR)
 
-- **Stage hero** — the headline: `GOOD`, `FAIR`, `POOR`, `BAD`, `HAZARD`. The color
+- **Air level card** — the big colored headline at the top: `GOOD`, `FAIR`, `POOR`, `BAD`, `HAZARD`. The color
   mirrors the device LCD/LED semantics (green → yellow → orange → red → purple).
   Below it, the live **PM2.5** reading in µg/m³ with a “live · updated hh:mm”
   timestamp.
-- **PM1.0 / PM10** tiles — the same moment, the other particle size bands, µg/m³.
+- **PM1.0 / PM10** cards — the same moment, the other particle size bands, µg/m³.
 - **Recommendations** (bottom of the page) — two short, plain-language bullets that
   adapt to the current stage: what the air means for the user and what to do with the
   purifier. E.g. POOR: “Air is poor — breathing irritation is likely, especially for
@@ -68,11 +80,11 @@ reference the product owner supplied (D-033).
 
 ### 2.2 System tab (SYSTEM STATUS)
 
-| Tile | Meaning |
+| Card | Meaning |
 |---|---|
 | **Temperature** | Room temperature, °C |
 | **Humidity** | Relative humidity, % |
-| **Air chemicals (VOC)** | A rough gauge of chemical-vapor level in kΩ. Below 30 kΩ the tile turns amber: “Chemical vapors high — air level counts worse” — the device actually bumps the reported air stage in that condition, which is why the wording says so |
+| **Air chemicals (VOC)** | A rough gauge of chemical-vapor level in kΩ. Below 30 kΩ the card turns amber: “Chemical vapors high — air level counts worse” — the device actually bumps the reported air stage in that condition, which is why the wording says so |
 | **Fan speed** | Current commanded fan speed in RPM (revolutions per minute) |
 | **Battery** | Charge %, or FULL; shows “Charging” while on external power |
 
@@ -80,7 +92,7 @@ No technical sub-labels are shown; each number is self-describing.
 
 ### 2.3 History tab (HISTORY)
 
-- **Range switcher:** `Day` · `Week` · `Month` · `Last month`.
+- **Range selector:** `Day` · `Week` · `Month` · `Last month`.
   `Last month` is the *previous complete calendar month* (calendar-bounded, D-032).
 - **Metric dropdown:** PM2.5 / PM10 / PM1.0 (µg/m³), Temperature (°C), Humidity (%),
   VOC (kΩ). Fan and Battery graphs were retired from the UI (D-032).
@@ -101,7 +113,7 @@ still shows the story straight after the drain.
 
 ### 2.4 Filter tab (FILTER)
 
-- **FILTER LIFE** hero: the remaining filter health in %, color-coded (green > 50 %,
+- **FILTER LIFE** card: the remaining filter health in %, color-coded (green > 50 %,
   amber > 20 %, red at/below), a progress bar, and the **estimated life remaining** —
   e.g. “About 8 months left · based on recent usage”. When close to replacement it
   switches to days (“About 12 days left”), and before enough usage is recorded it
@@ -138,7 +150,7 @@ projects **~8 months** (the accepted 6–10-month band; Sensitive ≈4 months, R
 
 - **Connection card:** “Connected to DOCASA-AirPurifier” / “Connecting…” / “No device
   connected”, with `Disconnect` and `Connect`/`Reconnect`. On the demo build the
-  Connect/Reconnect opens the same device-selection sheet as the real transport (a
+  Connect/Reconnect opens the same device-chooser pop-up as the real transport (a
   mock DOCASA row with signal bars) so the flow is presentable without hardware
   (D-033).
 - **Device information:** Maker / Model / Firmware / Hardware. On this build’s demo,
@@ -153,9 +165,9 @@ projects **~8 months** (the accepted 6–10-month band; Sensitive ≈4 months, R
 
 ## 3. Connecting, states, and developer tools
 
-### 3.1 Connection states (top-right pill and Device tab)
+### 3.1 Connection states (top-right label and Device tab)
 
-| Pill | Meaning |
+| Label | Meaning |
 |---|---|
 | `CONNECTED` (green) | Live link — data flows; counters refresh while connected |
 | `CONNECTING` (amber) | Link in progress (handshake) |
@@ -165,12 +177,12 @@ projects **~8 months** (the accepted 6–10-month band; Sensitive ≈4 months, R
 
 - The app **auto-connects on start** to the paired purifier (demo build: to the
   built-in emulator) — no action needed for the panel.
-- `Reconnect` (from a connected state) closes the link and opens the device picker —
+- `Reconnect` (from a connected state) closes the link and opens the device list —
   the same flow users see with the real hardware.
-- Device-picker rows show only the **advertised name + a signal-strength icon**
+- Devices in the list show only the **advertised name + a signal-strength icon**
   (cellular bars: ≥ −60 dBm full bars, ≥ −75 dBm two bars, else one). No dBm digits,
   no service-tag text — friendlier nothing (D-033). When nothing personal to DOCASA
-  is in range, the picker lists “other nearby devices” with a plain hint to power on
+  is in range, the list shows “other nearby devices” with a plain hint to power on
   and keep the purifier close.
 
 ### 3.3 Time sync and handshake
@@ -186,12 +198,12 @@ times** (taps must come within ~2.5 s of each other). Inside:
 
 | Control | Effect |
 |---|---|
-| Toggle switch | Turns the section off again |
+| Switch | Turns the section off again |
 | **Seed demo data (2 months)** | Replaces the phone history timeline with a generated 2-month story (clean stretches + dirty episodes) **and fills the whole current day 00:00→23:59**, so the Day chart always has data (D-038). It also pushes matching usage counters into the device (real NVS on a 4.2.1 purifier; the emulator echoes) — health then reads ≈1–2 % on Normal, and the replacement alert fires right away (D-030/D-031) |
 | **Clear history** | Wipes the phone-side history database |
-| **Preview filter alert** | Raises the replacement modal directly (demo-only, D-021) |
+| **Preview filter alert** | Raises the replacement pop-up directly (demo-only, D-021) |
 | **Device counters** card | Fan usage (equivalent full-speed hours), PM-weighted load (weighted particle-and-fan index), Dirty-air time (hours in POOR/BAD/HAZARD since the filter swap), Time share per stage (one line per air level), Powered on (lifetime) |
-| **Replacement basis (developer)** | Switches the health engine between `Dirty-air hours` and `Load (µg·h)`. Consumers are pinned to dirty-air hours on the Filter tab; this knob is the only way to change it (D-036) |
+| **Replacement basis (developer)** | Switches the health engine between `Dirty-air hours` and `Load (µg·h)`. Consumers are pinned to dirty-air hours on the Filter tab; this developer setting is the only way to change it (D-036) |
 
 Counters “live on the purifier and survive power cycles” — on real hardware they sit
 in the purifier’s NVS (flash memory that remembers things while powered off, defined
@@ -207,21 +219,21 @@ The story the panel cares most about:
 1. **When it fires** — while connected, the health is at or below the alert threshold
    (default ≤ 10 %), re-evaluated on every connect and every 5 minutes while
    connected.
-2. **How it presents** — app in the foreground → the in-app modal (“Filter needs
+2. **How it presents** — app in the foreground → the in-app pop-up (“Filter needs
    replacing — health is at N%…”); app in the background → a system push
-   notification, whose tap opens the app straight into the modal.
+   notification, whose tap opens the app straight into the pop-up.
 3. **Reconnect is a trigger** — a fresh connect (boot or user reconnect) re-surfaces
    degraded health **even within 24 h of the previous alert** (D-035); routine
-   background ticks remain capped at most once per day.
-4. **Modal actions**
+   background checks remain capped at most once per day.
+4. **Pop-up actions**
    - *“I’ll replace it at a later time”* — acknowledge and continue; the reminder then
      respects the at-most-once-per-day cap while the filter is still degraded.
    - *“I just replaced the filter”* — sends `resetFilter` to the purifier: the usage
      tracking restarts fresh (≈100 % health), and the alert window re-arms.
 
-Demo flow that always lands: seed (§3.4) → modal fires at ~2 % → press *“I just
+Demo flow that always lands: seed (§3.4) → pop-up fires at ~2 % → press *“I just
 replaced the filter”* → the Filter tab reads ~100 % and “About 8 months left” →
-reconnect again to re-arm the modal story when needed (D-035).
+reconnect again to re-arm the pop-up story when needed (D-035).
 
 ---
 
@@ -243,7 +255,7 @@ a panel session if the app was restarted.
 
 ## 6. Theme
 
-The moon toggle (top-right) switches dark/light instantly; the choice persists.
+The moon switch (top-right) changes dark/light instantly; the choice persists.
 
 ---
 
@@ -255,8 +267,8 @@ by script):
 1. **Show the Air tab live** — the emulator produces a believable PM story; point at
    stage → PM2.5 → PM1.0/PM10 → Recommendations.
 2. **Tell the filter story** — Filter tab: 100 % healthy → dev options (info-card
-   ×7) → `Seed demo data (2 months)` → the replacement modal arrives (health ≈ 2 %).
-   Explain the modal and its two actions; choose *“I’ll replace it at a later time”*.
+   ×7) → `Seed demo data (2 months)` → the replacement pop-up arrives (health ≈ 2 %).
+   Explain the pop-up and its two actions; choose *“I’ll replace it at a later time”*.
    Mention the manual “I replaced the filter” action that lives on the Filter tab
    itself (§2.4).
 3. **Show the evidence trail** — History tab: switch Day (the seeded current day is
@@ -277,7 +289,7 @@ Panel-pitfalls to avoid:
   emulator’s placeholder if asked.
 - Developer options ON state is remembered; leave the section ON for the panel, or
   flip the switch to hide it if you want a pristine customer view.
-- Re-seeding also resets the alert daily-cap clock — the modal fires immediately and
+- Re-seeding also resets the alert daily-cap clock — the pop-up fires immediately and
   again on every reconnect, which is exactly the demonstration you want.
 
 ---
@@ -287,9 +299,9 @@ Panel-pitfalls to avoid:
 | Symptom | Meaning / action |
 |---|---|
 | OFFLINE right after app start | The link is (re)establishing; the auto-connect loop retries — wait a beat or use `Reconnect` |
-| “Filter health is…” never updates | It updates on connect and on 5-min ticks; the seeded story changes after `Seed demo data` |
+| “Filter health is…” never updates | It updates on connect and every 5 minutes; the seeded story changes after `Seed demo data` |
 | History shows gaps | No recording happened while disconnected; gaps are shown truthfully (“gaps mean no recorded data”), and the offline ring fills them on reconnect |
-| Modal did not return on reconnect | It re-presents on reconnect while health is ≤ threshold and the counters read degraded (D-035); on the demo, re-seed if the app restarted |
+| Pop-up did not return on reconnect | It re-presents on reconnect while health is ≤ threshold and the counters read degraded (D-035); on the demo, re-seed if the app restarted |
 | adb phone shown `unauthorized` | Accept the RSA prompt on the phone (screen may need waking) |
 | Watch-host: pressing serial port resets the ESP32 | Known host quirk; avoid opening COM while the app is mid-demo |
 
@@ -323,7 +335,7 @@ Read this once — it is everything a presenter needs when a technical word come
 | **Recent usage / rate** | How fast the filter consumed its budget over the recorded window (seconds of dirty air per day). The projection multiplies the remaining budget by that rate — hence “based on recent usage”. |
 | **Alert threshold** | The health % below which the replacement alert fires (default 10 %). |
 | **Daily cap** | The once-per-24-h rule for background re-alerts, so the app never nags; a fresh (re)connect re-surfaces the alert even inside this window (D-035). |
-| **Whitelist of names** | The picker hides phones/noise — it only surfaces devices whose BLE advertisement belongs to a DOCASA purifier (D-002), with everything else tucked away as “other nearby devices”. |
+| **Whitelist of names** | The device list hides phones/noise — it only surfaces devices whose BLE advertisement belongs to a DOCASA purifier (D-002), with everything else tucked away as “other nearby devices”. |
 | **Adaptive icon** | Android’s two-layer launcher icon (a foreground logo + a background the launcher shapes into circles/squares). Both app builds carry the DOCASA logo this way, generated from `assets/docasa-logo-square-icon.png`. |
 | **seed / seeding** | The demo tool that back-fills a believable 2-month timeline and matching counters (D-030). The whole current day is included, so the Day chart always opens populated (D-038). |
 
@@ -349,13 +361,13 @@ Chrome — no LaTeX. The print stylesheet lives in `docs/pdf-header.html`.)
 
 The app has been on a consumer-focus pass; the visible refinements, newest last:
 
-1. **User-centric copy sweep** (D-033) — picker rows show a name + signal bars only;
-   the System tab speaks in plain tiles; the Air tab gained stage-appropriate
+1. **User-centric copy sweep** (D-033) — device rows show a name + signal bars only;
+   the System tab speaks in plain cards; the Air tab gained stage-appropriate
    **Recommendations**; dev jargon removed from user surfaces.
 2. **Device counters relocated** (D-034) — raw counters moved to the Device tab behind
    developer mode; the Filter tab is consumer-only.
 3. **Reconnect re-alerts** (D-035) — reconnecting re-surfaces a degraded filter’s
-   modal even within the once-per-day window.
+   pop-up even within the once-per-day window.
 4. **Filter-tab consumer batch** (D-036) — basis selection moved to Developer options
    (consumers are pinned to Dirty-air hours) and the manual **“I replaced the filter”**
    action with its confirmation prompt arrived.
