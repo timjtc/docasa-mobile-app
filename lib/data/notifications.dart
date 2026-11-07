@@ -7,7 +7,10 @@ abstract interface class FilterAlertPort {
 }
 
 /// Pure decision logic for the replacement alert (Plan §4.3):
-/// fire while connected, at/below threshold, at most once per day.
+/// fire while connected, at/below threshold, at most once per day —
+/// except when the evaluation was triggered by a (re)connect (D-035):
+/// attaching to the purifier re-surfaces degraded health immediately;
+/// the daily cap keeps guarding the background/timer evaluations.
 abstract final class FilterAlertDecision {
   static const int _realertIntervalMs = 24 * 3600 * 1000;
 
@@ -17,10 +20,11 @@ abstract final class FilterAlertDecision {
     required int lastAlertMs,
     required int nowMs,
     required bool connected,
+    bool freshConnect = false,
   }) =>
       connected &&
       healthPct <= thresholdPct &&
-      nowMs - lastAlertMs >= _realertIntervalMs;
+      (freshConnect || nowMs - lastAlertMs >= _realertIntervalMs);
 }
 
 /// flutter_local_notifications-backed port. Initialization failures are

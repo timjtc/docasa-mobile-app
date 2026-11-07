@@ -268,27 +268,38 @@ void main() {
     expect(s.lastAlertMs, 42);
   });
 
-  test('alert decision logic (at most daily, only while connected)', () {
+  test('alert decision logic (at most daily, only while connected; a '
+      'fresh connect re-surfaces)', () {
     bool should({
       required double pct,
       required int last,
       required int now,
       bool connected = true,
       int threshold = 10,
+      bool freshConnect = false,
     }) =>
         FilterAlertDecision.shouldNotify(
             healthPct: pct,
             thresholdPct: threshold,
             lastAlertMs: last,
             nowMs: now,
-            connected: connected);
+            connected: connected,
+            freshConnect: freshConnect);
 
     expect(should(pct: 9.5, last: 0, now: day), isTrue);
     expect(should(pct: 9.5, last: day - 1000, now: day), isFalse,
         reason: 'already alerted < 24 h ago');
-    expect(should(pct: 11, last: 0, now: day), isFalse,
-        reason: 'above threshold');
+    expect(should(pct: 9.5, last: day - 1000, now: day, freshConnect: true),
+        isTrue,
+        reason: 'reconnect is an alert trigger (D-035): bypasses the cap');
+    expect(
+        should(pct: 11, last: 0, now: day, freshConnect: true), isFalse,
+        reason: 'still health-gated — healthy filters never alert');
     expect(should(pct: 9.5, last: 0, now: day, connected: false), isFalse);
+    expect(
+        should(pct: 9.5, last: 0, now: day, connected: false, freshConnect: true),
+        isFalse,
+        reason: 'no counters/no connection — still no alert');
   });
 }
 

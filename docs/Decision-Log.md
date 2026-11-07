@@ -450,6 +450,22 @@ Append-only. Each entry: context → decision → consequences. Entries supersed
   line grew unbounded and squeezed the key label into one-character lines. Live-verified
   with the seeded story (BAD 1955100s renders, label intact).
 
+- **D-035 — Reconnect is a filter-alert trigger (bypasses the daily cap)** · resolved · 2026-11-08 · app
+  Context: user report — reconnecting (demo + BLE) never re-presented the replacement modal.
+  Cause: the connect handshake evaluation runs on every 'connected' event, but presenting was
+  gated by the D-021 24 h re-alert interval, so a same-day re-present was impossible.
+  Decision: `FilterAlertDecision.shouldNotify` gains `freshConnect` (connect-triggered
+  evaluations bypass ONLY the 24 h interval; the health threshold and connected gates
+  remain). `_onConnected` passes it; the 5-minute timer and `evaluateNow()` stay capped and
+  `lastAlertMs` still stamps on every presentation. A degraded filter therefore re-surfaces
+  at every attach; a healthy one never alerts. Both builds share this path (single fix →
+  identical behavior for the demo's fake and the real v4.2.1 purifier).
+  Verified by a service-level test with a connect-emitting fake (82/82): a connect event
+  presents degraded health inside a 298-ms-old cap stamp, while a routine evaluation at the
+  same age does not. Live: the seed-path modal re-confirmed on the A34; the kDebugMode
+  `[filter-alert]` trail (evaluation inputs + decision) was added for G4-era diagnosis and
+  prints nothing in release builds.
+
 ### Backlog (unscheduled, non-blocking)
 
 - AI-flagged v3 defects (particle wall-jitter bounce logic; boot progress outline only

@@ -1,6 +1,8 @@
 import 'dart:async';
 // ignore_for_file: use_initializing_formals, prefer_initializing_formals
 
+import 'package:flutter/foundation.dart';
+
 import '../ble/docasa_connection.dart';
 import '../protocol/models.dart';
 import 'db/database.dart';
@@ -69,8 +71,15 @@ class RecordingService {
   }
 
   Future<void> _onConnected(DocasaConnection conn) async {
-    // Initial counters read + alert evaluation (Contract §6.1 handshake).
-    await _evaluateAlerts(conn);
+    if (kDebugMode) {
+      debugPrint('[filter-alert] connect event → evaluation '
+          '(freshConnect: true)');
+    }
+    // (Re)connect handshake: initial counters read + alert evaluation. A
+    // fresh connect re-surfaces degraded health even inside the 24 h
+    // re-alert window — reconnect is a trigger (D-035); timer ticks stay
+    // capped.
+    await _evaluateAlerts(conn, freshConnect: true);
     _compactTimer ??= Timer.periodic(
       const Duration(seconds: 60),
       (_) => unawaited(compactor.run(_db)),
@@ -81,7 +90,10 @@ class RecordingService {
     );
   }
 
-  Future<void> _evaluateAlerts(DocasaConnection conn) async {
+  Future<void> _evaluateAlerts(
+    DocasaConnection conn, {
+    bool freshConnect = false,
+  }) async {
     try {
       final counters = await conn.readFilterCounters();
       final s = await settings.load();
@@ -97,18 +109,31 @@ class RecordingService {
         dirtyRatePerDaySec: dirtyRate,
       );
       final nowMs = _now().millisecondsSinceEpoch;
+      if (kDebugMode) {
+        debugPrint('[filter-alert] eval(freshConnect: $freshConnect): '
+            'health=${health.pct.toStringAsFixed(2)}% '
+            'threshold=${s.alertThresholdPct}% '
+            'lastAlertAge=${nowMs - s.lastAlertMs} ms');
+      }
       if (FilterAlertDecision.shouldNotify(
         healthPct: health.pct,
         thresholdPct: s.alertThresholdPct,
         lastAlertMs: s.lastAlertMs,
         nowMs: nowMs,
         connected: true,
+        freshConnect: freshConnect,
       )) {
+        if (kDebugMode) {
+          debugPrint('[filter-alert] presenting '
+              '(cap: ${freshConnect ? 'fresh-connect bypass' : 'routine'})');
+        }
         await _alerts.showFilterLow(health.pct);
         await settings.save(s.copyWith(lastAlertMs: nowMs));
       }
     } on Exception {
-      // Counters read or DB hiccup — skip this evaluation round.
+      if (kDebugMode) {
+        debugPrint('[filter-alert] evaluation skipped (counters/db hiccup)');
+      }
     }
   }
 

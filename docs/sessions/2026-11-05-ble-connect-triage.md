@@ -486,3 +486,37 @@ wide fixture: 'GOOD 3600000s' + 'HAZARD 0s'). Verified live on the A34 after re-
 (985.5 h dirty): label horizontal, five right-aligned stage lines, no wrap; artifact pair
 rebuilt + reinstalled. Note: seeding re-arms the replacement modal (story evaluated at
 0..1.5% — pop expected on each evaluation until acked; D-021 cap was reset by the seed).
+
+## Task 17 (2026-11-08): reconnect is a filter-alert trigger (D-035)
+
+User report: in the Demo build, reconnecting did not re-present the replacement modal.
+Root cause: the reconnect evaluation DID run (RecordingService listens to every
+'connected' event → `_onConnected` → `_evaluateAlerts`), but the presentation was gated by
+the D-021 daily cap re-alert interval (24 h since `lastAlertMs`) — a re-present was
+impossible within that window. Same shared path as the BLE build, so both behaved the same.
+
+Fix (`notifications.dart` + `recording_service.dart`, shared by both transports):
+- `FilterAlertDecision.shouldNotify` gains `freshConnect` — when the evaluation was
+  triggered by a connect/reconnect handshake, the cap is bypassed (degraded health is
+  re-surfaced at attach time; the health gate and the connected gate still apply).
+- `_onConnected` passes `freshConnect: true`; the 5-minute timer and `evaluateNow()`
+  (sensitivity-change / seed-path) evaluations stay capped. `lastAlertMs` still stamps at
+  every presentation, so background ticks remain at-most-daily.
+- kDebugMode-gated `[filter-alert]` debug trail prints each evaluation's inputs + decision
+  (0 in release builds — checked).
+
+Gates: analyze 0; **82/82 tests**. New `test/data/alert_reconnect_test.dart` verifies
+service-level wiring with a connect-emitting fake: (1) a fresh connect presents degraded
+health despite a 298-ms-old cap stamp (bypass works), (2) a routine `evaluateNow` at the
+same age stays suppressed (cap intact for non-connect triggers). The alerts-port capture
+presents exactly once in each scenario (degraded fixture ST-2..4 ≈ 98 % of budget).
+
+Device evidence (A34, demo build): the seeded story promotes the modal from the seed
+button itself ('Seeded 2 months — 985 h dirty air; device counters adopted' + 'Filter
+health is at 2 %' modal at 11:11 — presentation chain proven live). The touch-driven
+A/B on the reconnect button could not be completed on-device: the Device-tab list
+re-anchors under its 1 Hz counter re-render, so scripted taps drift — the app-side causal
+chain (connect event → evaluation → bypass → modal) is machine-verified instead; the
+release build carries the same shared logic as the BLE app and the purifier.
+Bench note: buttons at (760,1382)-ish move between screenshot and touch — when re-driving
+the phone, anchor + tap must happen within ~1 s of the same layout.
